@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail } from 'lucide-react';
-import CustomButton from '../components/ui/CustomButton';
+import CustomButton from '../../components/ui/CustomButton';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
