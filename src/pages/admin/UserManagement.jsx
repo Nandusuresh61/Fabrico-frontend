@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Search, Edit, Trash2, UserPlus } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllUsers } from '../../redux/features/adminSlice';
+import { getAllUsers, toggleUserStatus } from '../../redux/features/adminSlice';
 import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
 
@@ -14,12 +14,12 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
 
-  // ✅ Fetch users when the component loads
+  //  Fetch users when the component loads
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  // ✅ Filter users by search and status
+  //  Filter users by search and status
   const filteredUsers = users
     .filter((user) => {
       const matchesSearch =
@@ -30,8 +30,14 @@ const UserManagement = () => {
     })
     .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
 
-  // ✅ Pagination logic
+  //  Pagination logic
   const totalPages = Math.ceil(users.length / usersPerPage);
+
+
+  //toggle status
+  const toggleStatus = (userId) =>{
+    dispatch(toggleUserStatus(userId));
+  }
 
   return (
     <AdminLayout>
@@ -69,13 +75,13 @@ const UserManagement = () => {
           </select>
         </div>
 
-        {/* ✅ Show loading state */}
+        {/*  Show loading state */}
         {loading && <p className="text-center text-gray-500">Loading users...</p>}
 
-        {/* ✅ Show error state */}
+        {/*  Show error state */}
         {error && <p className="text-center text-red-500">{error}</p>}
 
-        {/* ✅ Users Table */}
+        {/*  Users Table */}
         {!loading && !error && (
           <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
             <table className="w-full">
@@ -94,7 +100,16 @@ const UserManagement = () => {
                     <td className="px-6 py-4">#{user._id}</td>
                     <td className="px-6 py-4">{user.username}</td>
                     <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">{user.status}</td>
+                    <td className="px-6 py-4">
+                    <span 
+                    onClick={()=>toggleStatus(user._id)}
+                    className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
+                      user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {user.status}
+                    </span>
+                    </td>
+
                     <td className="px-6 py-4 flex gap-2">
                       <Edit className="cursor-pointer text-gray-500" />
                       <Trash2 className="cursor-pointer text-red-500" />
@@ -106,14 +121,13 @@ const UserManagement = () => {
           </div>
         )}
 
-        {/* ✅ Pagination */}
+        {/*  Pagination */}
         <div className="mt-4 flex justify-center gap-2">
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
-              className={`px-4 py-2 ${
-                currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
-              }`}
+              className={`px-4 py-2 ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+                }`}
               onClick={() => setCurrentPage(i + 1)}
             >
               {i + 1}
@@ -126,3 +140,6 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+
+
+

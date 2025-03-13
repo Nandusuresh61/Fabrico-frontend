@@ -1,14 +1,13 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { userLoginApi, userRegApi } from '../../api/userApi';
 
-// Initial state
+
 const initialState = {
     user: null,
     loading: false,
     error: null,
 };
 
-// Register User
 export const registerUser = createAsyncThunk(
     'user/register',
     async (userData, { rejectWithValue }) => {
@@ -21,7 +20,6 @@ export const registerUser = createAsyncThunk(
     }
 );
 
-// Login User
 export const loginUser = createAsyncThunk(
     'user/login',
     async (userData, { rejectWithValue }) => {
@@ -34,12 +32,11 @@ export const loginUser = createAsyncThunk(
     }
 );
 
-// Logout User
 export const logoutUser = createAsyncThunk(
     'user/logout',
     async (_, { rejectWithValue }) => {
         try {
-            // API call for logout
+            
             await API.post('/users/logout');
             return null;
         } catch (error) {
@@ -58,7 +55,7 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Register User
+            
             .addCase(registerUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -72,7 +69,7 @@ const userSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Login User
+            
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -86,7 +83,7 @@ const userSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Logout User
+           
             .addCase(logoutUser.pending, (state) => {
                 state.loading = true;
             })
