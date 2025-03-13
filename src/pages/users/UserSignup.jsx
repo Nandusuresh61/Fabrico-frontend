@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, Check, X } from 'lucide-react';
-import Layout from '../../components/layout/layout';
+import Layout from '../../components/layout/Layout'
 import CustomButton from '../../components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
 
