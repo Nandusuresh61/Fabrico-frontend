@@ -6,7 +6,7 @@ import UserLogin from '../pages/users/UserLogin'
 import ProductDetail from '../pages/users/ProductDetail'
 import Products from '../pages/users/Products'
 import NotFound from '../pages/users/NotFound'
-import ProtectedRoute from '../ProtectedRoute'
+import ProtectedRoute from './ProtectedRoute'
 import UserProfile from '../pages/users/UserProfile'
 
 
