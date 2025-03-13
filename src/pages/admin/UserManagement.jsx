@@ -35,7 +35,10 @@ const UserManagement = () => {
 
 
   //toggle status
-  const toggleStatus = (userId) =>{
+  const toggleStatus = (userId,user) =>{
+    if(user.isAdmin){
+      return;
+    }
     dispatch(toggleUserStatus(userId));
   }
 
@@ -102,7 +105,7 @@ const UserManagement = () => {
                     <td className="px-6 py-4">{user.email}</td>
                     <td className="px-6 py-4">
                     <span 
-                    onClick={()=>toggleStatus(user._id)}
+                    onClick={()=>toggleStatus(user._id, user)}
                     className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
                       user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
