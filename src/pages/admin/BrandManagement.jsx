@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import AdminLayout from '../../components/layout/AdminLayout';
+// import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
 
 // Mock brand data
@@ -38,7 +38,7 @@ const BrandManagement = () => {
   };
 
   return (
-    <AdminLayout>
+     <>
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Brand Management</h1>
@@ -169,7 +169,7 @@ const BrandManagement = () => {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

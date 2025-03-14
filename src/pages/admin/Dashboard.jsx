@@ -4,7 +4,7 @@ import {
   Users, ShoppingBag, DollarSign, CreditCard, 
   ArrowUpRight, ArrowDownRight, Package, Tag 
 } from 'lucide-react';
-import AdminLayout from '../../components/layout/AdminLayout';
+// import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
 
 // Mock data for the dashboard
@@ -28,7 +28,7 @@ const recentOrders = [
 
 const Dashboard = () => {
   return (
-    <AdminLayout>
+    // <AdminLayout>
       <div className="px-6 py-8">
         <h1 className="mb-8 text-2xl font-bold">Dashboard</h1>
         
@@ -158,7 +158,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    // </AdminLayout>
   );
 };
 

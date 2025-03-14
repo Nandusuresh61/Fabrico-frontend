@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Edit, Trash2, Plus } from 'lucide-react';
-import AdminLayout from '../../components/layout/AdminLayout';
+
 import CustomButton from '../../components/ui/CustomButton';
 
 // Mock category data
@@ -40,7 +40,7 @@ const CategoryManagement = () => {
   };
 
   return (
-    <AdminLayout>
+    <>
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Category Management</h1>
@@ -171,7 +171,7 @@ const CategoryManagement = () => {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 };
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Search, Edit, Trash2, UserPlus } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllUsers, toggleUserStatus } from '../../redux/features/adminSlice';
-import AdminLayout from '../../components/layout/AdminLayout';
+// import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
 
 const UserManagement = () => {
@@ -43,7 +43,7 @@ const UserManagement = () => {
   }
 
   return (
-    <AdminLayout>
+    // <AdminLayout>
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">User Management</h1>
@@ -138,7 +138,7 @@ const UserManagement = () => {
           ))}
         </div>
       </div>
-    </AdminLayout>
+    // </AdminLayout>
   );
 };
 

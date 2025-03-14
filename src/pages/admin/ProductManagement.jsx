@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { Search, Edit, Trash2, Plus, Filter } from 'lucide-react';
-import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
 
 // Mock product data
@@ -35,7 +34,7 @@ const ProductManagement = () => {
   const brands = ['All', ...new Set(products.map((product) => product.brand))];
 
   return (
-    <AdminLayout>
+    <>
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Product Management</h1>
@@ -168,7 +167,7 @@ const ProductManagement = () => {
           </div>
         </div>
       </div>
-    </AdminLayout>
+    </>
   );
 };
 
