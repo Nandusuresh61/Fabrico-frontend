@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { userLoginApi, userRegApi } from '../../api/userApi';
+import { resendOtpApi, userLoginApi, userRegApi, verifyOtpApi } from '../../api/userApi';
 
 
 const initialState = {
@@ -32,11 +32,35 @@ export const loginUser = createAsyncThunk(
     }
 );
 
+export const verifyOtp = createAsyncThunk(
+    'user/verifyotp',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await verifyOtpApi(data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'OTP verification failed');
+        }
+    }
+);
+
+export const resendOtp = createAsyncThunk(
+    'user/resendotp',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await resendOtpApi(data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to resend OTP');
+        }
+    }
+)
+
 export const logoutUser = createAsyncThunk(
     'user/logout',
     async (_, { rejectWithValue }) => {
         try {
-            
+
             await API.post('/users/logout');
             return null;
         } catch (error) {
@@ -55,7 +79,7 @@ const userSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            
+
             .addCase(registerUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -69,7 +93,7 @@ const userSlice = createSlice({
                 state.error = action.payload;
             })
 
-            
+
             .addCase(loginUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -83,7 +107,7 @@ const userSlice = createSlice({
                 state.error = action.payload;
             })
 
-           
+
             .addCase(logoutUser.pending, (state) => {
                 state.loading = true;
             })
@@ -94,7 +118,36 @@ const userSlice = createSlice({
             .addCase(logoutUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-            });
+            })
+            //Verify Otp
+            .addCase(verifyOtp.pending, (state)=>{
+                state.loading = true;
+                state.error = null;
+                state.verificationSuccess = false;
+            })
+            .addCase(verifyOtp.fulfilled,(state)=>{
+                state.loading = true;
+                state.verificationSuccess = true;
+            })
+            .addCase(verifyOtp.rejected,(state,action)=>{
+                state.loading = false;
+                state.error = action.payload;
+            })
+            //resendotp
+            .addCase(resendOtp.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+                state.otpResent = false;
+            })
+            .addCase(resendOtp.fulfilled, (state) => {
+                state.loading = false;
+                state.otpResent = true;
+            })
+            .addCase(resendOtp.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
     },
 });
 
