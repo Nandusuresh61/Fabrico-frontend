@@ -126,7 +126,7 @@ const userSlice = createSlice({
                 state.verificationSuccess = false;
             })
             .addCase(verifyOtp.fulfilled,(state)=>{
-                state.loading = true;
+                state.loading = false;
                 state.verificationSuccess = true;
             })
             .addCase(verifyOtp.rejected,(state,action)=>{

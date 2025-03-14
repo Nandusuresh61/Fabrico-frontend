@@ -1,21 +1,38 @@
+// OTPVerification.jsx
 import { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import CustomButton from '../../components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
+import { useDispatch, useSelector } from 'react-redux'; // Add this import
+import { verifyOtp, resendOtp } from '../../redux/features/userSlice'; // Add this import
 
 const OTPVerification = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
-  const [isLoading, setIsLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [resendDisabled, setResendDisabled] = useState(true);
   const inputRefs = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const dispatch = useDispatch(); // Add this
+  const { loading, error, verificationSuccess, otpResent } = useSelector(state => state.user); // Add this
 
-  const email = location.state?.email || 'your email';
+  const email = location.state?.email || '';
+
+  // Redirect if no email is provided
+  useEffect(() => {
+    if (!email) {
+      navigate('/signup');
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No email provided for verification",
+      });
+    }
+  }, [email, navigate, toast]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,6 +48,40 @@ const OTPVerification = () => {
 
     return () => clearInterval(timer);
   }, []);
+
+  // Effect to handle successful verification
+  useEffect(() => {
+    if (verificationSuccess) {
+      toast({
+        title: "Verification successful",
+        description: "Your account has been verified",
+      });
+      navigate('/login');
+    }
+  }, [verificationSuccess, navigate, toast]);
+
+  // Effect to handle successful OTP resend
+  useEffect(() => {
+    if (otpResent) {
+      toast({
+        title: "OTP resent",
+        description: `A new verification code has been sent to ${email}`,
+      });
+      setTimeLeft(60);
+      setResendDisabled(true);
+    }
+  }, [otpResent, email, toast]);
+
+  // Effect to handle errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error,
+      });
+    }
+  }, [error, toast]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -83,37 +134,9 @@ const OTPVerification = () => {
   };
 
   const handleResendOTP = async () => {
-    setResendDisabled(true);
-    setTimeLeft(60);
+    if (resendDisabled) return;
     
-    // Simulate API call
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "OTP resent",
-        description: `A new verification code has been sent to ${email}`,
-      });
-      
-      // Restart the timer
-      const timer = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            clearInterval(timer);
-            setResendDisabled(false);
-            return 0;
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-    } catch (error) {
-      toast({
-        variant: "destructive", 
-        title: "Failed to resend OTP",
-        description: "Please try again later",
-      });
-      setResendDisabled(false);
-    }
+    dispatch(resendOtp({ email }));
   };
 
   const handleSubmit = async (e) => {
@@ -128,28 +151,8 @@ const OTPVerification = () => {
       return;
     }
     
-    setIsLoading(true);
-    
-    // Simulate API call
-    try {
-      // Mock successful verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Verification successful",
-        description: "Your account has been verified",
-      });
-      
-      navigate('/login');
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Verification failed",
-        description: "The code you entered is incorrect",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    const otpString = otp.join('');
+    dispatch(verifyOtp({ email, otp: otpString }));
   };
 
   return (
@@ -199,13 +202,14 @@ const OTPVerification = () => {
                   type="button"
                   onClick={handleResendOTP}
                   className="text-sm font-medium text-primary hover:underline"
+                  disabled={loading}
                 >
                   Resend verification code
                 </button>
               )}
             </div>
             
-            <CustomButton type="submit" fullWidth isLoading={isLoading}>
+            <CustomButton type="submit" fullWidth isLoading={loading}>
               Verify Email
             </CustomButton>
           </form>

@@ -8,6 +8,7 @@ import Products from '../pages/users/Products'
 import NotFound from '../pages/users/NotFound'
 import ProtectedRoute from './ProtectedRoute'
 import UserProfile from '../pages/users/UserProfile'
+import OTPVerification from '../pages/users/OTPVerification'
 
 
 function UserRoutes() {
@@ -17,6 +18,8 @@ function UserRoutes() {
         <Route path='/' element={<Index />} />
         <Route path='/login' element={<UserLogin />} />
         <Route path='/signup' element={<UserSignup />} />
+        <Route path='/otp-verification' element={<OTPVerification/>}/>
+        
         <Route path='/products/:id' element={<ProductDetail />} />
         <Route path='/products' element={<Products />} />
         <Route path='/*' element={<NotFound />} />

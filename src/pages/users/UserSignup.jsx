@@ -4,8 +4,12 @@ import { Eye, EyeOff, ArrowLeft, Check, X } from 'lucide-react';
 import Layout from '../../components/layout/Layout'
 import CustomButton from '../../components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
+import { useDispatch, useSelector} from 'react-redux'
+import { registerUser } from '../../redux/features/userSlice';
 
 const UserSignup = () => {
+const { loading, error} = useSelector((state)=>state.user);
+  const dispatch = useDispatch()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -72,28 +76,35 @@ const UserSignup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!validateForm()) return;
-    
-    setIsLoading(true);
-    
+    if(!validateForm())return;
+
     try {
-      // Mock successful registration
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Registration successful",
-        description: "Please verify your email",
-      });
-      
-      navigate('/otp-verification', { state: { email: formData.email } });
+      const resultAction = await dispatch(registerUser({
+        username: formData.name,
+        email: formData.email,
+        password: formData.password,
+      }));
+
+      if(registerUser.fulfilled.match(resultAction)){
+        toast({
+          title: "Registeration successful!",
+          description: "Please verify user email!",
+        });
+        navigate('/otp-verification',{state: {email: formData.email}});
+      }else{
+        toast({
+          variant : "destructive ",
+          title: "Registration Failed",
+          description: resultAction.payload || "Please try again",
+        });
+      }
+
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Registration failed",
         description: "Please try again later",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
