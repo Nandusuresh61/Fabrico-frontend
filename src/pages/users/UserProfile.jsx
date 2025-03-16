@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { User, Mail, Camera, LogOut } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import CustomButton from '../..//components/ui/CustomButton';
+import CustomButton from '../../components/ui/CustomButton';
+import { useDispatch} from 'react-redux'
+import { logoutUser } from '../../redux/features/userSlice'
+import { loginAdmin } from '../../redux/features/adminSlice';
 
 const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -10,7 +13,7 @@ const UserProfile = () => {
     email: 'john.doe@example.com',
     profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1740&auto=format&fit=crop',
   });
-  
+  const dispatch = useDispatch();
   const [formData, setFormData] = useState({
     name: userData.name,
     email: userData.email,
@@ -33,6 +36,10 @@ const UserProfile = () => {
     });
     setIsEditing(false);
   };
+
+  const handleLogout = () =>{
+    dispatch(logoutUser());
+  }
 
   return (
     <Layout>
@@ -137,14 +144,14 @@ const UserProfile = () => {
             </div>
           </div>
           
-          <div className="mt-8 flex justify-center">
-            <CustomButton 
-              variant="ghost" 
-              icon={<LogOut className="h-4 w-4" />}
-              iconPosition="left"
+          <div className="mt-8 border-t border-gray-200 pt-4">
+            <div onClick={handleLogout}
+              
+              className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
             >
-              Sign Out
-            </CustomButton>
+              <LogOut className="h-5 w-5" />
+              <button  className="ml-3">Logout</button>
+            </div>
           </div>
         </div>
       </div>

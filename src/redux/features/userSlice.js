@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { resendOtpApi, userLoginApi, userRegApi, verifyOtpApi } from '../../api/userApi';
+import { resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi } from '../../api/userApi';
 
 
 const initialState = {
@@ -61,7 +61,7 @@ export const logoutUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
 
-            await API.post('/users/logout');
+            await userLogoutApi();;
             return null;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Logout failed');

@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux'
 import { 
   LayoutDashboard, Users, ShoppingBag, Tags, 
   BadgePercent, Settings, LogOut, Menu, X 
 } from 'lucide-react';
+import { logoutAdmin } from '../../redux/features/adminSlice';
 
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
+  const dispatch = useDispatch();
   
   const navItems = [
     { icon: <LayoutDashboard className="h-5 w-5" />, name: 'Dashboard', path: '/admin/dashboard' },
@@ -21,6 +24,11 @@ const AdminLayout = ({ children }) => {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+
+  const handleLogout = () =>{
+    dispatch(logoutAdmin());
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
@@ -48,13 +56,13 @@ const AdminLayout = ({ children }) => {
             ))}
           </ul>
           <div className="mt-8 border-t border-gray-200 pt-4">
-            <Link
-              to="/admin/login"
+            <div
+              
               className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
             >
               <LogOut className="h-5 w-5" />
-              <span className="ml-3">Logout</span>
-            </Link>
+              <button onClick={handleLogout} className="ml-3">Logout</button>
+            </div>
           </div>
         </nav>
       </aside>
@@ -98,13 +106,13 @@ const AdminLayout = ({ children }) => {
             ))}
           </ul>
           <div className="mt-8 border-t border-gray-200 pt-4">
-            <Link
-              to="/admin/login"
+            <div
+              
               className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
             >
               <LogOut className="h-5 w-5" />
-              <span className="ml-3">Logout</span>
-            </Link>
+              <button onClick={handleLogout} className="ml-3">Logout</button>
+            </div>
           </div>
         </nav>
       </aside>
