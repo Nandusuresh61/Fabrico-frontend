@@ -14,12 +14,10 @@ const UserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
 
-  //  Fetch users when the component loads
   useEffect(() => {
     dispatch(getAllUsers());
   }, [dispatch]);
 
-  //  Filter users by search and status
   const filteredUsers = users
     .filter((user) => {
       const matchesSearch =
@@ -30,11 +28,9 @@ const UserManagement = () => {
     })
     .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage);
 
-  //  Pagination logic
   const totalPages = Math.ceil(users.length / usersPerPage);
 
 
-  //toggle status
   const toggleStatus = (userId,user) =>{
     if(user.isAdmin){
       return;
@@ -93,6 +89,7 @@ const UserManagement = () => {
                   <th className="px-6 py-3">ID</th>
                   <th className="px-6 py-3">Name</th>
                   <th className="px-6 py-3">Email</th>
+                  <th className="px-6 py-3">Role</th>
                   <th className="px-6 py-3">Status</th>
                   <th className="px-6 py-3">Actions</th>
                 </tr>
@@ -103,9 +100,10 @@ const UserManagement = () => {
                     <td className="px-6 py-4">#{user._id}</td>
                     <td className="px-6 py-4">{user.username}</td>
                     <td className="px-6 py-4">{user.email}</td>
+                    <td className="px-6 py-4">{user.isAdmin? 'Admin': 'User'}</td>
                     <td className="px-6 py-4">
                     <span 
-                    onClick={()=>toggleStatus(user._id, user)}
+                    
                     className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
                       user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
@@ -115,7 +113,10 @@ const UserManagement = () => {
 
                     <td className="px-6 py-4 flex gap-2">
                       <Edit className="cursor-pointer text-gray-500" />
-                      <Trash2 className="cursor-pointer text-red-500" />
+                      <button onClick={()=>toggleStatus(user._id, user)} className={`cursor-pointer ${
+                      user.status === 'active' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
+                    }`} >
+                      {user.status == "active" ? "Block" : 'UnBlock'}</button>
                     </td>
                   </tr>
                 ))}

@@ -7,7 +7,7 @@ const store = configureStore({
   reducer: {
     user: userReducer,
     admin: adminReducer,
-    categories: categoryReducer,
+    categories: categoryReducer, 
   },
 });
 

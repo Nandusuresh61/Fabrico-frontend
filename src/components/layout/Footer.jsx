@@ -47,8 +47,8 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <Link to="/" className="inline-block">
               <span className="mb-6 inline-flex text-2xl font-semibold">
-                <span className="text-primary">Caps</span>
-                <span className="text-gray-500">Haven</span>
+                <span className="text-primary">FAB</span>
+                <span className="text-gray-500">RICO</span>
               </span>
             </Link>
             <p className="mb-6 max-w-md text-sm text-gray-600">
@@ -57,12 +57,12 @@ const Footer = () => {
             <div className="flex flex-col space-y-3">
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin className="mr-3 h-4 w-4 text-gray-500" />
-                <span>123 Fashion Street, New York, NY 10001</span>
+                <span>New Fashion Street, India, KL 670702</span>
               </div>
               <div className="flex items-center text-sm text-gray-600">
                 <Mail className="mr-3 h-4 w-4 text-gray-500" />
                 <a href="mailto:hello@capshaven.com" className="hover:text-primary">
-                  hello@capshaven.com
+                  hello@Fabrico.com
                 </a>
               </div>
             </div>
@@ -95,7 +95,7 @@ const Footer = () => {
           <div className="flex flex-col items-center justify-between space-y-6 md:flex-row md:space-y-0">
             {/* Copyright */}
             <p className="text-sm text-gray-600">
-              © {currentYear} CapsHaven. All rights reserved.
+              © {currentYear} FABRICO. All rights reserved.
             </p>
 
             {/* Social Links */}
