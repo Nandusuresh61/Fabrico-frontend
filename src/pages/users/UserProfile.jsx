@@ -4,16 +4,23 @@ import Layout from '../../components/layout/Layout';
 import CustomButton from '../../components/ui/CustomButton';
 import { useDispatch} from 'react-redux'
 import { logoutUser } from '../../redux/features/userSlice'
-import { loginAdmin } from '../../redux/features/adminSlice';
+
 
 const UserProfile = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1740&auto=format&fit=crop',
+    name: user.username,
+    email: user.email,
+    profilePicture: 'https://imgs.search.brave.com/j78lJvavdwf_iHaHFpgZDpsva8wX8eIAeRb3jMepqQE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzEwLzAzLzA3Lzc2/LzM2MF9GXzEwMDMw/Nzc2MTBfVWo0WEFS/WW1EVmN4NUV3eUNE/OEYxOUhoMExLa3Ay/WFkuanBn',
   });
   const dispatch = useDispatch();
+  
+
+
+
+
   const [formData, setFormData] = useState({
     name: userData.name,
     email: userData.email,
