@@ -8,10 +8,11 @@ import {
     deleteUserByIdApi,
     getAllUsersApi
 } from '../../api/adminApi';
+import Cookies from 'js-cookie';
 
 // Initial state
 const initialState = {
-    admin: null,
+    admin: JSON.parse(localStorage.getItem("admin")) || null,
     users: [],
     loading: false,
     error: null,
@@ -23,6 +24,7 @@ export const loginAdmin = createAsyncThunk(
     async (adminData, { rejectWithValue }) => {
         try {
             const response = await adminLoginApi(adminData);
+            localStorage.setItem("admin", JSON.stringify(response.data));
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -36,6 +38,8 @@ export const logoutAdmin = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             await adminLogoutApi();
+            Cookies.remove("jwt")
+            localStorage.removeItem("admin");
             return null;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Logout failed');
