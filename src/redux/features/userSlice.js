@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi } from '../../api/userApi';
+import Cookies from 'js-cookie'
 
 
 const initialState = {
-    user: null,
+    user: JSON.parse(localStorage.getItem("user")) || null,
     loading: false,
     error: null,
 };
@@ -25,6 +26,7 @@ export const loginUser = createAsyncThunk(
     async (userData, { rejectWithValue }) => {
         try {
             const response = await userLoginApi(userData);
+            localStorage.setItem("user", JSON.stringify(response.data));
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -61,7 +63,9 @@ export const logoutUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
 
-            await userLogoutApi();;
+            await userLogoutApi();
+            Cookies.remove("jwt")
+            localStorage.removeItem("user");
             return null;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Logout failed');
