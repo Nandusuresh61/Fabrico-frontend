@@ -56,8 +56,8 @@ const Header = () => {
           to="/" 
           className="flex items-center text-xl font-semibold transition-opacity hover:opacity-80"
         >
-          <span className="mr-1 text-primary">Caps</span>
-          <span className="text-gray-500">Haven</span>
+          <span className="mr-1 text-primary">FAB</span>
+          <span className="text-gray-500">RICO</span>
         </Link>
 
         {/* Desktop Navigation */}
