@@ -32,6 +32,11 @@ const COLORS = [
   { id: 7, name: 'Gray', hex: '#808080' },
 ];
 
+const STATUSES = [
+  { id: 1, name: 'Active' },
+  { id: 2, name: 'Blocked' },
+];
+
 const AddProductForm = ({ onClose, onSubmit }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   
@@ -42,6 +47,7 @@ const AddProductForm = ({ onClose, onSubmit }) => {
     price: '',
     discountPrice: '',
     description: '',
+    status: 'Active', // Default status
   });
   
   const [images, setImages] = useState([]);
@@ -232,6 +238,28 @@ const AddProductForm = ({ onClose, onSubmit }) => {
                 placeholder="0.00"
               />
             </div>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              Status*
+            </label>
+            <Select 
+              value={productData.status} 
+              onValueChange={(value) => handleSelectChange('status', value)}
+            >
+              <SelectTrigger id="status">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUSES.map(status => (
+                  <SelectItem key={status.id} value={status.name}>
+                    {status.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Image Upload */}
