@@ -24,7 +24,7 @@ const UserLogin = () => {
     if(user){
       navigate('/profile')
     }
-  },[])
+  },[user])
 
   // Form validation
   const validateForm = () => {
