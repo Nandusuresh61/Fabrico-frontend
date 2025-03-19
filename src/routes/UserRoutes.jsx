@@ -29,8 +29,7 @@ function UserRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route path='/profile' element={<UserProfile />} />
           {/* <Route path='/wishlist' element={<WishList />} />
-          <Route path='/orders' element={<Orders />} />
-          <Route path='/dashboard' element={<UserDashboard />} /> */}
+          <Route path='/orders' element={<Orders />} />*/}
         </Route>
       </Routes>
     </>

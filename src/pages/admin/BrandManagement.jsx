@@ -1,34 +1,60 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus } from 'lucide-react';
-// import AdminLayout from '../../components/layout/AdminLayout';
+import { useDispatch, useSelector } from 'react-redux';
 import CustomButton from '../../components/ui/CustomButton';
-
-// Mock brand data
-const brands = [
-  { id: 1, name: 'CapCraft', products: 20, createdAt: '2023-05-01' },
-  { id: 2, name: 'UrbanLid', products: 15, createdAt: '2023-05-10' },
-  { id: 3, name: 'HeadStyle', products: 18, createdAt: '2023-05-15' },
-  { id: 4, name: 'StreetCrown', products: 12, createdAt: '2023-06-01' },
-  { id: 5, name: 'TopHat', products: 8, createdAt: '2023-06-10' },
-  { id: 6, name: 'CrownFit', products: 10, createdAt: '2023-06-15' },
-];
+import { 
+    fetchBrands, 
+    createBrand, 
+    updateBrand, 
+    toggleBrandStatus,
+    clearError 
+} from '../../redux/features/brandSlice';
 
 const BrandManagement = () => {
+  const dispatch = useDispatch();
+  const { brands, loading, error } = useSelector((state) => state.brands);
+  
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [newBrandName, setNewBrandName] = useState('');
 
-  const handleAddBrand = () => {
-    // Add brand logic
+  useEffect(() => {
+    dispatch(fetchBrands());
+  }, [dispatch]);
+
+  const handleAddBrand = async () => {
+    if (!newBrandName) {
+      return;
+    }
+
+    await dispatch(createBrand({
+      name: newBrandName
+    }));
+
     setIsAddModalOpen(false);
     setNewBrandName('');
   };
 
-  const handleEditBrand = () => {
-    // Edit brand logic
+  const handleEditBrand = async () => {
+    if (!newBrandName) {
+      return;
+    }
+
+    await dispatch(updateBrand({
+      id: selectedBrand._id,
+      brandData: {
+        name: newBrandName
+      }
+    }));
+
     setIsEditModalOpen(false);
     setSelectedBrand(null);
+    setNewBrandName('');
+  };
+
+  const handleToggleStatus = async (brandId) => {
+    await dispatch(toggleBrandStatus(brandId));
   };
 
   const openEditModal = (brand) => {
@@ -37,8 +63,16 @@ const BrandManagement = () => {
     setIsEditModalOpen(true);
   };
 
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500 text-center">{error}</div>;
+  }
+
   return (
-     <>
+    <>
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Brand Management</h1>
@@ -58,25 +92,31 @@ const BrandManagement = () => {
               <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
                 <th className="px-6 py-3">ID</th>
                 <th className="px-6 py-3">Name</th>
-                <th className="px-6 py-3">Products</th>
+                <th className="px-6 py-3">Status</th>
                 <th className="px-6 py-3">Created Date</th>
                 <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {brands.map((brand) => (
-                <tr key={brand.id} className="hover:bg-gray-50">
+                <tr key={brand._id} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    #{brand.id}
+                    #{brand._id.slice(-6)}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                     {brand.name}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                    {brand.products}
+                  <td className="whitespace-nowrap px-6 py-4 text-sm">
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      brand.status === 'Activated' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {brand.status}
+                    </span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                    {brand.createdAt}
+                    {new Date(brand.createdAt).toLocaleDateString()}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm">
                     <div className="flex items-center gap-2">
@@ -86,7 +126,10 @@ const BrandManagement = () => {
                       >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="text-gray-600 hover:text-red-500">
+                      <button 
+                        className="text-gray-600 hover:text-red-500"
+                        onClick={() => handleToggleStatus(brand._id)}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
@@ -95,25 +138,6 @@ const BrandManagement = () => {
               ))}
             </tbody>
           </table>
-        </div>
-        
-        {/* Pagination */}
-        <div className="mt-6 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
-            Showing <span className="font-medium">1</span> to <span className="font-medium">6</span> of <span className="font-medium">6</span> brands
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <button className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-sm disabled:opacity-50">
-              &lt;
-            </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-sm text-white">
-              1
-            </button>
-            <button className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-300 text-sm disabled:opacity-50">
-              &gt;
-            </button>
-          </div>
         </div>
       </div>
       

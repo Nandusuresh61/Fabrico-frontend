@@ -133,7 +133,7 @@ const { loading, error} = useSelector((state)=>state.user);
                 value={formData.name}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="John Doe"
+                placeholder="Full Name"
               />
               {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
             </div>
