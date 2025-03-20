@@ -6,6 +6,8 @@ import { Button } from '../../../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
 
+import uploadImageToCloudinary from '../../../utils/uploadImage';
+
 // Sample data for dropdowns
 const BRANDS = [
   { id: 1, name: 'CapCraft' },
@@ -94,23 +96,30 @@ const AddProductForm = ({ onClose, onSubmit }) => {
     }
   };
 
-  const handleImageUpload = (e) => {
-    const fileList = e.target.files;
-    if (!fileList) return;
 
-    const newImages = [];
-    const newPreviewUrls = [];
-
-    // Process only up to 3 images
-    for (let i = 0; i < Math.min(fileList.length, 3 - images.length); i++) {
-      const file = fileList[i];
-      newImages.push(file);
-      newPreviewUrls.push(URL.createObjectURL(file));
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+  
+    const newPreviewUrls = [...previewUrls];
+    const newImages = [...images];
+  
+    for (const file of files) {
+      if (newImages.length < 3) {
+        try {
+          const uploadedUrl = await uploadToCloudinary(file);
+          newImages.push(uploadedUrl);
+          newPreviewUrls.push(uploadedUrl);
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+        }
+      }
     }
-
-    setImages([...images, ...newImages]);
-    setPreviewUrls([...previewUrls, ...newPreviewUrls]);
+  
+    setImages(newImages);
+    setPreviewUrls(newPreviewUrls);
   };
+  
 
   const removeImage = (index) => {
     const updatedImages = images.filter((_, i) => i !== index);
