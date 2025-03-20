@@ -6,6 +6,7 @@ import CustomButton from '../../components/ui/CustomButton';
 import AddProductForm from './Product/AddProductForm';
 import EditProductForm from './Product/EditProductForm';
 import { useToast } from "../../hooks/use-toast";
+import React from 'react';
 
 const ProductManagement = () => {
   const dispatch = useDispatch();
@@ -18,6 +19,7 @@ const ProductManagement = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [expandedProducts, setExpandedProducts] = useState({});
+  let count = 1;
 
   useEffect(() => {
     dispatch(getAllProducts({ search: searchTerm, page }));
@@ -138,6 +140,7 @@ const ProductManagement = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3">ID</th>
                   <th className="px-6 py-3">Product Name</th>
                   <th className="px-6 py-3">Category</th>
                   <th className="px-6 py-3">Brand</th>
@@ -146,12 +149,12 @@ const ProductManagement = () => {
               </thead>
               <tbody>
                 {products?.map((product) => (
-                  <>
+                  <React.Fragment key={`product-${product._id}`}>
                     <tr 
-                      key={`product-${product._id}`} 
                       className="hover:bg-gray-50 cursor-pointer"
                       onClick={() => toggleProductExpand(product._id)}
                     >
+                      <td className="px-6 py-4">{count++}</td>
                       <td className="px-6 py-4">{product.name}</td>
                       <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
                       <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
@@ -165,7 +168,7 @@ const ProductManagement = () => {
                     </tr>
                     {expandedProducts[product._id] && (
                       <tr>
-                        <td colSpan="4" className="px-6 py-4">
+                        <td colSpan="5" className="px-6 py-4">
                           <div className="overflow-x-auto">
                             <table className="w-full">
                               <thead>
@@ -224,7 +227,7 @@ const ProductManagement = () => {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
