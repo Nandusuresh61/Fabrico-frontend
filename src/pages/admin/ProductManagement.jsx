@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Search, Edit, Trash2, Plus, X } from 'lucide-react';
-import { getAllProducts, editProduct } from '../../redux/features/productSlice';
+import { getAllProducts, editProduct,toggleProductStatus } from '../../redux/features/productSlice';
 import CustomButton from '../../components/ui/CustomButton';
 import AddProductForm from '../admin/Product/AddProductForm';
 import EditProductForm from './Product/EditProductForm';
@@ -54,7 +54,7 @@ const ProductManagement = () => {
       setIsEditModalOpen(false);
       toast({
         title: "Product Update Successful",
-        
+
       });
     } catch (error) {
       toast({
@@ -62,6 +62,15 @@ const ProductManagement = () => {
         title: "Update Failed",
         description: error || "There is some error!",
       });
+    }
+  };
+
+
+  const handleToggleStatus = async (productId) => {
+    try {
+      await dispatch(toggleProductStatus(productId));
+    } catch (error) {
+      console.error('Failed to toggle product status:', error);
     }
   };
 
@@ -101,7 +110,7 @@ const ProductManagement = () => {
         </CustomButton>
       </div>
 
-      {/* ✅ Product Table */}
+
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
         <table className="w-full">
           <thead>
@@ -119,7 +128,7 @@ const ProductManagement = () => {
           <tbody>
             {products?.map((product) => (
               <tr key={product._id} className="hover:bg-gray-50">
-                {/* ✅ Display product image */}
+
                 <td className="px-6 py-4">
                   {product.images?.length > 0 ? (
                     <img
@@ -141,8 +150,8 @@ const ProductManagement = () => {
                 <td className="px-6 py-4">
                   <span
                     className={`inline-block rounded-full px-2 py-1 text-xs ${product.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
                       }`}
                   >
                     {product.status}
@@ -153,10 +162,14 @@ const ProductManagement = () => {
                     onClick={() => handleEditProduct(product)}
                     className="text-gray-500 hover:text-primary"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-6 w-6" />
                   </button>
-                  <button className="text-gray-500 hover:text-red-500">
-                    <Trash2 className="h-4 w-4" />
+                  <button
+                    className={`text-gray-500 ${product.status === 'active' ? 'hover:text-red-500' : 'hover:text-green-500'
+                      }`}
+                    onClick={() => handleToggleStatus(product._id)}
+                  >
+                    {product.status === 'active' ? 'Deactivate' : 'Activate'}
                   </button>
                 </td>
 
@@ -168,7 +181,7 @@ const ProductManagement = () => {
         </table>
       </div>
 
-      {/* ✅ Pagination */}
+
       <div className="mt-4 flex justify-center gap-2">
         <CustomButton onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
           Prev
@@ -179,7 +192,7 @@ const ProductManagement = () => {
         </CustomButton>
       </div>
 
-      {/* ✅ Add Product Modal */}
+
       {isModalOpen && (
         <AddProductForm
           onClose={handleAddProduct}
@@ -187,14 +200,14 @@ const ProductManagement = () => {
         />
       )}
       {isEditModalOpen && (
-      <EditProductForm
-        product={selectedProduct}
-        onSubmit={handleEditProductSubmit}
-        onClose={() => setIsEditModalOpen(false)}
-      />
-    )}
+        <EditProductForm
+          product={selectedProduct}
+          onSubmit={handleEditProductSubmit}
+          onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
     </div>
-    
+
   );
 };
 

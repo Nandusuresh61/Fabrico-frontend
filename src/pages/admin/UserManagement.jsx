@@ -111,10 +111,11 @@ const UserManagement = () => {
 
                     <td className="px-6 py-4 flex gap-2">
                       {/* <Edit className="cursor-pointer text-gray-500" /> */}
-                      {!user.isAdmin ? <button onClick={()=>toggleStatus(user._id, user)} className={`cursor-pointer ${
-                      user.status  === 'active' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                    }`} >
-                      {user.status == "active" ? "Block" : 'UnBlock'}</button>: ""}
+                      {!user.isAdmin ? <button onClick={()=>toggleStatus(user._id, user)} className={`text-gray-500 ${user.status === 'active' ? 'hover:text-red-500' : 'hover:text-green-500'
+                      }`}
+                    
+                  >
+                    {user.status === 'active' ? 'Block' : 'Unblock'}</button>: ""}
                     </td>
                   </tr>
                 ))}
