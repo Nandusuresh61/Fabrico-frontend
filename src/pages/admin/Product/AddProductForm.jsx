@@ -13,36 +13,6 @@ import { useToast } from '../../../hooks/use-toast';
 
 import uploadImageToCloudinary from '../../../utils/uploadImage';
 
-// Sample data for dropdowns
-const BRANDS = [
-  { id: 1, name: 'CapCraft' },
-  { id: 2, name: 'UrbanLid' },
-  { id: 3, name: 'HeadStyle' },
-  { id: 4, name: 'StreetCrown' },
-];
-
-const CATEGORIES = [
-  { id: 1, name: 'Baseball Caps' },
-  { id: 2, name: 'Snapbacks' },
-  { id: 3, name: 'Trucker Caps' },
-  { id: 4, name: 'Fitted Caps' },
-  { id: 5, name: 'Dad Hats' },
-];
-
-const COLORS = [
-  { id: 1, name: 'Black', hex: '#000000' },
-  { id: 2, name: 'White', hex: '#FFFFFF' },
-  { id: 3, name: 'Red', hex: '#FF0000' },
-  { id: 4, name: 'Blue', hex: '#0000FF' },
-  { id: 5, name: 'Green', hex: '#00FF00' },
-  { id: 6, name: 'Yellow', hex: '#FFFF00' },
-  { id: 7, name: 'Gray', hex: '#808080' },
-];
-
-const STATUSES = [
-  { id: 1, name: 'Active' },
-  { id: 2, name: 'Blocked' },
-];
 
 const AddProductForm = ({ onClose }) => {
   const dispatch = useDispatch();

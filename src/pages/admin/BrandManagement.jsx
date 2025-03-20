@@ -127,10 +127,15 @@ const BrandManagement = () => {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button 
-                        className="text-gray-600 hover:text-red-500"
+                       
                         onClick={() => handleToggleStatus(brand._id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
+                        className={`text-gray-500 ${brand.status === 'Activated' ? 'hover:text-red-500' : 'hover:text-green-500'
+                        }`}
+                      
+                    >
+                      {brand.status === 'Activated' ? 'Deactivate' : 'Activate'}
+                      
+                        
                       </button>
                     </div>
                   </td>

@@ -8,7 +8,7 @@ import CustomButton from '../../components/ui/CustomButton';
 const UserManagement = () => {
   const dispatch = useDispatch();
   const { users, loading, error } = useSelector((state) => state.admin);
-
+  let count = 1;
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
@@ -86,6 +86,7 @@ const UserManagement = () => {
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 text-left text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3">ID</th>
                   <th className="px-6 py-3">Name</th>
                   <th className="px-6 py-3">Email</th>
                   <th className="px-6 py-3">Role</th>
@@ -96,6 +97,7 @@ const UserManagement = () => {
               <tbody>
                 {filteredUsers.map((user) => (
                   <tr key={user._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">{count++}</td>
                     <td className="px-6 py-4">{user.username}</td>
                     <td className="px-6 py-4">{user.email}</td>
                     <td className="px-6 py-4">{user.isAdmin? 'Admin': 'User'}</td>
