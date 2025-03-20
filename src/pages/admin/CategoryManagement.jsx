@@ -8,7 +8,7 @@ import CustomButton from '../../components/ui/CustomButton';
 const CategoryManagement = () => {
   const dispatch = useDispatch();
   const { categories, loading, error } = useSelector((state) => state.category);
-
+ let count = 1;
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -93,7 +93,7 @@ const CategoryManagement = () => {
                 categories.map((category) => (
                   <tr key={category._id} className="hover:bg-gray-50">
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                      #{category._id}
+                      {count++}
                     </td>
                     <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                       {category.name}

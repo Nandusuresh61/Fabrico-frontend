@@ -70,7 +70,7 @@ const BrandManagement = () => {
   if (error) {
     return <div className="text-red-500 text-center">{error}</div>;
   }
-
+    let count =1;
   return (
     <>
       <div className="px-6 py-8">
@@ -101,7 +101,7 @@ const BrandManagement = () => {
               {brands.map((brand) => (
                 <tr key={brand._id} className="hover:bg-gray-50">
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    #{brand._id.slice(-6)}
+                    {count++}
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                     {brand.name}

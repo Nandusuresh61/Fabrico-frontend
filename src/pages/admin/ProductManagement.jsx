@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Search, Edit, Trash2, Plus, X } from 'lucide-react';
-import { getAllProducts } from '../../redux/features/productSlice';
+import { getAllProducts, editProduct } from '../../redux/features/productSlice';
 import CustomButton from '../../components/ui/CustomButton';
 import AddProductForm from '../admin/Product/AddProductForm';
+import EditProductForm from './Product/EditProductForm';
+import { useToast } from "../../hooks/use-toast";
 
 const ProductManagement = () => {
   const dispatch = useDispatch();
+  const { toast } = useToast();
   const { products, totalProducts, currentPage, totalPages, loading } = useSelector((state) => state.product);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -14,9 +17,12 @@ const ProductManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+
   useEffect(() => {
     dispatch(getAllProducts({ search: searchTerm, page }));
-  }, [dispatch, searchTerm, page]);
+  }, [dispatch, searchTerm, page, products]);
 
 
   const handleAddProduct = () => setIsModalOpen(!isModalOpen);
@@ -33,6 +39,29 @@ const ProductManagement = () => {
   const handlePageChange = (newPage) => {
     if (newPage > 0 && newPage <= totalPages) {
       setPage(newPage);
+    }
+  };
+
+
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setIsEditModalOpen(true)
+  };
+
+  const handleEditProductSubmit = async (data) => {
+    try {
+      await dispatch(editProduct({ productId: selectedProduct._id, data }));
+      setIsEditModalOpen(false);
+      toast({
+        title: "Product Update Successful",
+        
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error || "There is some error!",
+      });
     }
   };
 
@@ -88,49 +117,52 @@ const ProductManagement = () => {
             </tr>
           </thead>
           <tbody>
-  {products?.map((product) => (
-    <tr key={product._id} className="hover:bg-gray-50">
-      {/* ✅ Display product image */}
-      <td className="px-6 py-4">
-        {product.images?.length > 0 ? (
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="h-10 w-10 rounded object-cover"
-          />
-        ) : (
-          <div className="h-10 w-10 flex items-center justify-center rounded bg-gray-200 text-gray-500">
-            No Image
-          </div>
-        )}
-      </td>
-      <td className="px-6 py-4">{product.name}</td>
-      <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
-      <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
-      <td className="px-6 py-4">₹ {product.price}</td>
-      <td className="px-6 py-4">{product.stock}</td>
-      <td className="px-6 py-4">
-        <span
-          className={`inline-block rounded-full px-2 py-1 text-xs ${
-            product.status === 'active'
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}
-        >
-          {product.status}
-        </span>
-      </td>
-      <td className="px-6 py-4 flex gap-2">
-        <button className="text-gray-500 hover:text-primary">
-          <Edit className="h-4 w-4" />
-        </button>
-        <button className="text-gray-500 hover:text-red-500">
-          <Trash2 className="h-4 w-4" />
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+            {products?.map((product) => (
+              <tr key={product._id} className="hover:bg-gray-50">
+                {/* ✅ Display product image */}
+                <td className="px-6 py-4">
+                  {product.images?.length > 0 ? (
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="h-10 w-10 rounded object-cover"
+                    />
+                  ) : (
+                    <div className="h-10 w-10 flex items-center justify-center rounded bg-gray-200 text-gray-500">
+                      No Image
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-4">{product.name}</td>
+                <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
+                <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
+                <td className="px-6 py-4">₹ {product.price}</td>
+                <td className="px-6 py-4">{product.stock}</td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`inline-block rounded-full px-2 py-1 text-xs ${product.status === 'active'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                      }`}
+                  >
+                    {product.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 flex gap-2">
+                  <button
+                    onClick={() => handleEditProduct(product)}
+                    className="text-gray-500 hover:text-primary"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button className="text-gray-500 hover:text-red-500">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </td>
+
+              </tr>
+            ))}
+          </tbody>
 
 
         </table>
@@ -151,10 +183,18 @@ const ProductManagement = () => {
       {isModalOpen && (
         <AddProductForm
           onClose={handleAddProduct}
-          onSubmit={() => {}}
+          onSubmit={() => { }}
         />
       )}
+      {isEditModalOpen && (
+      <EditProductForm
+        product={selectedProduct}
+        onSubmit={handleEditProductSubmit}
+        onClose={() => setIsEditModalOpen(false)}
+      />
+    )}
     </div>
+    
   );
 };
 
