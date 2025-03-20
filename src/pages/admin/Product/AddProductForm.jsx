@@ -61,7 +61,7 @@ const AddProductForm = ({ onClose }) => {
   
   const [variants, setVariants] = useState([{
     color: '',
-    quantity: 1,
+    quantity: 0,
     price: '',
     images: []
   }]);
@@ -91,14 +91,14 @@ const AddProductForm = ({ onClose }) => {
     const updatedVariants = [...variants];
     updatedVariants[index] = {
       ...updatedVariants[index],
-      [field]: value
+      [field]: field === 'quantity' ? Number(value) : value
     };
     setVariants(updatedVariants);
   };
 
   const addVariant = () => {
     if (variants.length < 5) {
-      setVariants([...variants, { color: '', quantity: 1, price: '', images: [] }]);
+      setVariants([...variants, { color: '', quantity: 0, price: '', images: [] }]);
       setPreviewUrls([...previewUrls, []]);
     }
   };
@@ -343,8 +343,9 @@ const AddProductForm = ({ onClose }) => {
                     </label>
                     <Input
                       type="number"
+                      min="0"
                       value={variant.quantity}
-                      onChange={(e) => handleVariantChange(variantIndex, 'quantity', parseInt(e.target.value) || 1)}
+                      onChange={(e) => handleVariantChange(variantIndex, 'quantity', e.target.value)}
                       placeholder="Enter quantity"
                       required
                     />

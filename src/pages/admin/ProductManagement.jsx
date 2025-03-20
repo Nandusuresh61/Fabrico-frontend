@@ -173,6 +173,7 @@ const ProductManagement = () => {
                             <table className="w-full">
                               <thead>
                                 <tr className="bg-gray-100 text-xs font-medium uppercase text-gray-500">
+                                  <th className="px-4 py-2">Image</th>
                                   <th className="px-4 py-2">Product Name</th>
                                   <th className="px-4 py-2">Category</th>
                                   <th className="px-4 py-2">Brand</th>
@@ -186,6 +187,19 @@ const ProductManagement = () => {
                               <tbody>
                                 {product.variants?.map((variant) => (
                                   <tr key={`variant-${variant._id}`} className="bg-white">
+                                    <td className="px-4 py-2">
+                                      {variant.mainImage ? (
+                                        <img 
+                                          src={variant.mainImage} 
+                                          alt={`${product.name} - ${variant.color}`}
+                                          className="w-12 h-12 object-cover rounded"
+                                        />
+                                      ) : (
+                                        <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                                          <span className="text-gray-400 text-xs">No image</span>
+                                        </div>
+                                      )}
+                                    </td>
                                     <td className="px-4 py-2">{product.name}</td>
                                     <td className="px-4 py-2">{product.category?.name || 'N/A'}</td>
                                     <td className="px-4 py-2">{product.brand?.name || 'N/A'}</td>
