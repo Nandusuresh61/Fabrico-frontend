@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Search, Edit, Trash2, Plus, X } from 'lucide-react';
-import { getAllProducts, editProduct,toggleProductStatus } from '../../redux/features/productSlice';
+import { Search, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
+import { getAllProducts, editProduct, toggleProductStatus } from '../../redux/features/productSlice';
 import CustomButton from '../../components/ui/CustomButton';
-import AddProductForm from '../admin/Product/AddProductForm';
+import AddProductForm from './Product/AddProductForm';
 import EditProductForm from './Product/EditProductForm';
 import { useToast } from "../../hooks/use-toast";
 
@@ -15,21 +15,17 @@ const ProductManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [expandedProducts, setExpandedProducts] = useState({});
 
   useEffect(() => {
     dispatch(getAllProducts({ search: searchTerm, page }));
-  }, [dispatch, searchTerm, page, products]);
-
+  }, [dispatch, searchTerm, page]);
 
   const handleAddProduct = () => setIsModalOpen(!isModalOpen);
 
-
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
-
 
   const handleClearSearch = () => {
     setSearchTerm('');
@@ -42,19 +38,28 @@ const ProductManagement = () => {
     }
   };
 
-
-  const handleEditProduct = (product) => {
-    setSelectedProduct(product);
-    setIsEditModalOpen(true)
+  const toggleProductExpand = (productId) => {
+    setExpandedProducts(prev => ({
+      ...prev,
+      [productId]: !prev[productId]
+    }));
   };
 
-  const handleEditProductSubmit = async (data) => {
+  const handleEditVariant = (product, variant) => {
+    setSelectedProduct({ ...product, variant });
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditVariantSubmit = async (data) => {
     try {
-      await dispatch(editProduct({ productId: selectedProduct._id, data }));
+      await dispatch(editProduct({ 
+        productId: selectedProduct._id, 
+        variantId: selectedProduct.variant._id,
+        data 
+      }));
       setIsEditModalOpen(false);
       toast({
-        title: "Product Update Successful",
-
+        title: "Variant Update Successful",
       });
     } catch (error) {
       toast({
@@ -65,18 +70,31 @@ const ProductManagement = () => {
     }
   };
 
-
-  const handleToggleStatus = async (productId) => {
+  const handleToggleVariantStatus = async (productId, variantId) => {
     try {
-      await dispatch(toggleProductStatus(productId));
+      await dispatch(toggleProductStatus({ productId, variantId }));
+      toast({
+        title: "Variant Status Updated Successfully",
+      });
     } catch (error) {
-      console.error('Failed to toggle product status:', error);
+      toast({
+        variant: "destructive",
+        title: "Status Update Failed",
+        description: error || "There is some error!",
+      });
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-6 py-8">
-
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Product Management</h1>
         <CustomButton
@@ -110,104 +128,143 @@ const ProductManagement = () => {
         </CustomButton>
       </div>
 
+      {products?.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No products found</p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-50 text-xs font-medium uppercase text-gray-500">
+                  <th className="px-6 py-3">Product Name</th>
+                  <th className="px-6 py-3">Category</th>
+                  <th className="px-6 py-3">Brand</th>
+                  <th className="px-6 py-3"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {products?.map((product) => (
+                  <>
+                    <tr 
+                      key={`product-${product._id}`} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => toggleProductExpand(product._id)}
+                    >
+                      <td className="px-6 py-4">{product.name}</td>
+                      <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
+                      <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
+                      <td className="px-6 py-4">
+                        {expandedProducts[product._id] ? (
+                          <ChevronUp className="h-5 w-5" />
+                        ) : (
+                          <ChevronDown className="h-5 w-5" />
+                        )}
+                      </td>
+                    </tr>
+                    {expandedProducts[product._id] && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-4">
+                          <div className="overflow-x-auto">
+                            <table className="w-full">
+                              <thead>
+                                <tr className="bg-gray-100 text-xs font-medium uppercase text-gray-500">
+                                  <th className="px-4 py-2">Product Name</th>
+                                  <th className="px-4 py-2">Category</th>
+                                  <th className="px-4 py-2">Brand</th>
+                                  <th className="px-4 py-2">Price</th>
+                                  <th className="px-4 py-2">Color</th>
+                                  <th className="px-4 py-2">Quantity</th>
+                                  <th className="px-4 py-2">Status</th>
+                                  <th className="px-4 py-2">Actions</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {product.variants?.map((variant) => (
+                                  <tr key={`variant-${variant._id}`} className="bg-white">
+                                    <td className="px-4 py-2">{product.name}</td>
+                                    <td className="px-4 py-2">{product.category?.name || 'N/A'}</td>
+                                    <td className="px-4 py-2">{product.brand?.name || 'N/A'}</td>
+                                    <td className="px-4 py-2">₹{variant.price}</td>
+                                    <td className="px-4 py-2">{variant.color}</td>
+                                    <td className="px-4 py-2">{variant.stock}</td>
+                                    <td className="px-4 py-2">
+                                      <span
+                                        className={`inline-block rounded-full px-2 py-1 text-xs ${
+                                          variant.isBlocked
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-green-100 text-green-800'
+                                        }`}
+                                      >
+                                        {variant.isBlocked ? 'Blocked' : 'Active'}
+                                      </span>
+                                    </td>
+                                    <td className="px-4 py-2 flex gap-2">
+                                      <button
+                                        onClick={() => handleEditVariant(product, variant)}
+                                        className="text-gray-500 hover:text-primary"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        className={`text-gray-500 ${
+                                          variant.isBlocked ? 'hover:text-green-500' : 'hover:text-red-500'
+                                        }`}
+                                        onClick={() => handleToggleVariantStatus(product._id, variant._id)}
+                                      >
+                                        {variant.isBlocked ? 'Activate' : 'Block'}
+                                      </button>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-        <table className="w-full">
-          <thead>
-            <tr className="bg-gray-50 text-xs font-medium uppercase text-gray-500">
-              <th className="px-6 py-3">Preview</th>
-              <th className="px-6 py-3">Product</th>
-              <th className="px-6 py-3">Category</th>
-              <th className="px-6 py-3">Brand</th>
-              <th className="px-6 py-3">Price</th>
-              <th className="px-6 py-3">Stock</th>
-              <th className="px-6 py-3">Status</th>
-              <th className="px-6 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products?.map((product) => (
-              <tr key={product._id} className="hover:bg-gray-50">
-
-                <td className="px-6 py-4">
-                  {product.images?.length > 0 ? (
-                    <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="h-10 w-10 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 flex items-center justify-center rounded bg-gray-200 text-gray-500">
-                      No Image
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4">{product.name}</td>
-                <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
-                <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
-                <td className="px-6 py-4">₹ {product.price}</td>
-                <td className="px-6 py-4">{product.stock}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-block rounded-full px-2 py-1 text-xs ${product.status === 'active'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                      }`}
-                  >
-                    {product.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 flex gap-2">
-                  <button
-                    onClick={() => handleEditProduct(product)}
-                    className="text-gray-500 hover:text-primary"
-                  >
-                    <Edit className="h-6 w-6" />
-                  </button>
-                  <button
-                    className={`text-gray-500 ${product.status === 'active' ? 'hover:text-red-500' : 'hover:text-green-500'
-                      }`}
-                    onClick={() => handleToggleStatus(product._id)}
-                  >
-                    {product.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </button>
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
-
-
-        </table>
-      </div>
-
-
-      <div className="mt-4 flex justify-center gap-2">
-        <CustomButton onClick={() => handlePageChange(page - 1)} disabled={page === 1}>
-          Prev
-        </CustomButton>
-        <span>{page} of {totalPages}</span>
-        <CustomButton onClick={() => handlePageChange(page + 1)} disabled={page === totalPages}>
-          Next
-        </CustomButton>
-      </div>
-
+          {totalPages > 1 && (
+            <div className="mt-4 flex justify-center gap-2">
+              <CustomButton 
+                onClick={() => handlePageChange(page - 1)} 
+                disabled={page === 1}
+              >
+                Prev
+              </CustomButton>
+              <span className="flex items-center">
+                Page {page} of {totalPages}
+              </span>
+              <CustomButton 
+                onClick={() => handlePageChange(page + 1)} 
+                disabled={page === totalPages}
+              >
+                Next
+              </CustomButton>
+            </div>
+          )}
+        </>
+      )}
 
       {isModalOpen && (
         <AddProductForm
           onClose={handleAddProduct}
-          onSubmit={() => { }}
         />
       )}
       {isEditModalOpen && (
         <EditProductForm
           product={selectedProduct}
-          onSubmit={handleEditProductSubmit}
+          onSubmit={handleEditVariantSubmit}
           onClose={() => setIsEditModalOpen(false)}
         />
       )}
     </div>
-
   );
 };
 

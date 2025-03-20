@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Upload, Plus, Minus } from 'lucide-react';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Button } from '../../../components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { useMediaQuery } from '../../../hooks/useMediaQuery';
+import { useDispatch, useSelector } from 'react-redux';
+import { addProduct } from '../../../redux/features/productSlice';
+import { fetchBrands } from '../../../redux/features/brandSlice';
+import { getAllCategories } from '../../../redux/features/categorySlice';
+import { useToast } from '../../../hooks/use-toast';
 
 import uploadImageToCloudinary from '../../../utils/uploadImage';
 
@@ -39,22 +44,33 @@ const STATUSES = [
   { id: 2, name: 'Blocked' },
 ];
 
-const AddProductForm = ({ onClose, onSubmit }) => {
+const AddProductForm = ({ onClose }) => {
+  const dispatch = useDispatch();
+  const { toast } = useToast();
   const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  const { brands } = useSelector((state) => state.brands);
+  const { categories } = useSelector((state) => state.category);
   
   const [productData, setProductData] = useState({
     name: '',
     brand: '',
     category: '',
-    price: '',
-    discountPrice: '',
     description: '',
-    status: 'Active', // Default status
   });
   
-  const [images, setImages] = useState([]);
-  const [variants, setVariants] = useState([{ color: '', quantity: 1 }]);
-  const [previewUrls, setPreviewUrls] = useState([]);
+  const [variants, setVariants] = useState([{
+    color: '',
+    quantity: 1,
+    price: '',
+    images: []
+  }]);
+  const [previewUrls, setPreviewUrls] = useState([[]]);
+
+  useEffect(() => {
+    dispatch(fetchBrands());
+    dispatch(getAllCategories());
+  }, [dispatch]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -71,74 +87,108 @@ const AddProductForm = ({ onClose, onSubmit }) => {
     });
   };
 
-  const handleVariantColorChange = (index, color) => {
+  const handleVariantChange = (index, field, value) => {
     const updatedVariants = [...variants];
-    updatedVariants[index].color = color;
-    setVariants(updatedVariants);
-  };
-
-  const handleVariantQuantityChange = (index, quantity) => {
-    const updatedVariants = [...variants];
-    updatedVariants[index].quantity = quantity;
+    updatedVariants[index] = {
+      ...updatedVariants[index],
+      [field]: value
+    };
     setVariants(updatedVariants);
   };
 
   const addVariant = () => {
-    if (variants.length < 5) { // Limit to 5 variants
-      setVariants([...variants, { color: '', quantity: 1 }]);
+    if (variants.length < 5) {
+      setVariants([...variants, { color: '', quantity: 1, price: '', images: [] }]);
+      setPreviewUrls([...previewUrls, []]);
     }
   };
 
   const removeVariant = (index) => {
     if (variants.length > 1) {
       const updatedVariants = variants.filter((_, i) => i !== index);
+      const updatedPreviews = previewUrls.filter((_, i) => i !== index);
       setVariants(updatedVariants);
+      setPreviewUrls(updatedPreviews);
     }
   };
 
-
-  const handleImageUpload = async (e) => {
+  const handleImageUpload = (e, variantIndex) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
-  
+
     const newPreviewUrls = [...previewUrls];
-    const newImages = [...images];
-  
-    for (const file of files) {
+    const newImages = [...variants[variantIndex].images];
+
+    files.forEach(file => {
       if (newImages.length < 3) {
-        try {
-          const uploadedUrl = await uploadToCloudinary(file);
-          newImages.push(uploadedUrl);
-          newPreviewUrls.push(uploadedUrl);
-        } catch (error) {
-          console.error('Failed to upload image:', error);
-        }
+        const url = URL.createObjectURL(file);
+        newPreviewUrls[variantIndex].push(url);
+        newImages.push(file);
       }
-    }
-  
-    setImages(newImages);
-    setPreviewUrls(newPreviewUrls);
-  };
-  
-
-  const removeImage = (index) => {
-    const updatedImages = images.filter((_, i) => i !== index);
-    
-    // Clean up object URLs to prevent memory leaks
-    URL.revokeObjectURL(previewUrls[index]);
-    const updatedPreviewUrls = previewUrls.filter((_, i) => i !== index);
-    
-    setImages(updatedImages);
-    setPreviewUrls(updatedPreviewUrls);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({
-      ...productData,
-      images,
-      variants,
     });
+
+    setPreviewUrls(newPreviewUrls);
+    handleVariantChange(variantIndex, 'images', newImages);
+  };
+
+  const removeImage = (variantIndex, imageIndex) => {
+    const newPreviewUrls = [...previewUrls];
+    const newImages = [...variants[variantIndex].images];
+    
+    URL.revokeObjectURL(newPreviewUrls[variantIndex][imageIndex]);
+    newPreviewUrls[variantIndex] = newPreviewUrls[variantIndex].filter((_, i) => i !== imageIndex);
+    newImages.splice(imageIndex, 1);
+    
+    setPreviewUrls(newPreviewUrls);
+    handleVariantChange(variantIndex, 'images', newImages);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate all variants have required images
+    const hasInvalidVariants = variants.some(variant => variant.images.length < 3);
+    if (hasInvalidVariants) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Each variant must have at least 3 images",
+      });
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('data', JSON.stringify({
+        ...productData,
+        variants: variants.map(({ color, quantity, price }) => ({
+          color,
+          quantity,
+          price
+        }))
+      }));
+
+      // Append images for each variant
+      variants.forEach((variant, variantIndex) => {
+        variant.images.forEach((image, imageIndex) => {
+          formData.append(`variant${variantIndex}`, image);
+        });
+      });
+
+      await dispatch(addProduct(formData)).unwrap();
+      toast({
+        title: "Success",
+        description: "Product added successfully",
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error || "Failed to add product",
+      });
+    }
   };
 
   return (
@@ -184,8 +234,8 @@ const AddProductForm = ({ onClose, onSubmit }) => {
                   <SelectValue placeholder="Select brand" />
                 </SelectTrigger>
                 <SelectContent>
-                  {BRANDS.map(brand => (
-                    <SelectItem key={brand.id} value={brand.name}>
+                  {brands.map(brand => (
+                    <SelectItem key={brand._id} value={brand._id}>
                       {brand.name}
                     </SelectItem>
                   ))}
@@ -204,8 +254,8 @@ const AddProductForm = ({ onClose, onSubmit }) => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map(category => (
-                    <SelectItem key={category.id} value={category.name}>
+                  {categories.map(category => (
+                    <SelectItem key={category._id} value={category._id}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -214,106 +264,20 @@ const AddProductForm = ({ onClose, onSubmit }) => {
             </div>
           </div>
 
-          {/* Price and Discount Price */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                Price*
-              </label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={productData.price}
-                onChange={handleInputChange}
-                placeholder="0.00"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="discountPrice" className="block text-sm font-medium text-gray-700 mb-1">
-                Discount Price
-              </label>
-              <Input
-                id="discountPrice"
-                name="discountPrice"
-                type="number"
-                step="0.01"
-                min="0"
-                value={productData.discountPrice}
-                onChange={handleInputChange}
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          {/* Status */}
+          {/* Description */}
           <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-              Status*
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              Product Description*
             </label>
-            <Select 
-              value={productData.status} 
-              onValueChange={(value) => handleSelectChange('status', value)}
-            >
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUSES.map(status => (
-                  <SelectItem key={status.id} value={status.name}>
-                    {status.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Product Images* (Max 3)
-            </label>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-              {previewUrls.map((url, index) => (
-                <div key={index} className="relative h-32 bg-gray-50 rounded-md border border-gray-200">
-                  <img 
-                    src={url} 
-                    alt={`Product image ${index + 1}`} 
-                    className="h-full w-full object-contain rounded-md" 
-                  />
-                  <button 
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-              
-              {images.length < 3 && (
-                <div className="h-32 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center p-4 hover:bg-gray-50 cursor-pointer">
-                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                  <label htmlFor="image-upload" className="cursor-pointer text-sm text-center">
-                    <span className="text-primary font-medium">Click to upload</span>
-                    <input
-                      id="image-upload"
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      disabled={images.length >= 3}
-                    />
-                  </label>
-                  <p className="text-xs text-gray-500 mt-1">{3 - images.length} remaining</p>
-                </div>
-              )}
-            </div>
+            <Textarea
+              id="description"
+              name="description"
+              rows={4}
+              value={productData.description}
+              onChange={handleInputChange}
+              placeholder="Enter product description..."
+              required
+            />
           </div>
 
           {/* Variants */}
@@ -333,97 +297,106 @@ const AddProductForm = ({ onClose, onSubmit }) => {
               </Button>
             </div>
             
-            {variants.map((variant, index) => (
-              <div key={index} className="flex items-center gap-4 mb-3 p-3 bg-gray-50 rounded-md">
-                <div className="flex-1">
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Color
-                  </label>
-                  <Select 
-                    value={variant.color} 
-                    onValueChange={(value) => handleVariantColorChange(index, value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select color" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COLORS.map(color => (
-                        <SelectItem key={color.id} value={color.name}>
-                          <div className="flex items-center">
-                            <div 
-                              className="h-4 w-4 rounded-full mr-2" 
-                              style={{ backgroundColor: color.hex, border: color.name === 'White' ? '1px solid #ccc' : 'none' }}
-                            />
-                            {color.name}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="w-32">
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Quantity
-                  </label>
-                  <div className="flex items-center">
+            {variants.map((variant, variantIndex) => (
+              <div key={variantIndex} className="mb-6 p-4 border rounded-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium">Variant {variantIndex + 1}</h3>
+                  {variants.length > 1 && (
                     <Button 
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleVariantQuantityChange(index, Math.max(1, variant.quantity - 1))}
+                      type="button" 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => removeVariant(variantIndex)}
                     >
-                      <Minus className="h-3 w-3" />
+                      <X className="h-4 w-4" />
                     </Button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">
+                      Color*
+                    </label>
+                    <Input
+                      value={variant.color}
+                      onChange={(e) => handleVariantChange(variantIndex, 'color', e.target.value)}
+                      placeholder="Enter color"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">
+                      Price*
+                    </label>
                     <Input
                       type="number"
-                      min="1"
-                      value={variant.quantity}
-                      onChange={(e) => handleVariantQuantityChange(index, parseInt(e.target.value) || 1)}
-                      className="mx-1 text-center h-8"
+                      value={variant.price}
+                      onChange={(e) => handleVariantChange(variantIndex, 'price', e.target.value)}
+                      placeholder="Enter price"
+                      required
                     />
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => handleVariantQuantityChange(index, variant.quantity + 1)}
-                    >
-                      <Plus className="h-3 w-3" />
-                    </Button>
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-700 mb-1">
+                      Quantity*
+                    </label>
+                    <Input
+                      type="number"
+                      value={variant.quantity}
+                      onChange={(e) => handleVariantChange(variantIndex, 'quantity', parseInt(e.target.value) || 1)}
+                      placeholder="Enter quantity"
+                      required
+                    />
                   </div>
                 </div>
-                
-                {variants.length > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8"
-                    onClick={() => removeVariant(index)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+
+                {/* Variant Images */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Images* (Min 3)
+                  </label>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {previewUrls[variantIndex]?.map((url, imageIndex) => (
+                      <div key={imageIndex} className="relative h-32 bg-gray-50 rounded-md border border-gray-200">
+                        <img 
+                          src={url} 
+                          alt={`Variant ${variantIndex + 1} image ${imageIndex + 1}`} 
+                          className="h-full w-full object-contain rounded-md" 
+                        />
+                        <button 
+                          type="button"
+                          onClick={() => removeImage(variantIndex, imageIndex)}
+                          className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm hover:bg-gray-100"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {variant.images.length < 3 && (
+                      <div className="h-32 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center p-4 hover:bg-gray-50 cursor-pointer">
+                        <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                        <label htmlFor={`variant-${variantIndex}-upload`} className="cursor-pointer text-sm text-center">
+                          <span className="text-primary font-medium">Click to upload</span>
+                          <input
+                            id={`variant-${variantIndex}-upload`}
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => handleImageUpload(e, variantIndex)}
+                            className="hidden"
+                            disabled={variant.images.length >= 3}
+                          />
+                        </label>
+                        <p className="text-xs text-gray-500 mt-1">{3 - variant.images.length} remaining</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             ))}
-          </div>
-
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              Product Description*
-            </label>
-            <Textarea
-              id="description"
-              name="description"
-              rows={4}
-              value={productData.description}
-              onChange={handleInputChange}
-              placeholder="Enter product description..."
-              required
-            />
           </div>
 
           {/* Form Buttons */}

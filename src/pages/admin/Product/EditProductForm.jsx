@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react';
+import { Input } from '../../../components/ui/input';
+import { Button } from '../../../components/ui/button';
+import { X } from 'lucide-react';
 
 const EditProductForm = ({ product, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
-    name: product.name || '',
-    description: product.description || '',
-    price: product.price || '',
-    discount: product.discount || '',
-    category: product.category?._id || '',
-    brand: product.brand?._id || '',
-    stock: product.stock || '',
+    color: product.variant.color || '',
+    price: product.variant.price || '',
+    stock: product.variant.stock || '',
     images: []
   });
 
   const [previewImages, setPreviewImages] = useState([]);
-  const [existingImages, setExistingImages] = useState(product.images || []);
+  const [existingImages, setExistingImages] = useState([
+    product.variant.mainImage,
+    ...product.variant.subImages
+  ].filter(Boolean));
 
   // Cleanup function for preview URLs
   useEffect(() => {
@@ -86,53 +88,68 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-bold mb-4">Edit Product</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold">Edit Variant</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            className="border rounded p-2 w-full"
-            placeholder="Name"
-          />
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            className="border rounded p-2 w-full"
-            placeholder="Description"
-          />
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            className="border rounded p-2 w-full"
-            placeholder="Price"
-          />
-          <input
-            type="number"
-            name="discount"
-            value={formData.discount}
-            onChange={handleChange}
-            className="border rounded p-2 w-full"
-            placeholder="Discount"
-          />
-          <input
-            type="number"
-            name="stock"
-            value={formData.stock}
-            onChange={handleChange}
-            className="border rounded p-2 w-full"
-            placeholder="Stock"
-          />
-          <input
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            className="border rounded p-2 w-full"
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Color
+            </label>
+            <Input
+              type="text"
+              name="color"
+              value={formData.color}
+              onChange={handleChange}
+              className="w-full"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Price
+            </label>
+            <Input
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={handleChange}
+              className="w-full"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Stock
+            </label>
+            <Input
+              type="number"
+              name="stock"
+              value={formData.stock}
+              onChange={handleChange}
+              className="w-full"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Images
+            </label>
+            <Input
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              className="w-full"
+              accept="image/*"
+            />
+          </div>
           
           {/* Existing Images */}
           {existingImages.length > 0 && (
@@ -176,13 +193,13 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
             </div>
           )}
 
-          <div className="flex gap-2">
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-              Update
-            </button>
-            <button type="button" onClick={onClose} className="bg-gray-300 px-4 py-2 rounded">
+          <div className="flex gap-2 pt-4">
+            <Button type="submit" className="flex-1">
+              Update Variant
+            </Button>
+            <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </div>

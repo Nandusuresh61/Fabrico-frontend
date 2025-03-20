@@ -19,28 +19,41 @@ export const getAllProducts = createAsyncThunk(
   }
 );
 
-// Edit Product
+// Edit Product Variant
 export const editProduct = createAsyncThunk(
   'product/editProduct',
-  async ({ productId, data }, { rejectWithValue }) => {
+  async ({ productId, variantId, data }, { rejectWithValue }) => {
     try {
-      const response = await editProductApi(productId, data);
+      const response = await editProductApi(productId, variantId, data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to edit product');
+      return rejectWithValue(error.response?.data?.message || 'Failed to edit product variant');
     }
   }
 );
 
-// Toggle Product Status
+// Toggle Product Variant Status
 export const toggleProductStatus = createAsyncThunk(
   'product/toggleProductStatus',
-  async (productId, { rejectWithValue }) => {
+  async ({ productId, variantId }, { rejectWithValue }) => {
     try {
-      const response = await deleteProductApi(productId);
+      const response = await deleteProductApi(productId, variantId);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update status');
+      return rejectWithValue(error.response?.data?.message || 'Failed to update variant status');
+    }
+  }
+);
+
+// Add Product
+export const addProduct = createAsyncThunk(
+  'product/addProduct',
+  async (formData, { rejectWithValue }) => {
+    try {
+      const response = await addProductApi(formData);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to add product');
     }
   }
 );
@@ -79,34 +92,71 @@ const productSlice = createSlice({
         state.error = action.payload;
       })
       
-      // Edit Product
+      // Edit Product Variant
       .addCase(editProduct.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(editProduct.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = state.products.map((product) =>
-          product._id === action.payload.product._id ? action.payload.product : product
-        );
+        const { productId, variantId, variant } = action.payload;
+        state.products = state.products.map((product) => {
+          if (product._id === productId) {
+            return {
+              ...product,
+              variants: product.variants.map((v) =>
+                v._id === variantId ? variant : v
+              ),
+            };
+          }
+          return product;
+        });
       })
       .addCase(editProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
       
-      // Toggle Product Status
+      // Toggle Product Variant Status
       .addCase(toggleProductStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(toggleProductStatus.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = state.products.map((product) =>
-          product._id === action.payload._id ? action.payload : product
-        );
+        const { productId, variantId, variant } = action.payload;
+        state.products = state.products.map((product) => {
+          if (product._id === productId) {
+            return {
+              ...product,
+              variants: product.variants.map((v) =>
+                v._id === variantId ? variant : v
+              ),
+            };
+          }
+          return product;
+        });
       })
       .addCase(toggleProductStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Add Product
+      .addCase(addProduct.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(addProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        // Check if product already exists before adding
+        const exists = state.products.some(p => p._id === action.payload.product._id);
+        if (!exists) {
+          state.products.unshift(action.payload.product);
+          state.totalProducts += 1;
+        }
+      })
+      .addCase(addProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
