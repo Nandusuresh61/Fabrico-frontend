@@ -7,11 +7,12 @@ import {
 } from '../../api/productApi';
 
 // Get All Products
+// Get All Products with search and pagination
 export const getAllProducts = createAsyncThunk(
   'product/getAllProducts',
-  async (_, { rejectWithValue }) => {
+  async ({ search = '', page = 1, limit = 5 }, { rejectWithValue }) => {
     try {
-      const response = await getAllProductsApi();
+      const response = await getAllProductsApi({ search, page, limit });
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load products');
@@ -19,18 +20,6 @@ export const getAllProducts = createAsyncThunk(
   }
 );
 
-// Add Product
-export const addProduct = createAsyncThunk(
-  'product/addProduct',
-  async (data, { rejectWithValue }) => {
-    try {
-      const response = await addProductApi(data);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to add product');
-    }
-  }
-);
 
 // Edit Product
 export const editProduct = createAsyncThunk(
@@ -45,88 +34,37 @@ export const editProduct = createAsyncThunk(
   }
 );
 
-// Delete Product
-export const deleteProduct = createAsyncThunk(
-  'product/deleteProduct',
+// Toggle Product Status
+export const toggleProductStatus = createAsyncThunk(
+  'product/toggleProductStatus',
   async (productId, { rejectWithValue }) => {
     try {
       const response = await deleteProductApi(productId);
-      return { productId, status: response.data.status };
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete product');
+      return rejectWithValue(error.response?.data?.message || 'Failed to update status');
     }
   }
 );
 
-const initialState = {
-  products: [],
-  loading: false,
-  error: null,
-};
-
 const productSlice = createSlice({
   name: 'product',
-  initialState,
+  initialState: { products: [], loading: false, error: null },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Get All Products
-      .addCase(getAllProducts.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(getAllProducts.fulfilled, (state, action) => {
-        state.loading = false;
-        state.products = action.payload;
-      })
-      .addCase(getAllProducts.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Add Product
-      .addCase(addProduct.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(addProduct.fulfilled, (state, action) => {
-        state.loading = false;
-        state.products.push(action.payload.product);
-      })
-      .addCase(addProduct.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Edit Product
-      .addCase(editProduct.pending, (state) => {
-        state.loading = true;
+        state.products = action.payload.products;
       })
       .addCase(editProduct.fulfilled, (state, action) => {
-        state.loading = false;
         state.products = state.products.map((product) =>
-          product._id === action.payload.product._id ? action.payload.product : product
+          product._id === action.payload._id ? action.payload : product
         );
       })
-      .addCase(editProduct.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-
-      // Delete Product (Toggle Status)
-      .addCase(deleteProduct.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(deleteProduct.fulfilled, (state, action) => {
-        state.loading = false;
+      .addCase(toggleProductStatus.fulfilled, (state, action) => {
         state.products = state.products.map((product) =>
-          product._id === action.payload.productId
-            ? { ...product, status: action.payload.status }
-            : product
+          product._id === action.payload._id ? action.payload : product
         );
-      })
-      .addCase(deleteProduct.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
       });
   },
 });

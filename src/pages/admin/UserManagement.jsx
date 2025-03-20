@@ -43,9 +43,9 @@ const UserManagement = () => {
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">User Management</h1>
-          <CustomButton icon={<UserPlus className="h-4 w-4" />} iconPosition="left">
+          {/* <CustomButton icon={<UserPlus className="h-4 w-4" />} iconPosition="left">
             Add New User
-          </CustomButton>
+          </CustomButton> */}
         </div>
 
         {/* Filters */}
@@ -110,7 +110,7 @@ const UserManagement = () => {
                     </td>
 
                     <td className="px-6 py-4 flex gap-2">
-                      <Edit className="cursor-pointer text-gray-500" />
+                      {/* <Edit className="cursor-pointer text-gray-500" /> */}
                       {!user.isAdmin ? <button onClick={()=>toggleStatus(user._id, user)} className={`cursor-pointer ${
                       user.status  === 'active' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                     }`} >
