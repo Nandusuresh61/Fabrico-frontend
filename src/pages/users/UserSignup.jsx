@@ -118,7 +118,7 @@ const { loading, error} = useSelector((state)=>state.user);
               Back to home
             </Link>
             <h1 className="mb-2 text-2xl font-bold text-gray-900">Create an account</h1>
-            <p className="text-gray-600">Join CapsHaven to start shopping premium caps</p>
+            <p className="text-gray-600">Join FABRICO to start shopping premium caps</p>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-5">

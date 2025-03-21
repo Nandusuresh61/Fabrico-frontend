@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/layout/layout';
 import ProductCard from '../../components/ui/ProductCard';
 import { getAllProducts } from '../../redux/features/productSlice';
@@ -11,17 +12,31 @@ const Products = () => {
   const { products, loading } = useSelector((state) => state.product);
   const { categories } = useSelector((state) => state.category);
   const { brands } = useSelector((state) => state.brands);
+  const [searchParams] = useSearchParams();
 
-  const [activeCategory, setActiveCategory] = useState('all');
+  // Get category from URL query params
+  const categoryFromUrl = searchParams.get('category');
+  const searchFromUrl = searchParams.get('search');
+
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl || 'all');
   const [activeBrand, setActiveBrand] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState('featured');
 
   useEffect(() => {
-    dispatch(getAllProducts({}));
+    // Update active category when URL changes
+    setActiveCategory(categoryFromUrl || 'all');
+    
+    // Fetch products with search and category parameters
+    dispatch(getAllProducts({ 
+      search: searchFromUrl || '', 
+      category: categoryFromUrl || '',
+      page: 1,
+      limit: 12
+    }));
     dispatch(getAllCategories());
     dispatch(fetchBrands());
-  }, [dispatch]);
+  }, [dispatch, categoryFromUrl, searchFromUrl]);
 
   // Filter products based on selected criteria
   const filteredProducts = products.filter((product) => {
@@ -41,8 +56,12 @@ const Products = () => {
     }
 
     // Filter by category
-    if (activeCategory !== 'all' && product.category?._id !== activeCategory) {
-      return false;
+    if (activeCategory !== 'all') {
+      // Check if the product's category name matches the active category
+      const productCategory = product.category?.name?.toLowerCase();
+      if (productCategory !== activeCategory.toLowerCase()) {
+        return false;
+      }
     }
 
     // Filter by brand
@@ -93,7 +112,9 @@ const Products = () => {
   return (
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
-        <h1 className="mb-8 text-3xl font-bold">Shop Products</h1>
+        <h1 className="mb-8 text-3xl font-bold">
+          {categoryFromUrl ? `${categoryFromUrl.charAt(0).toUpperCase() + categoryFromUrl.slice(1)} Products` : 'Shop Products'}
+        </h1>
         
         <div className="grid gap-8 md:grid-cols-4">
           {/* Filters Sidebar */}
@@ -113,9 +134,9 @@ const Products = () => {
                 {categories.map((category) => (
                   <button
                     key={category._id}
-                    onClick={() => setActiveCategory(category._id)}
+                    onClick={() => setActiveCategory(category.name.toLowerCase())}
                     className={`block w-full text-left text-sm ${
-                      activeCategory === category._id ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
+                      activeCategory === category.name.toLowerCase() ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
                     {category.name}

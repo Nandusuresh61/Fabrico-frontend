@@ -10,15 +10,12 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Categories for the menu
-  const categories = [
-    { name: 'New Arrivals', path: '/products?category=new-arrivals' },
-    { name: 'Bestsellers', path: '/products?category=bestsellers' },
-    { name: 'Baseball Caps', path: '/products?category=baseball-caps' },
-    { name: 'Trucker Caps', path: '/products?category=trucker-caps' },
-    { name: 'Snapback', path: '/products?category=snapback' },
-    { name: 'Fitted Caps', path: '/products?category=fitted-caps' },
-    { name: 'Dad Hats', path: '/products?category=dad-hats' },
+  // Navigation options
+  const navOptions = [
+    { name: 'Shop', path: '/products' },
+    { name: 'Men', path: '/products?category=men' },
+    { name: 'Women', path: '/products?category=women' },
+    { name: 'Kids', path: '/products?category=kids' },
   ];
 
   useEffect(() => {
@@ -61,14 +58,14 @@ const Header = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center space-x-6 md:flex">
-          {categories.slice(0, 5).map((category) => (
+        <nav className="hidden items-center space-x-8 md:flex">
+          {navOptions.map((option) => (
             <Link
-              key={category.name}
-              to={category.path}
-              className="text-sm font-medium text-gray-700 transition-colors hover:text-primary"
+              key={option.name}
+              to={option.path}
+              className="text-base font-medium text-gray-700 transition-colors hover:text-primary"
             >
-              {category.name}
+              {option.name}
             </Link>
           ))}
         </nav>
@@ -164,25 +161,25 @@ const Header = () => {
             </form>
 
             {/* Mobile Navigation Links */}
-            <nav className="flex flex-col space-y-4">
-              {categories.map((category) => (
+            <nav className="flex flex-col space-y-6">
+              {navOptions.map((option) => (
                 <Link
-                  key={category.name}
-                  to={category.path}
-                  className="flex items-center py-2 text-base font-medium text-gray-800"
+                  key={option.name}
+                  to={option.path}
+                  className="flex items-center py-2 text-lg font-medium text-gray-800"
                 >
-                  {category.name}
+                  {option.name}
                 </Link>
               ))}
               
-              <div className="my-2 h-px bg-gray-200" />
+              <div className="my-4 h-px bg-gray-200" />
               
-              <Link to="/wishlist" className="flex items-center py-2 text-base font-medium text-gray-800">
+              <Link to="/wishlist" className="flex items-center py-2 text-lg font-medium text-gray-800">
                 <Heart className="mr-3 h-5 w-5" />
                 Wishlist
               </Link>
               
-              <Link to="/login" className="flex items-center py-2 text-base font-medium text-gray-800">
+              <Link to="/login" className="flex items-center py-2 text-lg font-medium text-gray-800">
                 <User className="mr-3 h-5 w-5" />
                 Account
               </Link>

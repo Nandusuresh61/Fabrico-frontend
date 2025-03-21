@@ -18,7 +18,7 @@ const AdminLayout = ({ children }) => {
     { icon: <ShoppingBag className="h-5 w-5" />, name: 'Products', path: '/admin/products' },
     { icon: <Tags className="h-5 w-5" />, name: 'Categories', path: '/admin/categories' },
     { icon: <BadgePercent className="h-5 w-5" />, name: 'Brands', path: '/admin/brands' },
-    { icon: <Settings className="h-5 w-5" />, name: 'Settings', path: '/admin/settings' },
+    // { icon: <Settings className="h-5 w-5" />, name: 'Settings', path: '/admin/settings' },
   ];
 
   const toggleSidebar = () => {
