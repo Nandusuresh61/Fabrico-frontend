@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/layout/layout';
 import ProductCard from '../../components/ui/ProductCard';
-import { getAllProducts } from '../../redux/features/productSlice';
+import { getAllProductsForUsers } from '../../redux/features/productSlice'; // Update import
 import { getAllCategories } from '../../redux/features/categorySlice';
 import { fetchBrands } from '../../redux/features/brandSlice';
 
@@ -27,8 +27,8 @@ const Products = () => {
     // Update active category when URL changes
     setActiveCategory(categoryFromUrl || 'all');
     
-    // Fetch products with search and category parameters
-    dispatch(getAllProducts({ 
+    // Replace getAllProducts with getAllProductsForUsers
+    dispatch(getAllProductsForUsers({ 
       search: searchFromUrl || '', 
       category: categoryFromUrl || '',
       page: 1,

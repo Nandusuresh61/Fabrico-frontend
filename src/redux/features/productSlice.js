@@ -6,6 +6,7 @@ import {
   getAllProductsApi,
   toggleProductMainStatusApi,
   getProductByIdApi,
+  getAllProductsForUsersApi,
 } from '../../api/productApi';
 
 // Get All Products with search and pagination
@@ -82,6 +83,19 @@ export const getProductById = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load product');
+    }
+  }
+);
+
+// Get All Products for Users
+export const getAllProductsForUsers = createAsyncThunk(
+  'product/getAllProductsForUsers',
+  async ({ search = '', page = 1, limit = 5 }, { rejectWithValue }) => {
+    try {
+      const response = await getAllProductsForUsersApi({ search, page, limit });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to load products');
     }
   }
 );
@@ -220,6 +234,23 @@ const productSlice = createSlice({
         state.selectedProduct = action.payload;
       })
       .addCase(getProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Get All Products for Users
+      .addCase(getAllProductsForUsers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getAllProductsForUsers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.products = action.payload.products;
+        state.totalProducts = action.payload.totalProducts;
+        state.currentPage = action.payload.currentPage;
+        state.totalPages = action.payload.totalPages;
+      })
+      .addCase(getAllProductsForUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

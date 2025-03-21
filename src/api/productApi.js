@@ -7,3 +7,6 @@ export const toggleProductMainStatusApi = (productId) => API.put(`/products/${pr
 export const getAllProductsApi = ({ search, page, limit }) =>
   API.get(`/products?search=${search || ''}&page=${page || 1}&limit=${limit || 5}`);
 export const getProductByIdApi = (id) => API.get(`/products/${id}`);
+
+export const getAllProductsForUsersApi = ({ search, page, limit }) =>
+  API.get(`/products?search=${search || ''}&page=${page || 1}&limit=${limit || 5}`);
