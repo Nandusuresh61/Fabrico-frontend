@@ -154,14 +154,14 @@ const Index = () => {
                   <CustomButton size="lg">
                     <Link to="/products">Shop Now</Link>
                   </CustomButton>
-                  <CustomButton size="lg" variant="outline">
+                  {/* <CustomButton size="lg" variant="outline">
                     <Link to="/products?category=new-arrivals">New Arrivals</Link>
-                  </CustomButton>
+                  </CustomButton> */}
                 </div>
               </div>
               <div className="relative animate-fade-in">
                 <img
-                  src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1536&auto=format&fit=crop"
+                  src="https://capsapparel.com/cdn/shop/files/JOURNEY-Black-Front.jpg?v=1736757822&width=1200"
                   alt="Featured cap"
                   className="mx-auto rounded-xl shadow-lg md:ml-auto"
                 />
@@ -262,31 +262,6 @@ const Index = () => {
               {newArrivals.map((product) => (
                 <ProductCard key={product.id} {...product} />
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Promotion Banner */}
-        <section className="bg-primary py-16 text-white">
-          <div className="container px-4 md:px-6">
-            <div className="mx-auto max-w-3xl text-center">
-              <h2 className="mb-6 text-2xl font-bold sm:text-3xl md:text-4xl">
-                Join Our Community
-              </h2>
-              <p className="mb-8 text-lg opacity-90">
-                Sign up for our newsletter and receive 15% off your first order, plus early access to new releases and exclusive offers.
-              </p>
-              <form className="mx-auto flex max-w-md flex-col gap-4 sm:flex-row">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 rounded-lg border-none bg-white/10 px-4 py-3 text-white placeholder-white/70 backdrop-blur-sm outline-none focus:ring-2 focus:ring-white/50"
-                  required
-                />
-                <CustomButton className="bg-white text-primary hover:bg-white/90">
-                  Subscribe
-                </CustomButton>
-              </form>
             </div>
           </div>
         </section>

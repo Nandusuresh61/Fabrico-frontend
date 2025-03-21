@@ -1,86 +1,73 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Layout from '../../components/layout/layout';
 import ProductCard from '../../components/ui/ProductCard';
-
-// Mock data
-const products = [
-  {
-    id: '1',
-    name: 'Vintage Baseball Cap',
-    price: 39.99,
-    discountPrice: 29.99,
-    imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1536&auto=format&fit=crop',
-    rating: 4.5,
-    isFeatured: true,
-  },
-  {
-    id: '2',
-    name: 'Classic Snapback',
-    price: 45.99,
-    imageUrl: 'https://images.unsplash.com/photo-1534215754734-18e55d13e346?q=80&w=1548&auto=format&fit=crop',
-    rating: 4.2,
-  },
-  {
-    id: '3',
-    name: 'Premium Trucker Cap',
-    price: 49.99,
-    discountPrice: 39.99,
-    imageUrl: 'https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1470&auto=format&fit=crop',
-    rating: 4.8,
-    isFeatured: true,
-  },
-  {
-    id: '4',
-    name: 'Urban Fitted Cap',
-    price: 55.99,
-    imageUrl: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=1587&auto=format&fit=crop',
-    rating: 4.0,
-  },
-  {
-    id: '5',
-    name: 'Minimalist Dad Hat',
-    price: 35.99,
-    discountPrice: 29.99,
-    imageUrl: 'https://images.unsplash.com/photo-1552060155-4b9a038bc4d3?q=80&w=1587&auto=format&fit=crop',
-    rating: 4.6,
-  },
-  {
-    id: '6',
-    name: 'Sport Performance Cap',
-    price: 42.99,
-    imageUrl: 'https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1470&auto=format&fit=crop',
-    rating: 4.3,
-  },
-];
-
-const categories = [
-  { id: '1', name: 'All Products' },
-  { id: '2', name: 'Baseball Caps' },
-  { id: '3', name: 'Snapbacks' },
-  { id: '4', name: 'Trucker Caps' },
-  { id: '5', name: 'Dad Hats' },
-  { id: '6', name: 'Fitted Caps' },
-];
-
-const brands = [
-  { id: '1', name: 'All Brands' },
-  { id: '2', name: 'CapCraft' },
-  { id: '3', name: 'UrbanLid' },
-  { id: '4', name: 'HeadStyle' },
-  { id: '5', name: 'StreetCrown' },
-];
+import { getAllProducts } from '../../redux/features/productSlice';
+import { getAllCategories } from '../../redux/features/categorySlice';
+import { fetchBrands } from '../../redux/features/brandSlice';
 
 const Products = () => {
-  const [activeCategory, setActiveCategory] = useState('1');
-  const [activeBrand, setActiveBrand] = useState('1');
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const dispatch = useDispatch();
+  const { products, loading } = useSelector((state) => state.product);
+  const { categories } = useSelector((state) => state.category);
+  const { brands } = useSelector((state) => state.brands);
+
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeBrand, setActiveBrand] = useState('all');
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [sortBy, setSortBy] = useState('featured');
+
+  useEffect(() => {
+    dispatch(getAllProducts({}));
+    dispatch(getAllCategories());
+    dispatch(fetchBrands());
+  }, [dispatch]);
+
+  // Filter products based on selected criteria
+  const filteredProducts = products.filter((product) => {
+    // Filter by category
+    if (activeCategory !== 'all' && product.category?._id !== activeCategory) {
+      return false;
+    }
+
+    // Filter by brand
+    if (activeBrand !== 'all' && product.brand?._id !== activeBrand) {
+      return false;
+    }
+
+    // Filter by price range
+    const firstVariant = product.variants[0];
+    if (firstVariant) {
+      const price = firstVariant.price;
+      if (price < priceRange[0] || price > priceRange[1]) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const priceA = a.variants[0]?.price || 0;
+    const priceB = b.variants[0]?.price || 0;
+
+    switch (sortBy) {
+      case 'price-low':
+        return priceA - priceB;
+      case 'price-high':
+        return priceB - priceA;
+      case 'newest':
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      default:
+        return 0;
+    }
+  });
 
   return (
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
-        <h1 className="mb-8 text-3xl font-bold">Shop Caps</h1>
+        <h1 className="mb-8 text-3xl font-bold">Shop Products</h1>
         
         <div className="grid gap-8 md:grid-cols-4">
           {/* Filters Sidebar */}
@@ -89,12 +76,20 @@ const Products = () => {
             <div className="rounded-lg border border-gray-200 p-4">
               <h3 className="mb-3 font-medium">Categories</h3>
               <div className="space-y-2">
+                <button
+                  onClick={() => setActiveCategory('all')}
+                  className={`block w-full text-left text-sm ${
+                    activeCategory === 'all' ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  All Categories
+                </button>
                 {categories.map((category) => (
                   <button
-                    key={category.id}
-                    onClick={() => setActiveCategory(category.id)}
+                    key={category._id}
+                    onClick={() => setActiveCategory(category._id)}
                     className={`block w-full text-left text-sm ${
-                      activeCategory === category.id ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
+                      activeCategory === category._id ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
                     {category.name}
@@ -107,12 +102,20 @@ const Products = () => {
             <div className="rounded-lg border border-gray-200 p-4">
               <h3 className="mb-3 font-medium">Brands</h3>
               <div className="space-y-2">
+                <button
+                  onClick={() => setActiveBrand('all')}
+                  className={`block w-full text-left text-sm ${
+                    activeBrand === 'all' ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  All Brands
+                </button>
                 {brands.map((brand) => (
                   <button
-                    key={brand.id}
-                    onClick={() => setActiveBrand(brand.id)}
+                    key={brand._id}
+                    onClick={() => setActiveBrand(brand._id)}
                     className={`block w-full text-left text-sm ${
-                      activeBrand === brand.id ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
+                      activeBrand === brand._id ? 'font-medium text-primary' : 'text-gray-600 hover:text-gray-900'
                     }`}
                   >
                     {brand.name}
@@ -131,7 +134,7 @@ const Products = () => {
               <input
                 type="range"
                 min="0"
-                max="100"
+                max="1000"
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                 className="mt-2 w-full cursor-pointer"
@@ -143,7 +146,7 @@ const Products = () => {
           <div className="md:col-span-3">
             {/* Sorting */}
             <div className="mb-6 flex items-center justify-between">
-              <div className="text-sm text-gray-600">{products.length} products</div>
+              <div className="text-sm text-gray-600">{sortedProducts.length} products</div>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -158,12 +161,29 @@ const Products = () => {
             
             {/* Products Grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {products.map((product) => (
-                <ProductCard key={product.id} {...product} />
-              ))}
+              {loading ? (
+                <div>Loading...</div>
+              ) : (
+                sortedProducts.map((product) => {
+                  const firstVariant = product.variants[0];
+                  if (!firstVariant) return null;
+
+                  return (
+                    <ProductCard
+                      key={product._id}
+                      id={product._id}
+                      name={product.name}
+                      price={firstVariant.price}
+                      discountPrice={firstVariant.discountPrice}
+                      imageUrl={firstVariant.mainImage}
+                      rating={4.5}
+                    />
+                  );
+                })
+              )}
             </div>
             
-            {/* Pagination */}
+            {/* Pagination - You can implement this later based on your backend pagination */}
             <div className="mt-8 flex items-center justify-center">
               <div className="flex items-center space-x-1">
                 <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-sm">
@@ -171,12 +191,6 @@ const Products = () => {
                 </button>
                 <button className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm text-white">
                   1
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-sm">
-                  2
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-sm">
-                  3
                 </button>
                 <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-sm">
                   &gt;
