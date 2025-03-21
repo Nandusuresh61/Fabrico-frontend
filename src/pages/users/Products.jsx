@@ -25,6 +25,21 @@ const Products = () => {
 
   // Filter products based on selected criteria
   const filteredProducts = products.filter((product) => {
+    // Filter out blocked products
+    if (product.status === 'blocked') {
+      return false;
+    }
+
+    // Filter out products with blocked categories
+    if (product.category?.status === 'Deactivated') {
+      return false;
+    }
+
+    // Filter out products with blocked brands
+    if (product.brand?.status === 'Deactivated') {
+      return false;
+    }
+
     // Filter by category
     if (activeCategory !== 'all' && product.category?._id !== activeCategory) {
       return false;
@@ -35,22 +50,33 @@ const Products = () => {
       return false;
     }
 
-    // Filter by price range
-    const firstVariant = product.variants[0];
-    if (firstVariant) {
-      const price = firstVariant.price;
-      if (price < priceRange[0] || price > priceRange[1]) {
+    // Check if product has any non-blocked variants
+    const hasActiveVariants = product.variants.some(variant => !variant.isBlocked);
+    if (!hasActiveVariants) {
+      return false;
+    }
+
+    // Filter by price range - only consider non-blocked variants
+    const activeVariants = product.variants.filter(variant => !variant.isBlocked);
+    if (activeVariants.length > 0) {
+      const lowestPrice = Math.min(...activeVariants.map(v => v.price));
+      if (lowestPrice < priceRange[0] || lowestPrice > priceRange[1]) {
         return false;
       }
+    } else {
+      return false;
     }
 
     return true;
   });
 
-  // Sort products
+  // Sort products - only consider non-blocked variants for pricing
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const priceA = a.variants[0]?.price || 0;
-    const priceB = b.variants[0]?.price || 0;
+    const activeVariantsA = a.variants.filter(v => !v.isBlocked);
+    const activeVariantsB = b.variants.filter(v => !v.isBlocked);
+    
+    const priceA = activeVariantsA.length > 0 ? Math.min(...activeVariantsA.map(v => v.price)) : 0;
+    const priceB = activeVariantsB.length > 0 ? Math.min(...activeVariantsB.map(v => v.price)) : 0;
 
     switch (sortBy) {
       case 'price-low':
@@ -165,17 +191,19 @@ const Products = () => {
                 <div>Loading...</div>
               ) : (
                 sortedProducts.map((product) => {
-                  const firstVariant = product.variants[0];
-                  if (!firstVariant) return null;
+                  // Get the first non-blocked variant
+                  const activeVariants = product.variants.filter(v => !v.isBlocked);
+                  const firstActiveVariant = activeVariants[0];
+                  if (!firstActiveVariant) return null;
 
                   return (
                     <ProductCard
                       key={product._id}
                       id={product._id}
                       name={product.name}
-                      price={firstVariant.price}
-                      discountPrice={firstVariant.discountPrice}
-                      imageUrl={firstVariant.mainImage}
+                      price={firstActiveVariant.price}
+                      discountPrice={firstActiveVariant.discountPrice}
+                      imageUrl={firstActiveVariant.mainImage}
                       rating={4.5}
                     />
                   );

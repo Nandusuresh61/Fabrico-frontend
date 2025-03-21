@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Search, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
-import { getAllProducts, editProduct, toggleProductStatus } from '../../redux/features/productSlice';
+import { getAllProducts, editProduct, toggleProductStatus, toggleProductMainStatus } from '../../redux/features/productSlice';
 import CustomButton from '../../components/ui/CustomButton';
 import AddProductForm from './Product/AddProductForm';
 import EditProductForm from './Product/EditProductForm';
@@ -87,6 +87,21 @@ const ProductManagement = () => {
     }
   };
 
+  const handleToggleProductStatus = async (productId) => {
+    try {
+      await dispatch(toggleProductMainStatus(productId));
+      toast({
+        title: "Product Status Updated Successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Status Update Failed",
+        description: error || "There is some error!",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -144,21 +159,41 @@ const ProductManagement = () => {
                   <th className="px-6 py-3">Product Name</th>
                   <th className="px-6 py-3">Category</th>
                   <th className="px-6 py-3">Brand</th>
+                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3">Actions</th>
                   <th className="px-6 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 {products?.map((product) => (
                   <React.Fragment key={`product-${product._id}`}>
-                    <tr 
-                      className="hover:bg-gray-50 cursor-pointer"
-                      onClick={() => toggleProductExpand(product._id)}
-                    >
+                    <tr className="hover:bg-gray-50">
                       <td className="px-6 py-4">{count++}</td>
-                      <td className="px-6 py-4">{product.name}</td>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => toggleProductExpand(product._id)}>{product.name}</td>
                       <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
                       <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
                       <td className="px-6 py-4">
+                        <span
+                          className={`inline-block rounded-full px-2 py-1 text-xs ${
+                            product.status === 'blocked'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}
+                        >
+                          {product.status === 'blocked' ? 'Blocked' : 'Active'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          className={`text-sm font-medium ${
+                            product.status === 'blocked' ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'
+                          }`}
+                          onClick={() => handleToggleProductStatus(product._id)}
+                        >
+                          {product.status === 'blocked' ? 'Activate' : 'Block'}
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 cursor-pointer" onClick={() => toggleProductExpand(product._id)}>
                         {expandedProducts[product._id] ? (
                           <ChevronUp className="h-5 w-5" />
                         ) : (

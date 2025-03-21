@@ -1,62 +1,64 @@
-
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Heart, ShoppingCart, Star } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
-import CustomButton from '../..//components/ui/CustomButton';
+import CustomButton from '../../components/ui/CustomButton';
 import ProductCard from '../../components/ui/ProductCard';
-
-// Mock product data
-const product = {
-  id: '1',
-  name: 'Vintage Baseball Cap',
-  price: 39.99,
-  discountPrice: 29.99,
-  description: 'A premium quality baseball cap crafted with durable materials for everyday comfort and style. Features adjustable strap for perfect fit.',
-  rating: 4.5,
-  reviews: 128,
-  colors: ['Black', 'Navy', 'Olive', 'Burgundy'],
-  images: [
-    'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1536&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1534215754734-18e55d13e346?q=80&w=1548&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1470&auto=format&fit=crop',
-  ],
-  brand: 'CapCraft',
-  sku: 'CC-VBC-001',
-  inStock: true,
-};
-
-// Mock similar products
-const similarProducts = [
-  {
-    id: '2',
-    name: 'Classic Snapback',
-    price: 45.99,
-    imageUrl: 'https://images.unsplash.com/photo-1534215754734-18e55d13e346?q=80&w=1548&auto=format&fit=crop',
-    rating: 4.2,
-  },
-  {
-    id: '3',
-    name: 'Premium Trucker Cap',
-    price: 49.99,
-    discountPrice: 39.99,
-    imageUrl: 'https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1470&auto=format&fit=crop',
-    rating: 4.8,
-  },
-  {
-    id: '4',
-    name: 'Urban Fitted Cap',
-    price: 55.99,
-    imageUrl: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=1587&auto=format&fit=crop',
-    rating: 4.0,
-  },
-];
+import { getProductById, clearSelectedProduct } from '../../redux/features/productSlice';
+import { useToast } from '../../hooks/use-toast';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+  const { selectedProduct: product, loading, error } = useSelector((state) => state.product);
+
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [mainImage, setMainImage] = useState(product.images[0]);
+  const [mainImage, setMainImage] = useState('');
+
+  useEffect(() => {
+    dispatch(getProductById(id))
+      .unwrap()
+      .catch((error) => {
+        toast({
+          title: 'Error',
+          description: error,
+          variant: 'destructive',
+        });
+        navigate('/products');
+      });
+
+    return () => {
+      dispatch(clearSelectedProduct());
+    };
+  }, [dispatch, id, navigate, toast]);
+
+  useEffect(() => {
+    if (product) {
+      // Set the first variant as selected by default
+      setSelectedVariant(product.variants[0]);
+      setMainImage(product.variants[0].mainImage);
+    }
+  }, [product]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container flex items-center justify-center px-4 py-8 md:px-6 md:py-12">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!product) {
+    return null;
+  }
+
+  const allImages = selectedVariant ? [selectedVariant.mainImage, ...selectedVariant.subImages] : [];
 
   return (
     <Layout>
@@ -72,7 +74,7 @@ const ProductDetail = () => {
               />
             </div>
             <div className="flex flex-wrap gap-3">
-              {product.images.map((image, index) => (
+              {allImages.map((image, index) => (
                 <button
                   key={index}
                   onClick={() => setMainImage(image)}
@@ -93,29 +95,29 @@ const ProductDetail = () => {
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="text-sm font-medium">{product.rating}</span>
-                  <span className="text-sm text-gray-500">({product.reviews} reviews)</span>
+                  <span className="text-sm font-medium">4.5</span>
+                  <span className="text-sm text-gray-500">(128 reviews)</span>
                 </div>
-                <span className="text-sm text-gray-500">Brand: {product.brand}</span>
+                <span className="text-sm text-gray-500">Brand: {product.brand?.name}</span>
               </div>
             </div>
             
             <div className="space-y-1">
-              {product.discountPrice ? (
+              {selectedVariant?.discountPrice ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">${product.discountPrice}</span>
-                    <span className="text-lg text-gray-500 line-through">${product.price}</span>
+                    <span className="text-2xl font-bold">${selectedVariant.discountPrice}</span>
+                    <span className="text-lg text-gray-500 line-through">${selectedVariant.price}</span>
                     <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
-                      {Math.round(((product.price - product.discountPrice) / product.price) * 100)}% OFF
+                      {Math.round(((selectedVariant.price - selectedVariant.discountPrice) / selectedVariant.price) * 100)}% OFF
                     </span>
                   </div>
                 </>
               ) : (
-                <span className="text-2xl font-bold">${product.price}</span>
+                <span className="text-2xl font-bold">${selectedVariant?.price}</span>
               )}
               <p className="text-sm text-green-600">
-                {product.inStock ? 'In Stock' : 'Out of Stock'}
+                {selectedVariant?.stock > 0 ? 'In Stock' : 'Out of Stock'}
               </p>
             </div>
             
@@ -124,17 +126,20 @@ const ProductDetail = () => {
             <div>
               <label className="mb-2 block font-medium">Color</label>
               <div className="flex flex-wrap gap-2">
-                {product.colors.map((color) => (
+                {product.variants.map((variant) => (
                   <button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
+                    key={variant._id}
+                    onClick={() => {
+                      setSelectedVariant(variant);
+                      setMainImage(variant.mainImage);
+                    }}
                     className={`rounded-md border px-3 py-1.5 text-sm ${
-                      selectedColor === color
+                      selectedVariant?._id === variant._id
                         ? 'border-primary bg-primary/5 font-medium text-primary'
                         : 'border-gray-300 text-gray-700 hover:border-gray-400'
                     }`}
                   >
-                    {color}
+                    {variant.color}
                   </button>
                 ))}
               </div>
@@ -166,7 +171,10 @@ const ProductDetail = () => {
             </div>
             
             <div className="flex flex-wrap gap-4">
-              <CustomButton icon={<ShoppingCart className="h-4 w-4" />}>
+              <CustomButton 
+                icon={<ShoppingCart className="h-4 w-4" />}
+                disabled={!selectedVariant || selectedVariant.stock === 0}
+              >
                 Add to Cart
               </CustomButton>
               <CustomButton variant="outline" icon={<Heart className="h-4 w-4" />}>
@@ -175,18 +183,9 @@ const ProductDetail = () => {
             </div>
             
             <div className="border-t border-gray-200 pt-4 text-sm text-gray-600">
-              <p>SKU: {product.sku}</p>
+              <p>Category: {product.category?.name}</p>
+              <p>Brand: {product.brand?.name}</p>
             </div>
-          </div>
-        </div>
-        
-        {/* Similar Products */}
-        <div className="border-t border-gray-200 pt-10">
-          <h2 className="mb-6 text-2xl font-bold">You May Also Like</h2>
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {similarProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
-            ))}
           </div>
         </div>
       </div>

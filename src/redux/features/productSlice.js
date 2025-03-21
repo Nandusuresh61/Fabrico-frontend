@@ -4,6 +4,8 @@ import {
   editProductApi,
   deleteProductApi,
   getAllProductsApi,
+  toggleProductMainStatusApi,
+  getProductByIdApi,
 } from '../../api/productApi';
 
 // Get All Products with search and pagination
@@ -58,10 +60,37 @@ export const addProduct = createAsyncThunk(
   }
 );
 
+// Toggle Product Main Status
+export const toggleProductMainStatus = createAsyncThunk(
+  'product/toggleProductMainStatus',
+  async (productId, { rejectWithValue }) => {
+    try {
+      const response = await toggleProductMainStatusApi(productId);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update product status');
+    }
+  }
+);
+
+// Get Product by ID
+export const getProductById = createAsyncThunk(
+  'product/getProductById',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await getProductByIdApi(id);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to load product');
+    }
+  }
+);
+
 const productSlice = createSlice({
   name: 'product',
   initialState: {
     products: [],
+    selectedProduct: null,
     loading: false,
     error: null,
     totalProducts: 0,
@@ -71,6 +100,9 @@ const productSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    clearSelectedProduct: (state) => {
+      state.selectedProduct = null;
     }
   },
   extraReducers: (builder) => {
@@ -159,9 +191,40 @@ const productSlice = createSlice({
       .addCase(addProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      
+      // Toggle Product Main Status
+      .addCase(toggleProductMainStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(toggleProductMainStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedProduct = action.payload.product;
+        state.products = state.products.map((product) =>
+          product._id === updatedProduct._id ? updatedProduct : product
+        );
+      })
+      .addCase(toggleProductMainStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // Get Product by ID
+      .addCase(getProductById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getProductById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.selectedProduct = action.payload;
+      })
+      .addCase(getProductById.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearError } = productSlice.actions;
+export const { clearError, clearSelectedProduct } = productSlice.actions;
 export default productSlice.reducer;
