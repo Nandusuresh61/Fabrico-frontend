@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, ShoppingCart, User, Menu, X, Heart } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -9,13 +9,14 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  // Navigation options
+  // Navigation options with proper category values
   const navOptions = [
     { name: 'Shop', path: '/products' },
-    { name: 'Men', path: '/products?category=men' },
-    { name: 'Women', path: '/products?category=women' },
-    { name: 'Kids', path: '/products?category=kids' },
+    { name: 'Men', category: 'men' },
+    { name: 'Women', category: 'women' },
+    { name: 'Kids', category: 'kids' },
   ];
 
   useEffect(() => {
@@ -36,7 +37,34 @@ const Header = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/products?search=${encodeURIComponent(searchQuery)}`);
+      // Preserve existing params and add/update search
+      const currentParams = Object.fromEntries(searchParams.entries());
+      navigate({
+        pathname: '/products',
+        search: new URLSearchParams({
+          ...currentParams,
+          search: searchQuery.trim(),
+          page: '1' // Reset to first page on new search
+        }).toString()
+      });
+    }
+  };
+
+  const handleNavigation = (option) => {
+    if (option.path) {
+      // For "Shop", just go to products page with default params
+      navigate(option.path);
+    } else if (option.category) {
+      // For category navigation, preserve other params except category
+      const currentParams = Object.fromEntries(searchParams.entries());
+      navigate({
+        pathname: '/products',
+        search: new URLSearchParams({
+          ...currentParams,
+          category: option.category,
+          page: '1' // Reset to first page on category change
+        }).toString()
+      });
     }
   };
 
@@ -60,13 +88,18 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav className="hidden items-center space-x-8 md:flex">
           {navOptions.map((option) => (
-            <Link
+            <button
               key={option.name}
-              to={option.path}
-              className="text-base font-medium text-gray-700 transition-colors hover:text-primary"
+              onClick={() => handleNavigation(option)}
+              className={`text-base font-medium text-gray-700 transition-colors hover:text-primary ${
+                (option.category && searchParams.get('category') === option.category) ||
+                (!option.category && location.pathname === option.path)
+                  ? 'text-primary'
+                  : ''
+              }`}
             >
               {option.name}
-            </Link>
+            </button>
           ))}
         </nav>
 
@@ -163,13 +196,18 @@ const Header = () => {
             {/* Mobile Navigation Links */}
             <nav className="flex flex-col space-y-6">
               {navOptions.map((option) => (
-                <Link
+                <button
                   key={option.name}
-                  to={option.path}
-                  className="flex items-center py-2 text-lg font-medium text-gray-800"
+                  onClick={() => handleNavigation(option)}
+                  className={`flex items-center py-2 text-lg font-medium ${
+                    (option.category && searchParams.get('category') === option.category) ||
+                    (!option.category && location.pathname === option.path)
+                      ? 'text-primary'
+                      : 'text-gray-800'
+                  }`}
                 >
                   {option.name}
-                </Link>
+                </button>
               ))}
               
               <div className="my-4 h-px bg-gray-200" />
