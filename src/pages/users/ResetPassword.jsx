@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, Check, X } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import CustomButton from '../..//components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
+import { useDispatch } from 'react-redux';
+import { resetPassword } from '../../redux/features/userSlice';
 
 const ResetPassword = () => {
   const [password, setPassword] = useState('');
@@ -13,7 +15,9 @@ const ResetPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const dispatch = useDispatch();
 
   const passwordRequirements = [
     { id: 'length', label: 'At least 8 characters', test: (p) => p.length >= 8 },
@@ -55,8 +59,10 @@ const ResetPassword = () => {
     setIsLoading(true);
     
     try {
-      // Mock successful password reset
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await dispatch(resetPassword({ 
+        email: location.state?.email,
+        password 
+      })).unwrap();
       
       toast({
         title: "Password reset successful",
@@ -68,7 +74,7 @@ const ResetPassword = () => {
       toast({
         variant: "destructive",
         title: "Failed to reset password",
-        description: "Please try again later",
+        description: error || "Please try again later",
       });
     } finally {
       setIsLoading(false);

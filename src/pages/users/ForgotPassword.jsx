@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import CustomButton from '../../components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
+import { useDispatch } from 'react-redux';
+import { sendForgotPasswordEmail } from '../../redux/features/userSlice';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -11,6 +13,7 @@ const ForgotPassword = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const dispatch = useDispatch();
 
   const validateForm = () => {
     if (!email) {
@@ -34,22 +37,20 @@ const ForgotPassword = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
     try {
-      // Mock successful submission
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await dispatch(sendForgotPasswordEmail({ email })).unwrap();
       
       toast({
         title: "Reset link sent",
         description: `Instructions to reset your password have been sent to ${email}`,
       });
       
-      navigate('/otp-verification', { state: { email } });
+      navigate('/forgot-otp', { state: { email } });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Failed to send reset link",
-        description: "Please try again later",
+        description: error || "Please try again later",
       });
     } finally {
       setIsLoading(false);

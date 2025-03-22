@@ -10,6 +10,8 @@ import ProtectedRoute from './ProtectedRoute'
 import UserProfile from '../pages/users/UserProfile'
 import OTPVerification from '../pages/users/OTPVerification'
 import ForgotPassword from '../pages/users/ForgotPassword'
+import ForgotOTP from '../pages/users/ForgotOTP'
+import ResetPassword from '../pages/users/ResetPassword'
 
 
 function UserRoutes() {
@@ -21,6 +23,8 @@ function UserRoutes() {
         <Route path='/signup' element={<UserSignup />} />
         <Route path='/otp-verification' element={<OTPVerification/>}/>
         <Route path='/forgot-password' element={<ForgotPassword/>}/>
+        <Route path='/forgot-otp' element={<ForgotOTP/>}/>
+        <Route path='/reset-password' element={<ResetPassword/>}/>
         
         <Route path='/products/:id' element={<ProductDetail />} />
         <Route path='/products' element={<Products />} />
