@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, ShoppingCart, Star } from 'lucide-react';
+import { Heart, ShoppingCart, Star, ChevronRight } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import CustomButton from '../../components/ui/CustomButton';
 import ProductCard from '../../components/ui/ProductCard';
@@ -13,11 +13,13 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { selectedProduct: product, loading, error } = useSelector((state) => state.product);
+  const { selectedProduct: product, loading } = useSelector((state) => state.product);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState('');
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     dispatch(getProductById(id))
@@ -38,11 +40,21 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (product) {
-      // Set the first variant as selected by default
       setSelectedVariant(product.variants[0]);
       setMainImage(product.variants[0].mainImage);
     }
   }, [product]);
+
+  // Handle image zoom
+  const handleMouseMove = (e) => {
+    if (!isZoomed) return;
+    
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    
+    setMousePosition({ x, y });
+  };
 
   if (loading) {
     return (
@@ -54,23 +66,40 @@ const ProductDetail = () => {
     );
   }
 
-  if (!product) {
-    return null;
-  }
+  if (!product) return null;
 
   const allImages = selectedVariant ? [selectedVariant.mainImage, ...selectedVariant.subImages] : [];
 
   return (
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
+        {/* Breadcrumbs */}
+        <div className="mb-6 flex items-center gap-2 text-sm text-gray-600">
+          <Link to="/" className="hover:text-primary">Home</Link>
+          <ChevronRight className="h-4 w-4" />
+          <Link to="/products" className="hover:text-primary">Products</Link>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-gray-900">{product.name}</span>
+        </div>
+
         <div className="mb-12 grid gap-12 md:grid-cols-2">
           {/* Product Images */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-xl">
+            <div 
+              className="relative aspect-square overflow-hidden rounded-xl"
+              onMouseEnter={() => setIsZoomed(true)}
+              onMouseLeave={() => setIsZoomed(false)}
+              onMouseMove={handleMouseMove}
+            >
               <img 
                 src={mainImage} 
                 alt={product.name} 
-                className="h-full w-full object-cover"
+                className={`h-full w-full object-cover transition-transform duration-200 ${
+                  isZoomed ? 'scale-150' : ''
+                }`}
+                style={isZoomed ? {
+                  transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`
+                } : undefined}
               />
             </div>
             <div className="flex flex-wrap gap-3">
@@ -94,7 +123,15 @@ const ProductDetail = () => {
               <h1 className="mb-2 text-3xl font-bold">{product.name}</h1>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star 
+                      key={star}
+                      className={`h-4 w-4 ${star <= 4.5 
+                        ? 'fill-yellow-400 text-yellow-400' 
+                        : 'fill-gray-200 text-gray-200'
+                      }`} 
+                    />
+                  ))}
                   <span className="text-sm font-medium">4.5</span>
                   <span className="text-sm text-gray-500">(128 reviews)</span>
                 </div>
@@ -186,6 +223,36 @@ const ProductDetail = () => {
               <p>Category: {product.category?.name}</p>
               <p>Brand: {product.brand?.name}</p>
             </div>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16">
+          <h2 className="mb-6 text-2xl font-bold">Customer Reviews</h2>
+          <div className="space-y-6">
+            {/* Dummy reviews */}
+            {[1, 2, 3].map((review) => (
+              <div key={review} className="border-b border-gray-200 pb-6">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star 
+                        key={star}
+                        className={`h-4 w-4 ${star <= 4 
+                          ? 'fill-yellow-400 text-yellow-400' 
+                          : 'fill-gray-200 text-gray-200'
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm text-gray-600">2 months ago</span>
+                </div>
+                <h3 className="mt-2 font-medium">John Doe</h3>
+                <p className="mt-2 text-gray-600">
+                  Great product! The quality is excellent and it arrived quickly.
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

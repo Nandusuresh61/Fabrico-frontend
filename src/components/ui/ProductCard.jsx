@@ -12,7 +12,8 @@ const ProductCard = ({
   rating = 0,
   className,
   isNew = false,
-  isFeatured = false
+  isFeatured = false,
+  link
 }) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
@@ -27,7 +28,7 @@ const ProductCard = ({
 
   return (
     <Link 
-      to={`/product/${id}`} 
+      to={link} 
       className={cn(
         "group relative flex flex-col overflow-hidden rounded-lg bg-white shadow-sm transition-all duration-300 hover:shadow-md",
         className

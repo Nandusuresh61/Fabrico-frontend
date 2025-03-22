@@ -255,6 +255,7 @@ const Products = () => {
                       .filter(v => !v.isBlocked)
                       .map(v => v.price))}
                     imageUrl={product.variants.find(v => !v.isBlocked)?.mainImage}
+                    link={`/products/${product._id}`}
                   />
                 ))
               )}
