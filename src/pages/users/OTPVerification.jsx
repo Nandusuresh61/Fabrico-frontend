@@ -97,11 +97,14 @@ const OTPVerification = () => {
     
     // Handle paste event with multiple characters
     if (value.length > 1) {
-      const digits = value.split('').filter(char => /\d/.test(char)).slice(0, 6);
+      const digits = value.split('')
+        .filter(char => /\d/.test(char))
+        .slice(0, 6 - index); // Only take remaining slots from current index
+      
       const newOtpArray = [...otp];
       
       digits.forEach((digit, idx) => {
-        if (idx < 6) {
+        if (index + idx < 6) { // Ensure we don't exceed 6 digits
           newOtpArray[index + idx] = digit;
         }
       });
@@ -117,12 +120,14 @@ const OTPVerification = () => {
     }
     
     // Handle single character input
-    newOtp[index] = value;
-    setOtp(newOtp);
+    if (index < 6) { // Only allow input if within 6 digits
+      newOtp[index] = value;
+      setOtp(newOtp);
 
-    // Auto-focus next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
+      // Auto-focus next input
+      if (value && index < 5) {
+        inputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
@@ -181,7 +186,7 @@ const OTPVerification = () => {
                   ref={(ref) => (inputRefs.current[index] = ref)}
                   type="text"
                   inputMode="numeric"
-                  maxLength={6}
+                  maxLength={1} // Change this to 1 to prevent multiple digits in one input
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
