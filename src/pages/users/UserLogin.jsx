@@ -64,11 +64,20 @@ const UserLogin = () => {
 
       navigate('/'); // Redirect to homepage on success
     } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: err || "Invalid email or password",
-      });
+      // Check if the error indicates a blocked account
+      if (err.includes('blocked')) {
+        toast({
+          variant: "destructive",
+          title: "Account Blocked",
+          description: "Your account has been blocked. Please contact support.",
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Login failed",
+          description: err || "Invalid email or password",
+        });
+      }
     }
   };
 
