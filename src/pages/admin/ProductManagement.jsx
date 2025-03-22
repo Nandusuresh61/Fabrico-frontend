@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { Search, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
-import { getAllProducts, editProduct, toggleProductStatus, toggleProductMainStatus } from '../../redux/features/productSlice';
+import { getAllProducts, editProduct, toggleProductStatus, toggleProductMainStatus, editProductName } from '../../redux/features/productSlice';
 import CustomButton from '../../components/ui/CustomButton';
 import AddProductForm from './Product/AddProductForm';
 import EditProductForm from './Product/EditProductForm';
+import EditProductNameForm from './Product/EditProductNameForm';
 import { useToast } from "../../hooks/use-toast";
 import React from 'react';
 
@@ -28,6 +29,8 @@ const ProductManagement = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [expandedProducts, setExpandedProducts] = useState({});
   const [loadingProducts, setLoadingProducts] = useState({});
+  const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
+  const [selectedProductForName, setSelectedProductForName] = useState(null);
 
   const updateUrlAndFetch = (newParams) => {
     const currentParams = Object.fromEntries(searchParams.entries());
@@ -150,6 +153,30 @@ const ProductManagement = () => {
     }
   };
 
+  const handleEditProductName = (product) => {
+    setSelectedProductForName(product);
+    setIsEditNameModalOpen(true);
+  };
+
+  const handleEditProductNameSubmit = async (data) => {
+    try {
+      await dispatch(editProductName({ 
+        productId: selectedProductForName._id, 
+        data 
+      })).unwrap();
+      setIsEditNameModalOpen(false);
+      toast({
+        title: "Product Name Updated Successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error || "There was an error updating the product name",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -245,14 +272,22 @@ const ProductManagement = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          className={`text-sm font-medium ${
-                            product.status === 'blocked' ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'
-                          }`}
-                          onClick={() => handleToggleProductStatus(product._id)}
-                        >
-                          {product.status === 'blocked' ? 'Activate' : 'Block'}
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                            onClick={() => handleEditProductName(product)}
+                          >
+                            Edit Name
+                          </button>
+                          <button
+                            className={`text-sm font-medium ${
+                              product.status === 'blocked' ? 'text-green-600 hover:text-green-800' : 'text-red-600 hover:text-red-800'
+                            }`}
+                            onClick={() => handleToggleProductStatus(product._id)}
+                          >
+                            {product.status === 'blocked' ? 'Activate' : 'Block'}
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4 cursor-pointer" onClick={() => toggleProductExpand(product._id)}>
                         {expandedProducts[product._id] ? (
@@ -380,6 +415,13 @@ const ProductManagement = () => {
           product={selectedProduct}
           onSubmit={handleEditVariantSubmit}
           onClose={() => setIsEditModalOpen(false)}
+        />
+      )}
+      {isEditNameModalOpen && (
+        <EditProductNameForm
+          product={selectedProductForName}
+          onSubmit={handleEditProductNameSubmit}
+          onClose={() => setIsEditNameModalOpen(false)}
         />
       )}
     </div>

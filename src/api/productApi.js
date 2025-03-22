@@ -17,3 +17,6 @@ export const getAllProductsForUsersApi = (params) =>
       limit: Number(params.limit)
     }
   });
+
+export const editProductNameApi = (productId, data) => 
+  API.put(`/products/${productId}/edit-name`, data);

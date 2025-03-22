@@ -7,6 +7,7 @@ import {
   toggleProductMainStatusApi,
   getProductByIdApi,
   getAllProductsForUsersApi,
+  editProductNameApi,
 } from '../../api/productApi';
 
 // Get All Products with search and pagination
@@ -96,6 +97,19 @@ export const getAllProductsForUsers = createAsyncThunk(
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load products');
+    }
+  }
+);
+
+// Edit Product Name
+export const editProductName = createAsyncThunk(
+  'product/editProductName',
+  async ({ productId, data }, { rejectWithValue }) => {
+    try {
+      const response = await editProductNameApi(productId, data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update product name');
     }
   }
 );
@@ -251,6 +265,23 @@ const productSlice = createSlice({
         state.totalPages = action.payload.totalPages;
       })
       .addCase(getAllProductsForUsers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      
+      // Edit Product Name
+      .addCase(editProductName.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(editProductName.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedProduct = action.payload.product;
+        state.products = state.products.map((product) =>
+          product._id === updatedProduct._id ? updatedProduct : product
+        );
+      })
+      .addCase(editProductName.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
