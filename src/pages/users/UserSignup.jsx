@@ -18,7 +18,6 @@ const { loading, error} = useSelector((state)=>state.user);
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -76,34 +75,28 @@ const { loading, error} = useSelector((state)=>state.user);
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if(!validateForm())return;
+    if (!validateForm()) return;
+    
+    if (loading) return;
 
     try {
       const resultAction = await dispatch(registerUser({
         username: formData.name,
         email: formData.email,
         password: formData.password,
-      }));
+      })).unwrap();
 
-      if(registerUser.fulfilled.match(resultAction)){
-        toast({
-          title: "Registeration successful!",
-          description: "Please verify user email!",
-        });
-        navigate('/otp-verification',{state: {email: formData.email}});
-      }else{
-        toast({
-          variant : "destructive ",
-          title: "Registration Failed",
-          description: resultAction.payload || "Please try again",
-        });
-      }
-
+      toast({
+        title: "Registration successful!",
+        description: "Please verify your email!",
+      });
+      navigate('/otp-verification', { state: { email: formData.email }});
+      
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Registration failed",
-        description: "Please try again later",
+        description: error?.message || "Please try again later",
       });
     }
   };
@@ -246,7 +239,12 @@ const { loading, error} = useSelector((state)=>state.user);
               </label>
             </div>
             
-            <CustomButton type="submit" fullWidth isLoading={isLoading}>
+            <CustomButton 
+              type="submit" 
+              fullWidth 
+              isLoading={loading}
+              disabled={loading}
+            >
               Create Account
             </CustomButton>
           </form>
