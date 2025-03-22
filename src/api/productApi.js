@@ -7,5 +7,13 @@ export const toggleProductMainStatusApi = (productId) => API.put(`/products/${pr
 export const getAllProductsApi = (params) => API.get('/products', { params });
 export const getProductByIdApi = (id) => API.get(`/products/${id}`);
 
-export const getAllProductsForUsersApi = ({ search, page, limit }) =>
-  API.get(`/products?search=${search || ''}&page=${page || 1}&limit=${limit || 5}`);
+export const getAllProductsForUsersApi = (params) => 
+  API.get('/products/users', { 
+    params: {
+      ...params,
+      minPrice: Number(params.minPrice),
+      maxPrice: Number(params.maxPrice),
+      page: Number(params.page),
+      limit: Number(params.limit)
+    }
+  });

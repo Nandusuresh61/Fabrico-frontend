@@ -90,9 +90,9 @@ export const getProductById = createAsyncThunk(
 // Get All Products for Users
 export const getAllProductsForUsers = createAsyncThunk(
   'product/getAllProductsForUsers',
-  async ({ search = '', page = 1, limit = 5 }, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const response = await getAllProductsForUsersApi({ search, page, limit });
+      const response = await getAllProductsForUsersApi(params);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load products');

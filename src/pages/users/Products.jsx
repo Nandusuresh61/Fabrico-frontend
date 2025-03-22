@@ -3,119 +3,137 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '../../components/layout/layout';
 import ProductCard from '../../components/ui/ProductCard';
-import { getAllProductsForUsers } from '../../redux/features/productSlice'; // Update import
+import { getAllProductsForUsers } from '../../redux/features/productSlice';
 import { getAllCategories } from '../../redux/features/categorySlice';
 import { fetchBrands } from '../../redux/features/brandSlice';
 
 const Products = () => {
   const dispatch = useDispatch();
-  const { products, loading } = useSelector((state) => state.product);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { products, loading, totalPages, currentPage } = useSelector((state) => state.product);
   const { categories } = useSelector((state) => state.category);
   const { brands } = useSelector((state) => state.brands);
-  const [searchParams] = useSearchParams();
 
-  // Get category from URL query params
-  const categoryFromUrl = searchParams.get('category');
-  const searchFromUrl = searchParams.get('search');
+  // Get all params from URL
+  const categoryFromUrl = searchParams.get('category') || 'all';
+  const searchFromUrl = searchParams.get('search') || '';
+  const pageFromUrl = parseInt(searchParams.get('page')) || 1;
+  const sortFromUrl = searchParams.get('sort') || 'featured';
+  const brandFromUrl = searchParams.get('brand') || 'all';
+  const minPriceFromUrl = parseInt(searchParams.get('minPrice')) || 0;
+  const maxPriceFromUrl = parseInt(searchParams.get('maxPrice')) || 1000;
 
-  const [activeCategory, setActiveCategory] = useState(categoryFromUrl || 'all');
-  const [activeBrand, setActiveBrand] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 1000]);
-  const [sortBy, setSortBy] = useState('featured');
+  // Local state for filters
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl);
+  const [activeBrand, setActiveBrand] = useState(brandFromUrl);
+  const [priceRange, setPriceRange] = useState([minPriceFromUrl, maxPriceFromUrl]);
+  const [sortBy, setSortBy] = useState(sortFromUrl);
+  const [searchTerm, setSearchTerm] = useState(searchFromUrl);
 
+  // Update URL and fetch products
+  const updateFilters = (newFilters) => {
+    const currentFilters = {
+      category: activeCategory,
+      brand: activeBrand,
+      minPrice: priceRange[0],
+      maxPrice: priceRange[1],
+      sort: sortBy,
+      search: searchTerm,
+      page: pageFromUrl,
+      ...newFilters
+    };
+
+    // Remove default values from URL
+    const cleanFilters = {};
+    Object.entries(currentFilters).forEach(([key, value]) => {
+      if (
+        value !== 'all' && 
+        value !== '' && 
+        value !== 0 && 
+        !(key === 'maxPrice' && value === 1000) &&
+        !(key === 'page' && value === 1) &&
+        !(key === 'sort' && value === 'featured')
+      ) {
+        cleanFilters[key] = value;
+      }
+    });
+
+    setSearchParams(cleanFilters);
+  };
+
+  // Apply filters
+  const handleApplyFilters = () => {
+    updateFilters({ page: 1 }); // Reset to first page when applying filters
+  };
+
+  // Clear filters
+  const handleClearFilters = () => {
+    setActiveCategory('all');
+    setActiveBrand('all');
+    setPriceRange([0, 1000]);
+    setSortBy('featured');
+    setSearchTerm('');
+    setSearchParams({});
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    updateFilters({ search: searchTerm, page: 1 });
+  };
+
+  // Clear search
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    updateFilters({ search: '', page: 1 });
+  };
+
+  // Fetch products when URL params change
   useEffect(() => {
-    // Update active category when URL changes
-    setActiveCategory(categoryFromUrl || 'all');
-    
-    // Replace getAllProducts with getAllProductsForUsers
-    dispatch(getAllProductsForUsers({ 
-      search: searchFromUrl || '', 
-      category: categoryFromUrl || '',
-      page: 1,
+    dispatch(getAllProductsForUsers({
+      category: categoryFromUrl,
+      brand: brandFromUrl,
+      minPrice: minPriceFromUrl,
+      maxPrice: maxPriceFromUrl,
+      sort: sortFromUrl,
+      search: searchFromUrl,
+      page: pageFromUrl,
       limit: 12
     }));
+  }, [dispatch, searchParams]);
+
+  // Fetch categories and brands
+  useEffect(() => {
     dispatch(getAllCategories());
     dispatch(fetchBrands());
-  }, [dispatch, categoryFromUrl, searchFromUrl]);
-
-  // Filter products based on selected criteria
-  const filteredProducts = products.filter((product) => {
-    // Filter out blocked products
-    if (product.status === 'blocked') {
-      return false;
-    }
-
-    // Filter out products with blocked categories
-    if (product.category?.status === 'Deactivated') {
-      return false;
-    }
-
-    // Filter out products with blocked brands
-    if (product.brand?.status === 'Deactivated') {
-      return false;
-    }
-
-    // Filter by category
-    if (activeCategory !== 'all') {
-      // Check if the product's category name matches the active category
-      const productCategory = product.category?.name?.toLowerCase();
-      if (productCategory !== activeCategory.toLowerCase()) {
-        return false;
-      }
-    }
-
-    // Filter by brand
-    if (activeBrand !== 'all' && product.brand?._id !== activeBrand) {
-      return false;
-    }
-
-    // Check if product has any non-blocked variants
-    const hasActiveVariants = product.variants.some(variant => !variant.isBlocked);
-    if (!hasActiveVariants) {
-      return false;
-    }
-
-    // Filter by price range - only consider non-blocked variants
-    const activeVariants = product.variants.filter(variant => !variant.isBlocked);
-    if (activeVariants.length > 0) {
-      const lowestPrice = Math.min(...activeVariants.map(v => v.price));
-      if (lowestPrice < priceRange[0] || lowestPrice > priceRange[1]) {
-        return false;
-      }
-    } else {
-      return false;
-    }
-
-    return true;
-  });
-
-  // Sort products - only consider non-blocked variants for pricing
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    const activeVariantsA = a.variants.filter(v => !v.isBlocked);
-    const activeVariantsB = b.variants.filter(v => !v.isBlocked);
-    
-    const priceA = activeVariantsA.length > 0 ? Math.min(...activeVariantsA.map(v => v.price)) : 0;
-    const priceB = activeVariantsB.length > 0 ? Math.min(...activeVariantsB.map(v => v.price)) : 0;
-
-    switch (sortBy) {
-      case 'price-low':
-        return priceA - priceB;
-      case 'price-high':
-        return priceB - priceA;
-      case 'newest':
-        return new Date(b.createdAt) - new Date(a.createdAt);
-      default:
-        return 0;
-    }
-  });
+  }, [dispatch]);
 
   return (
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
-        <h1 className="mb-8 text-3xl font-bold">
-          {categoryFromUrl ? `${categoryFromUrl.charAt(0).toUpperCase() + categoryFromUrl.slice(1)} Products` : 'Shop Products'}
-        </h1>
-        
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="mb-6 flex gap-2">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search products..."
+            className="flex-1 rounded-lg border p-2"
+          />
+          <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-white">
+            Search
+          </button>
+          {searchTerm && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="rounded-lg border px-4 py-2"
+            >
+              Clear
+            </button>
+          )}
+        </form>
+
         <div className="grid gap-8 md:grid-cols-4">
           {/* Filters Sidebar */}
           <div className="space-y-6 md:col-span-1">
@@ -187,65 +205,79 @@ const Products = () => {
                 className="mt-2 w-full cursor-pointer"
               />
             </div>
+
+            {/* Add Apply/Clear buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={handleApplyFilters}
+                className="w-full rounded-lg bg-primary px-4 py-2 text-white"
+              >
+                Apply Filters
+              </button>
+              <button
+                onClick={handleClearFilters}
+                className="w-full rounded-lg border px-4 py-2"
+              >
+                Clear Filters
+              </button>
+            </div>
           </div>
           
           {/* Products Grid */}
           <div className="md:col-span-3">
-            {/* Sorting */}
-            <div className="mb-6 flex items-center justify-between">
-              <div className="text-sm text-gray-600">{sortedProducts.length} products</div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="rounded-md border border-gray-300 px-3 py-1 text-sm"
-              >
-                <option value="featured">Featured</option>
-                <option value="newest">Newest</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
+            {/* Sorting dropdown - update options */}
+            <select
+              value={sortBy}
+              onChange={(e) => {
+                setSortBy(e.target.value);
+                updateFilters({ sort: e.target.value });
+              }}
+              className="mb-4 rounded-lg border p-2"
+            >
+              <option value="featured">Featured</option>
+              <option value="price-low">Price: Low to High</option>
+              <option value="price-high">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+            </select>
             
-            {/* Products Grid */}
+            {/* Products grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading ? (
                 <div>Loading...</div>
               ) : (
-                sortedProducts.map((product) => {
-                  // Get the first non-blocked variant
-                  const activeVariants = product.variants.filter(v => !v.isBlocked);
-                  const firstActiveVariant = activeVariants[0];
-                  if (!firstActiveVariant) return null;
-
-                  return (
-                    <ProductCard
-                      key={product._id}
-                      id={product._id}
-                      name={product.name}
-                      price={firstActiveVariant.price}
-                      discountPrice={firstActiveVariant.discountPrice}
-                      imageUrl={firstActiveVariant.mainImage}
-                      rating={4.5}
-                    />
-                  );
-                })
+                products.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    id={product._id}
+                    name={product.name}
+                    price={Math.min(...product.variants
+                      .filter(v => !v.isBlocked)
+                      .map(v => v.price))}
+                    imageUrl={product.variants.find(v => !v.isBlocked)?.mainImage}
+                  />
+                ))
               )}
             </div>
-            
-            {/* Pagination - You can implement this later based on your backend pagination */}
-            <div className="mt-8 flex items-center justify-center">
-              <div className="flex items-center space-x-1">
-                <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-sm">
-                  &lt;
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm text-white">
-                  1
-                </button>
-                <button className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-sm">
-                  &gt;
-                </button>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => updateFilters({ page })}
+                    className={`h-8 w-8 rounded-full ${
+                      page === currentPage
+                        ? 'bg-primary text-white'
+                        : 'border bg-white'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
