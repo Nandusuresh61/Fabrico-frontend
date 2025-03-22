@@ -10,6 +10,7 @@ import { useToast } from "../../hooks/use-toast";
 import React from 'react';
 
 const ProductManagement = () => {
+  let count = 1;
   const dispatch = useDispatch();
   const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -228,7 +229,7 @@ const ProductManagement = () => {
                 {products?.map((product) => (
                   <React.Fragment key={`product-${product._id}`}>
                     <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4">{product._id}</td>
+                      <td className="px-6 py-4">{count++}</td>
                       <td className="px-6 py-4 cursor-pointer" onClick={() => toggleProductExpand(product._id)}>{product.name}</td>
                       <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
                       <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
