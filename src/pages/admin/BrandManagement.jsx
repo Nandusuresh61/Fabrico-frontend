@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Edit, Trash2, Plus } from 'lucide-react';
+import { Edit, Trash2, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import CustomButton from '../../components/ui/CustomButton';
 import { 
     fetchBrands, 
@@ -12,16 +13,67 @@ import {
 
 const BrandManagement = () => {
   const dispatch = useDispatch();
-  const { brands, loading, error } = useSelector((state) => state.brands);
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { brands, loading, error, page, totalPages, total } = useSelector((state) => state.brands);
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [newBrandName, setNewBrandName] = useState('');
 
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '');
+  const [sortField, setSortField] = useState(searchParams.get('sortField') || 'createdAt');
+  const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
+
+  const [loadingBrands, setLoadingBrands] = useState({});
+
+  const updateUrlAndFetch = (newParams) => {
+    const currentParams = Object.fromEntries(searchParams.entries());
+    const updatedParams = { ...currentParams, ...newParams };
+    
+    // Remove empty params
+    Object.keys(updatedParams).forEach(key => 
+      !updatedParams[key] && delete updatedParams[key]
+    );
+
+    setSearchParams(updatedParams);
+    dispatch(fetchBrands(updatedParams));
+  };
+
   useEffect(() => {
-    dispatch(fetchBrands());
-  }, [dispatch]);
+    const params = {
+      page: searchParams.get('page') || 1,
+      limit: 10,
+      search: searchParams.get('search') || '',
+      status: searchParams.get('status') || '',
+      sortField: searchParams.get('sortField') || 'createdAt',
+      sortOrder: searchParams.get('sortOrder') || 'desc',
+    };
+    dispatch(fetchBrands(params));
+  }, [dispatch, searchParams]);
+
+  const handlePageChange = (newPage) => {
+    updateUrlAndFetch({ page: newPage });
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    updateUrlAndFetch({ search: searchTerm, page: 1 });
+  };
+
+  const handleSort = (field) => {
+    const newSortOrder = field === sortField && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newSortOrder);
+    updateUrlAndFetch({ sortField: field, sortOrder: newSortOrder, page: 1 });
+  };
+
+  const handleStatusFilter = (status) => {
+    setSelectedStatus(status);
+    updateUrlAndFetch({ status, page: 1 });
+  };
 
   const handleAddBrand = async () => {
     if (!newBrandName) {
@@ -54,7 +106,14 @@ const BrandManagement = () => {
   };
 
   const handleToggleStatus = async (brandId) => {
-    await dispatch(toggleBrandStatus(brandId));
+    try {
+      setLoadingBrands(prev => ({ ...prev, [brandId]: true }));
+      await dispatch(toggleBrandStatus(brandId)).unwrap();
+    } catch (error) {
+      // Handle error if needed
+    } finally {
+      setLoadingBrands(prev => ({ ...prev, [brandId]: false }));
+    }
   };
 
   const openEditModal = (brand) => {
@@ -85,15 +144,47 @@ const BrandManagement = () => {
           </CustomButton>
         </div>
         
+        {/* Search and Filter Section */}
+        <div className="mb-6 flex gap-4">
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search brands..."
+              className="rounded-md border px-3 py-2"
+            />
+            <CustomButton type="submit">Search</CustomButton>
+          </form>
+
+          <select
+            value={selectedStatus}
+            onChange={(e) => handleStatusFilter(e.target.value)}
+            className="rounded-md border px-3 py-2"
+          >
+            <option value="">All Status</option>
+            <option value="Activated">Activated</option>
+            <option value="Deactivated">Deactivated</option>
+          </select>
+        </div>
+        
         {/* Brands Table */}
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
           <table className="w-full">
             <thead>
               <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                <th className="px-6 py-3">ID</th>
-                <th className="px-6 py-3">Name</th>
-                <th className="px-6 py-3">Status</th>
-                <th className="px-6 py-3">Created Date</th>
+                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('_id')}>
+                  ID {sortField === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')}>
+                  Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('status')}>
+                  Status {sortField === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
+                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('createdAt')}>
+                  Created Date {sortField === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+                </th>
                 <th className="px-6 py-3">Actions</th>
               </tr>
             </thead>
@@ -127,15 +218,19 @@ const BrandManagement = () => {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button 
-                       
                         onClick={() => handleToggleStatus(brand._id)}
-                        className={`text-gray-500 ${brand.status === 'Activated' ? 'hover:text-red-500' : 'hover:text-green-500'
-                        }`}
-                      
-                    >
-                      {brand.status === 'Activated' ? 'Deactivate' : 'Activate'}
-                      
-                        
+                        disabled={loadingBrands[brand._id]}
+                        className={`text-gray-500 ${
+                          brand.status === 'Activated' 
+                            ? 'hover:text-red-500' 
+                            : 'hover:text-green-500'
+                        } ${loadingBrands[brand._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {loadingBrands[brand._id] ? (
+                          <span className="inline-block animate-spin">⌛</span>
+                        ) : (
+                          brand.status === 'Activated' ? 'Deactivate' : 'Activate'
+                        )}
                       </button>
                     </div>
                   </td>
@@ -143,6 +238,34 @@ const BrandManagement = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-4 flex items-center justify-between">
+          <div className="text-sm text-gray-700">
+            Showing {brands.length} of {total} results
+          </div>
+          <div className="flex items-center gap-2">
+            <CustomButton
+              variant="outline"
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page <= 1}
+              icon={<ChevronLeft className="h-4 w-4" />}
+            >
+              Previous
+            </CustomButton>
+            <span className="text-sm">
+              Page {page} of {totalPages}
+            </span>
+            <CustomButton
+              variant="outline"
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page >= totalPages}
+              icon={<ChevronRight className="h-4 w-4" />}
+            >
+              Next
+            </CustomButton>
+          </div>
         </div>
       </div>
       

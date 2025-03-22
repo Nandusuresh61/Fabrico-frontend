@@ -14,6 +14,13 @@ import Cookies from 'js-cookie';
 const initialState = {
     admin: JSON.parse(localStorage.getItem("admin")) || null,
     users: [],
+    pagination: {
+        page: 1,
+        totalPages: 1,
+        totalDocs: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+    },
     loading: false,
     error: null,
 };
@@ -50,7 +57,7 @@ export const logoutAdmin = createAsyncThunk(
 // Toggle User Status
 export const toggleUserStatus = createAsyncThunk(
     'admin/toggleUserStatus',
-    async (userId, { rejectWithValue }) => {
+    async (userId, { rejectWithValue, getState }) => {
         try {
             const response = await toggleUserStatusApi(userId);
             return { userId, status: response.data.status };
@@ -98,18 +105,19 @@ export const deleteUserById = createAsyncThunk(
         }
     }
 );
-//GET all user
+
+// GET all user
 export const getAllUsers = createAsyncThunk(
     'admin/getAllUsers',
-    async (_, { rejectWithValue }) => {
-      try {
-        const response = await getAllUsersApi();
-        return response.data;
-      } catch (error) {
-        return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
-      }
+    async (params, { rejectWithValue }) => {
+        try {
+            const response = await getAllUsersApi(params);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to fetch users');
+        }
     }
-  );
+);
 
 // Slice Definition
 const adminSlice = createSlice({
@@ -150,19 +158,16 @@ const adminSlice = createSlice({
             })
 
             // Toggle User Status
-            .addCase(toggleUserStatus.pending, (state) => {
-                state.loading = true;
+            .addCase(toggleUserStatus.pending, (state, action) => {
+                state.error = null;
             })
             .addCase(toggleUserStatus.fulfilled, (state, action) => {
-                state.loading = false;
-                state.users = state.users.map(user =>
-                    user._id === action.payload.userId
-                        ? { ...user, status: action.payload.status }
-                        : user
-                );
+                const userIndex = state.users.findIndex(user => user._id === action.payload.userId);
+                if (userIndex !== -1) {
+                    state.users[userIndex].status = action.payload.status;
+                }
             })
             .addCase(toggleUserStatus.rejected, (state, action) => {
-                state.loading = false;
                 state.error = action.payload;
             })
 
@@ -207,19 +212,21 @@ const adminSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            //Get All Users
+
+            // GET all users
             .addCase(getAllUsers.pending, (state) => {
                 state.loading = true;
                 state.error = null;
-              })
-              .addCase(getAllUsers.fulfilled, (state, action) => {
+            })
+            .addCase(getAllUsers.fulfilled, (state, action) => {
                 state.loading = false;
-                state.users = action.payload;
-              })
-              .addCase(getAllUsers.rejected, (state, action) => {
+                state.users = action.payload.users;
+                state.pagination = action.payload.pagination;
+            })
+            .addCase(getAllUsers.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
-              });
+            });
     },
 });
 

@@ -8,9 +8,9 @@ import {
 
 export const fetchBrands = createAsyncThunk(
     'brands/fetchBrands',
-    async (_, { rejectWithValue }) => {
+    async (params, { rejectWithValue }) => {
         try {
-            const response = await getAllBrandsApi();
+            const response = await getAllBrandsApi(params);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to fetch brands');
@@ -44,7 +44,7 @@ export const updateBrand = createAsyncThunk(
 
 export const toggleBrandStatus = createAsyncThunk(
     'brands/toggleBrandStatus',
-    async (id, { rejectWithValue }) => {
+    async (id, { rejectWithValue, getState }) => {
         try {
             const response = await toggleBrandStatusApi(id);
             return response.data;
@@ -58,6 +58,9 @@ const initialState = {
     brands: [],
     loading: false,
     error: null,
+    page: 1,
+    totalPages: 1,
+    total: 0
 };
 
 const brandSlice = createSlice({
@@ -77,7 +80,10 @@ const brandSlice = createSlice({
             })
             .addCase(fetchBrands.fulfilled, (state, action) => {
                 state.loading = false;
-                state.brands = action.payload;
+                state.brands = action.payload.brands;
+                state.page = action.payload.page;
+                state.totalPages = action.payload.totalPages;
+                state.total = action.payload.total;
             })
             .addCase(fetchBrands.rejected, (state, action) => {
                 state.loading = false;
@@ -113,19 +119,16 @@ const brandSlice = createSlice({
                 state.error = action.payload;
             })
             // Toggle Brand Status
-            .addCase(toggleBrandStatus.pending, (state) => {
-                state.loading = true;
+            .addCase(toggleBrandStatus.pending, (state, action) => {
                 state.error = null;
             })
             .addCase(toggleBrandStatus.fulfilled, (state, action) => {
-                state.loading = false;
                 const index = state.brands.findIndex(brand => brand._id === action.payload._id);
                 if (index !== -1) {
                     state.brands[index] = action.payload;
                 }
             })
             .addCase(toggleBrandStatus.rejected, (state, action) => {
-                state.loading = false;
                 state.error = action.payload;
             });
     },

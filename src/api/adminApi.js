@@ -22,4 +22,7 @@ export const deleteUserByIdApi = (userId) =>
     API.delete(`/admin/${userId}`);
 
 
-export const getAllUsersApi = () => API.get('/admin/users');
+export const getAllUsersApi = (params) => {
+  const queryString = new URLSearchParams(params).toString();
+  return API.get(`/admin/users?${queryString}`);
+};

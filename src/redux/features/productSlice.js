@@ -12,9 +12,9 @@ import {
 // Get All Products with search and pagination
 export const getAllProducts = createAsyncThunk(
   'product/getAllProducts',
-  async ({ search = '', page = 1, limit = 5 }, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const response = await getAllProductsApi({ search, page, limit });
+      const response = await getAllProductsApi(params);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Failed to load products');
@@ -107,8 +107,8 @@ const productSlice = createSlice({
     selectedProduct: null,
     loading: false,
     error: null,
-    totalProducts: 0,
-    currentPage: 1,
+    total: 0,
+    page: 1,
     totalPages: 1,
   },
   reducers: {
@@ -129,9 +129,9 @@ const productSlice = createSlice({
       .addCase(getAllProducts.fulfilled, (state, action) => {
         state.loading = false;
         state.products = action.payload.products;
-        state.totalProducts = action.payload.totalProducts;
-        state.currentPage = action.payload.currentPage;
+        state.page = action.payload.page;
         state.totalPages = action.payload.totalPages;
+        state.total = action.payload.total;
       })
       .addCase(getAllProducts.rejected, (state, action) => {
         state.loading = false;
@@ -199,7 +199,7 @@ const productSlice = createSlice({
         const exists = state.products.some(p => p._id === action.payload.product._id);
         if (!exists) {
           state.products.unshift(action.payload.product);
-          state.totalProducts += 1;
+          state.total += 1;
         }
       })
       .addCase(addProduct.rejected, (state, action) => {
@@ -246,8 +246,8 @@ const productSlice = createSlice({
       .addCase(getAllProductsForUsers.fulfilled, (state, action) => {
         state.loading = false;
         state.products = action.payload.products;
-        state.totalProducts = action.payload.totalProducts;
-        state.currentPage = action.payload.currentPage;
+        state.total = action.payload.total;
+        state.page = action.payload.page;
         state.totalPages = action.payload.totalPages;
       })
       .addCase(getAllProductsForUsers.rejected, (state, action) => {

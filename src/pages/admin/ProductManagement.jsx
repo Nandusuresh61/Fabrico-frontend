@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { Search, ChevronDown, ChevronUp, Plus, X } from 'lucide-react';
 import { getAllProducts, editProduct, toggleProductStatus, toggleProductMainStatus } from '../../redux/features/productSlice';
 import CustomButton from '../../components/ui/CustomButton';
@@ -11,34 +12,95 @@ import React from 'react';
 const ProductManagement = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { products, totalProducts, currentPage, totalPages, loading } = useSelector((state) => state.product);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { products, total, page, totalPages, loading } = useSelector((state) => state.product);
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [page, setPage] = useState(1);
+  // States for search, sort, and filter
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '');
+  const [sortField, setSortField] = useState(searchParams.get('sortField') || 'createdAt');
+  const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
+  
+  // Other states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [expandedProducts, setExpandedProducts] = useState({});
-  let count = 1;
+  const [loadingProducts, setLoadingProducts] = useState({});
+
+  const updateUrlAndFetch = (newParams) => {
+    const currentParams = Object.fromEntries(searchParams.entries());
+    const updatedParams = { ...currentParams, ...newParams };
+    
+    Object.keys(updatedParams).forEach(key => 
+      !updatedParams[key] && delete updatedParams[key]
+    );
+
+    setSearchParams(updatedParams);
+    dispatch(getAllProducts(updatedParams));
+  };
 
   useEffect(() => {
-    dispatch(getAllProducts({ search: searchTerm, page }));
-  }, [dispatch, searchTerm, page]);
+    const params = {
+      page: searchParams.get('page') || 1,
+      limit: 10,
+      search: searchParams.get('search') || '',
+      status: searchParams.get('status') || '',
+      sortField: searchParams.get('sortField') || 'createdAt',
+      sortOrder: searchParams.get('sortOrder') || 'desc',
+    };
+    dispatch(getAllProducts(params));
+  }, [dispatch, searchParams]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      updateUrlAndFetch({ page: newPage });
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    updateUrlAndFetch({ search: searchTerm, page: 1 });
+  };
+
+  const handleSort = (field) => {
+    const newSortOrder = field === sortField && sortOrder === 'asc' ? 'desc' : 'asc';
+    setSortField(field);
+    setSortOrder(newSortOrder);
+    updateUrlAndFetch({ sortField: field, sortOrder: newSortOrder, page: 1 });
+  };
+
+  const handleStatusFilter = (status) => {
+    setSelectedStatus(status);
+    updateUrlAndFetch({ status, page: 1 });
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    updateUrlAndFetch({ search: '', page: 1 });
+  };
+
+  const handleToggleProductStatus = async (productId) => {
+    try {
+      setLoadingProducts(prev => ({ ...prev, [productId]: true }));
+      await dispatch(toggleProductMainStatus(productId)).unwrap();
+      toast({
+        title: "Product Status Updated Successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Status Update Failed",
+        description: error || "There is some error!",
+      });
+    } finally {
+      setLoadingProducts(prev => ({ ...prev, [productId]: false }));
+    }
+  };
 
   const handleAddProduct = () => setIsModalOpen(!isModalOpen);
 
   const handleSearchChange = (e) => setSearchTerm(e.target.value);
-
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setPage(1);
-  };
-
-  const handlePageChange = (newPage) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setPage(newPage);
-    }
-  };
 
   const toggleProductExpand = (productId) => {
     setExpandedProducts(prev => ({
@@ -87,21 +149,6 @@ const ProductManagement = () => {
     }
   };
 
-  const handleToggleProductStatus = async (productId) => {
-    try {
-      await dispatch(toggleProductMainStatus(productId));
-      toast({
-        title: "Product Status Updated Successfully",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Status Update Failed",
-        description: error || "There is some error!",
-      });
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -122,27 +169,40 @@ const ProductManagement = () => {
         </CustomButton>
       </div>
 
-      <div className="mb-6 flex items-center gap-2">
-        <div className="relative w-full">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="w-full rounded-md border border-gray-300 px-3 py-2"
-          />
-          {searchTerm && (
-            <button
-              className="absolute right-3 top-2 text-gray-500"
-              onClick={handleClearSearch}
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-        <CustomButton onClick={() => dispatch(getAllProducts({ search: searchTerm, page }))}>
-          <Search className="h-4 w-4" />
-        </CustomButton>
+      <div className="mb-6 flex gap-4">
+        <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="absolute right-3 top-2 text-gray-500"
+                onClick={handleClearSearch}
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <CustomButton type="submit">
+            <Search className="h-4 w-4" />
+          </CustomButton>
+        </form>
+
+        <select
+          value={selectedStatus}
+          onChange={(e) => handleStatusFilter(e.target.value)}
+          className="rounded-md border px-3 py-2"
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="blocked">Blocked</option>
+        </select>
       </div>
 
       {products?.length === 0 ? (
@@ -168,7 +228,7 @@ const ProductManagement = () => {
                 {products?.map((product) => (
                   <React.Fragment key={`product-${product._id}`}>
                     <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4">{count++}</td>
+                      <td className="px-6 py-4">{product._id}</td>
                       <td className="px-6 py-4 cursor-pointer" onClick={() => toggleProductExpand(product._id)}>{product.name}</td>
                       <td className="px-6 py-4">{product.category?.name || 'N/A'}</td>
                       <td className="px-6 py-4">{product.brand?.name || 'N/A'}</td>
@@ -282,25 +342,30 @@ const ProductManagement = () => {
             </table>
           </div>
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex justify-center gap-2">
-              <CustomButton 
-                onClick={() => handlePageChange(page - 1)} 
-                disabled={page === 1}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Showing {products.length} of {total} results
+            </div>
+            <div className="flex items-center gap-2">
+              <CustomButton
+                variant="outline"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
               >
-                Prev
+                Previous
               </CustomButton>
-              <span className="flex items-center">
+              <span className="text-sm">
                 Page {page} of {totalPages}
               </span>
-              <CustomButton 
-                onClick={() => handlePageChange(page + 1)} 
-                disabled={page === totalPages}
+              <CustomButton
+                variant="outline"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages}
               >
                 Next
               </CustomButton>
             </div>
-          )}
+          </div>
         </>
       )}
 
