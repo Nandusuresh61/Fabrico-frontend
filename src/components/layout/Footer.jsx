@@ -10,11 +10,11 @@ const Footer = () => {
     {
       title: 'Shop',
       links: [
-        { name: 'New Arrivals', path: '/products?category=new-arrivals' },
-        { name: 'Bestsellers', path: '/products?category=bestsellers' },
-        { name: 'Baseball Caps', path: '/products?category=baseball-caps' },
-        { name: 'Trucker Caps', path: '/products?category=trucker-caps' },
-        { name: 'Snapback', path: '/products?category=snapback' },
+        { name: 'Shop', path: '/products' },
+        { name: 'Men', path: '/products?category=men' },
+        { name: 'Women', path: '/products?category=women' },
+        { name: 'Kids', path: '/products?category=kids' },
+        
       ],
     },
     {
