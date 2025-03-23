@@ -277,7 +277,7 @@ const ProductManagement = () => {
                             className="text-sm font-medium text-blue-600 hover:text-blue-800"
                             onClick={() => handleEditProductName(product)}
                           >
-                            Edit Name
+                            Edit 
                           </button>
                           <button
                             className={`text-sm font-medium ${
