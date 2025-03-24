@@ -1,25 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, ShoppingCart, Star, ChevronRight } from 'lucide-react';
+import { Heart, ShoppingCart, Star, ChevronRight, ArrowRight } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import CustomButton from '../../components/ui/CustomButton';
 import ProductCard from '../../components/ui/ProductCard';
 import { getProductById, clearSelectedProduct } from '../../redux/features/productSlice';
 import { useToast } from '../../hooks/use-toast';
+import { getAllProductsForUsers } from '../../redux/features/productSlice';
 
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { selectedProduct: product, loading } = useSelector((state) => state.product);
+  const { selectedProduct: product, products, loading } = useSelector((state) => state.product);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [mainImage, setMainImage] = useState(null);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     dispatch(getProductById(id))
@@ -39,11 +41,20 @@ const ProductDetail = () => {
   }, [dispatch, id, navigate, toast]);
 
   useEffect(() => {
+    dispatch(getAllProductsForUsers({
+      status: 'active',
+      limit: 6 // Limit to 6 products for the featured section
+    }));
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 400);
+
     if (product) {
       setSelectedVariant(product.variants[0]);
       setMainImage(product.variants[0].mainImage);
     }
-  }, [product]);
+    return () => clearTimeout(timer);
+  }, [product, dispatch]);
 
   // Handle image zoom
   const handleMouseMove = (e) => {
@@ -69,6 +80,7 @@ const ProductDetail = () => {
   if (!product) return null;
 
   const allImages = selectedVariant ? [selectedVariant.mainImage, ...selectedVariant.subImages] : [];
+
 
   return (
     <Layout>
@@ -289,6 +301,53 @@ const ProductDetail = () => {
               ))}
             </div>
           </details>
+
+           {/* related Products Section */}
+        <section className="py-16">
+          <div className="container px-4 md:px-6">
+            <div className="mb-10 flex items-center justify-between">
+              <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+                Related Products
+              </h2>
+              <Link 
+                to="/products" 
+                className="group flex items-center text-sm font-medium text-gray-600 transition-colors hover:text-primary"
+              >
+                View All 
+                <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+            
+            <div className="relative">
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6">
+                  {products.map((product) => {
+                    const lowestPriceVariant = product.variants
+                      .filter(v => !v.isBlocked)
+                      .reduce((min, v) => v.price < min.price ? v : min, product.variants[0]);
+
+                    return (
+                      <div key={product._id} className="min-w-[240px] max-w-[240px] snap-start sm:min-w-[280px] sm:max-w-[280px]">
+                        <ProductCard 
+                          id={product._id}
+                          name={product.name}
+                          price={lowestPriceVariant.price}
+                          imageUrl={lowestPriceVariant.mainImage}
+                          link={`/products/${product._id}`}
+                          rating={4.5}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
         </div>
       </div>
     </Layout>
