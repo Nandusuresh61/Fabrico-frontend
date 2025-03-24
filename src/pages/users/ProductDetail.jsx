@@ -256,32 +256,39 @@ const ProductDetail = () => {
 
         {/* Reviews Section */}
         <div className="mt-16">
-          <h2 className="mb-6 text-2xl font-bold">Customer Reviews</h2>
-          <div className="space-y-6">
-            {/* Dummy reviews */}
-            {[1, 2, 3].map((review) => (
-              <div key={review} className="border-b border-gray-200 pb-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star 
-                        key={star}
-                        className={`h-4 w-4 ${star <= 4 
-                          ? 'fill-yellow-400 text-yellow-400' 
-                          : 'fill-gray-200 text-gray-200'
-                        }`} 
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">2 months ago</span>
-                </div>
-                <h3 className="mt-2 font-medium">John Doe</h3>
-                <p className="mt-2 text-gray-600">
-                  Great product! The quality is excellent and it arrived quickly.
-                </p>
+          <details className="group rounded-lg border border-gray-200">
+            <summary className="flex cursor-pointer items-center justify-between rounded-lg bg-gray-50 px-6 py-4">
+              <h2 className="text-2xl font-bold">Customer Reviews</h2>
+              <div className="transition-transform duration-200 group-open:rotate-180">
+                <ChevronRight className="h-5 w-5" />
               </div>
-            ))}
-          </div>
+            </summary>
+            <div className="space-y-6 px-6 py-4">
+              {/* Dummy reviews */}
+              {[1, 2, 3].map((review) => (
+                <div key={review} className="border-b border-gray-200 pb-6 last:border-b-0">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Star 
+                          key={star}
+                          className={`h-4 w-4 ${star <= 4 
+                            ? 'fill-yellow-400 text-yellow-400' 
+                            : 'fill-gray-200 text-gray-200'
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-gray-600">2 months ago</span>
+                  </div>
+                  <h3 className="mt-2 font-medium">John Doe</h3>
+                  <p className="mt-2 text-gray-600">
+                    Great product! The quality is excellent and it arrived quickly.
+                  </p>
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
       </div>
     </Layout>
