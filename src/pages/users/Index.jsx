@@ -1,97 +1,11 @@
-
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
 import ProductCard from '../../components/ui/ProductCard';
 import CustomButton from '../../components/ui/CustomButton';
-
-// Mock data
-const featuredProducts = [
-  {
-    id: '1',
-    name: 'Vintage Baseball Cap',
-    price: 39.99,
-    discountPrice: 29.99,
-    imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?q=80&w=1536&auto=format&fit=crop',
-    rating: 4.5,
-    isFeatured: true,
-  },
-  {
-    id: '2',
-    name: 'Classic Snapback',
-    price: 45.99,
-    imageUrl: 'https://images.unsplash.com/photo-1534215754734-18e55d13e346?q=80&w=1548&auto=format&fit=crop',
-    rating: 4.2,
-  },
-  {
-    id: '3',
-    name: 'Premium Trucker Cap',
-    price: 49.99,
-    discountPrice: 39.99,
-    imageUrl: 'https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1470&auto=format&fit=crop',
-    rating: 4.8,
-    isFeatured: true,
-  },
-  {
-    id: '4',
-    name: 'Urban Fitted Cap',
-    price: 55.99,
-    imageUrl: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=1587&auto=format&fit=crop',
-    rating: 4.0,
-  },
-  {
-    id: '5',
-    name: 'Minimalist Dad Hat',
-    price: 35.99,
-    discountPrice: 29.99,
-    imageUrl: 'https://images.unsplash.com/photo-1552060155-4b9a038bc4d3?q=80&w=1587&auto=format&fit=crop',
-    rating: 4.6,
-  },
-  {
-    id: '6',
-    name: 'Sport Performance Cap',
-    price: 42.99,
-    imageUrl: 'https://images.unsplash.com/photo-1556306535-0f09a537f0a3?q=80&w=1470&auto=format&fit=crop',
-    rating: 4.3,
-  },
-];
-
-const newArrivals = [
-  {
-    id: '7',
-    name: 'Limited Edition Cap',
-    price: 59.99,
-    imageUrl: 'https://images.unsplash.com/photo-1575428652377-a2d80e2277fc?q=80&w=1470&auto=format&fit=crop',
-    rating: 4.9,
-    isNew: true,
-  },
-  {
-    id: '8',
-    name: 'Designer Collaboration Cap',
-    price: 65.99,
-    discountPrice: 55.99,
-    imageUrl: 'https://images.unsplash.com/photo-1514327605112-b887c0e61c0a?q=80&w=1487&auto=format&fit=crop',
-    rating: 4.7,
-    isNew: true,
-  },
-  {
-    id: '9',
-    name: 'Eco-Friendly Cap',
-    price: 49.99,
-    imageUrl: 'https://images.unsplash.com/photo-1521119989659-a83eee488004?q=80&w=1523&auto=format&fit=crop',
-    rating: 4.5,
-    isNew: true,
-  },
-  {
-    id: '10',
-    name: 'Heritage Collection Cap',
-    price: 52.99,
-    imageUrl: 'https://images.unsplash.com/photo-1596455607563-ad6193f76b17?q=80&w=1364&auto=format&fit=crop',
-    rating: 4.4,
-    isNew: true,
-  },
-];
+import { useDispatch, useSelector } from 'react-redux';
+import { getAllProductsForUsers } from '../../redux/features/productSlice';
 
 // Categories
 const categories = [
@@ -122,16 +36,24 @@ const categories = [
 ];
 
 const Index = () => {
+  const dispatch = useDispatch();
+  const { products, loading } = useSelector((state) => state.product);
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    // Fetch available products
+    dispatch(getAllProductsForUsers({
+      status: 'active',
+      limit: 6 // Limit to 6 products for the featured section
+    }));
+
     // Simulate loading
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 400);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [dispatch]);
 
   return (
     <Layout>
@@ -181,10 +103,10 @@ const Index = () => {
           <div className="container px-4 md:px-6">
             <div className="mb-10 flex items-center justify-between">
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                Featured Products
+                Available Products
               </h2>
               <Link 
-                to="/products?featured=true" 
+                to="/products" 
                 className="group flex items-center text-sm font-medium text-gray-600 transition-colors hover:text-primary"
               >
                 View All 
@@ -193,13 +115,32 @@ const Index = () => {
             </div>
             
             <div className="relative">
-              <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6">
-                {featuredProducts.map((product) => (
-                  <div key={product.id} className="min-w-[240px] max-w-[240px] snap-start sm:min-w-[280px] sm:max-w-[280px]">
-                    <ProductCard {...product} />
-                  </div>
-                ))}
-              </div>
+              {loading ? (
+                <div className="flex justify-center py-8">
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6">
+                  {products.map((product) => {
+                    const lowestPriceVariant = product.variants
+                      .filter(v => !v.isBlocked)
+                      .reduce((min, v) => v.price < min.price ? v : min, product.variants[0]);
+
+                    return (
+                      <div key={product._id} className="min-w-[240px] max-w-[240px] snap-start sm:min-w-[280px] sm:max-w-[280px]">
+                        <ProductCard 
+                          id={product._id}
+                          name={product.name}
+                          price={lowestPriceVariant.price}
+                          imageUrl={lowestPriceVariant.mainImage}
+                          link={`/products/${product._id}`}
+                          rating={4.5}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -237,30 +178,6 @@ const Index = () => {
                     </div>
                   </div>
                 </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-        
-        {/* New Arrivals Section */}
-        <section className="py-16">
-          <div className="container px-4 md:px-6">
-            <div className="mb-10 flex items-center justify-between">
-              <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                New Arrivals
-              </h2>
-              <Link 
-                to="/products?category=new-arrivals" 
-                className="group flex items-center text-sm font-medium text-gray-600 transition-colors hover:text-primary"
-              >
-                View All 
-                <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-            
-            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {newArrivals.map((product) => (
-                <ProductCard key={product.id} {...product} />
               ))}
             </div>
           </div>

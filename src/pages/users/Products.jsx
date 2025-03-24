@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import Layout from '../../components/layout/layout';
+import Layout from '../../components/layout/Layout';
 import ProductCard from '../../components/ui/ProductCard';
 import { getAllProductsForUsers } from '../../redux/features/productSlice';
 import { getAllCategories } from '../../redux/features/categorySlice';
@@ -98,6 +98,7 @@ const Products = () => {
       sort: sortFromUrl,
       search: searchFromUrl,
       page: pageFromUrl,
+      status: 'active',
       limit: 12
     }));
   }, [dispatch, searchParams]);
@@ -256,6 +257,7 @@ const Products = () => {
                       .map(v => v.price))}
                     imageUrl={product.variants.find(v => !v.isBlocked)?.mainImage}
                     link={`/products/${product._id}`}
+                    rating={4.5}
                   />
                 ))
               )}
