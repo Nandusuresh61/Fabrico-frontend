@@ -17,7 +17,7 @@ const ProductDetail = () => {
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [mainImage, setMainImage] = useState('');
+  const [mainImage, setMainImage] = useState(null);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
@@ -84,9 +84,50 @@ const ProductDetail = () => {
 
         <div className="mb-12 grid gap-12 md:grid-cols-2">
           {/* Product Images */}
-          <div className="space-y-4">
+          <div className="flex gap-4">
+            {/* Sub Images */}
+            <div className="flex h-[480px] flex-col items-center">
+              <div className="mt-[60px]">
+                <button
+                  onClick={() => setMainImage(allImages[0])}
+                  className={`h-24 w-24 overflow-hidden rounded-lg border-2 ${
+                    mainImage === allImages[0] ? 'border-primary' : 'border-transparent'
+                  }`}
+                >
+                  <img src={allImages[0]} alt={`${product.name} view 1`} className="h-full w-full object-cover" />
+                </button>
+              </div>
+
+              <div className="my-auto">
+                {allImages[1] && (
+                  <button
+                    onClick={() => setMainImage(allImages[1])}
+                    className={`h-24 w-24 overflow-hidden rounded-lg border-2 ${
+                      mainImage === allImages[1] ? 'border-primary' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={allImages[1]} alt={`${product.name} view 2`} className="h-full w-full object-cover" />
+                  </button>
+                )}
+              </div>
+
+              <div className="mb-[60px]">
+                {allImages[2] && (
+                  <button
+                    onClick={() => setMainImage(allImages[2])}
+                    className={`h-24 w-24 overflow-hidden rounded-lg border-2 ${
+                      mainImage === allImages[2] ? 'border-primary' : 'border-transparent'
+                    }`}
+                  >
+                    <img src={allImages[2]} alt={`${product.name} view 3`} className="h-full w-full object-cover" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Main Image */}
             <div 
-              className="relative aspect-square overflow-hidden rounded-xl"
+              className="relative h-[500px] w-[500px] overflow-hidden rounded-xl"
               onMouseEnter={() => setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
               onMouseMove={handleMouseMove}
@@ -101,19 +142,6 @@ const ProductDetail = () => {
                   transformOrigin: `${mousePosition.x}% ${mousePosition.y}%`
                 } : undefined}
               />
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {allImages.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setMainImage(image)}
-                  className={`h-20 w-20 overflow-hidden rounded-lg border-2 ${
-                    mainImage === image ? 'border-primary' : 'border-transparent'
-                  }`}
-                >
-                  <img src={image} alt={`${product.name} view ${index + 1}`} className="h-full w-full object-cover" />
-                </button>
-              ))}
             </div>
           </div>
           
