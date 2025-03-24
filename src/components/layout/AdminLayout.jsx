@@ -35,7 +35,7 @@ const AdminLayout = ({ children }) => {
       {/* Sidebar for larger screens */}
       <aside className="hidden w-64 flex-shrink-0 border-r border-gray-200 bg-white lg:block">
         <div className="flex h-16 items-center justify-center border-b border-gray-200">
-          <h1 className="text-xl font-bold">Caps Admin</h1>
+          <h1 className="text-xl font-bold">Fabrico Admin Panel</h1>
         </div>
         <nav className="p-4">
           <ul className="space-y-1">
