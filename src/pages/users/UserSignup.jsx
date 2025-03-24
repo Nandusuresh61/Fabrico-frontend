@@ -6,6 +6,7 @@ import CustomButton from '../../components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
 import { useDispatch, useSelector} from 'react-redux'
 import { registerUser } from '../../redux/features/userSlice';
+import GoogleLogin from '../../pages/users/GoogleLogin.jsx'
 
 const UserSignup = () => {
 const { loading, error} = useSelector((state)=>state.user);
@@ -257,6 +258,7 @@ const { loading, error} = useSelector((state)=>state.user);
               </Link>
             </p>
           </div>
+          <GoogleLogin />
         </div>
       </div>
     </Layout>
