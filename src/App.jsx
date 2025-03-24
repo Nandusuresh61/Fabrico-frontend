@@ -10,6 +10,7 @@ import AddProductForm from "./pages/admin/Product/AddProductForm";
 
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { googleConfig } from "./configuration";
+import ScrollToTop from "../src/pages/admin/Product/ScrollTop";
 
 const queryClient = new QueryClient();
 
@@ -22,12 +23,14 @@ function App() {
           <Toaster />
           <Sonner />
           <GoogleOAuthProvider clientId={googleConfig.web.client_id}>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/*" element={<UserRoutes />} />
-              <Route path="/admin/*" element={<AdminRoutes />} />
-            </Routes>
-          </BrowserRouter>
+            <BrowserRouter>
+            <ScrollToTop />
+              <Routes>
+                
+                <Route path="/*" element={<UserRoutes />} />
+                <Route path="/admin/*" element={<AdminRoutes />} />
+              </Routes>
+            </BrowserRouter>
           </GoogleOAuthProvider>
         </TooltipProvider>
       </QueryClientProvider>
