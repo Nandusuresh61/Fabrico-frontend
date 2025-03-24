@@ -56,11 +56,25 @@ const UserManagement = () => {
 
   const toggleStatus = async (userId, user) => {
     if (user.isAdmin) return;
+    
+    // Add confirmation dialog
+    const action = user.status === 'active' ? 'block' : 'unblock';
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} user "${user.username}"? ${
+        action === 'block' 
+          ? 'They will not be able to access the system.'
+          : 'They will regain access to the system.'
+      }`
+    );
+
+    if (!confirmed) return;
+
     try {
       setTogglingUsers(prev => new Set(prev).add(userId));
       await dispatch(toggleUserStatus(userId)).unwrap();
     } catch (error) {
       console.error('Failed to toggle status:', error);
+      alert(`Failed to ${action} user. Please try again.`);
     } finally {
       setTogglingUsers(prev => {
         const newSet = new Set(prev);

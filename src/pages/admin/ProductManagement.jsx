@@ -85,6 +85,20 @@ const ProductManagement = () => {
   };
 
   const handleToggleProductStatus = async (productId) => {
+    const product = products.find(p => p._id === productId);
+    if (!product) return;
+
+    const action = product.status === 'active' ? 'block' : 'unblock';
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} product "${product.name}"? ${
+        action === 'block' 
+          ? 'This product and all its variants will no longer be available for purchase.'
+          : 'This product and all its variants will be available for purchase again.'
+      }`
+    );
+
+    if (!confirmed) return;
+
     try {
       setLoadingProducts(prev => ({ ...prev, [productId]: true }));
       await dispatch(toggleProductMainStatus(productId)).unwrap();
@@ -95,7 +109,7 @@ const ProductManagement = () => {
       toast({
         variant: "destructive",
         title: "Status Update Failed",
-        description: error || "There is some error!",
+        description: error || "There was an error updating the product status",
       });
     } finally {
       setLoadingProducts(prev => ({ ...prev, [productId]: false }));
@@ -139,6 +153,21 @@ const ProductManagement = () => {
   };
 
   const handleToggleVariantStatus = async (productId, variantId) => {
+    const product = products.find(p => p._id === productId);
+    const variant = product?.variants?.find(v => v._id === variantId);
+    if (!product || !variant) return;
+
+    const action = variant.isBlocked ? 'activate' : 'block';
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} this variant of "${product.name}" (${variant.color})? ${
+        action === 'block' 
+          ? 'This variant will no longer be available for purchase.'
+          : 'This variant will be available for purchase again.'
+      }`
+    );
+
+    if (!confirmed) return;
+
     try {
       await dispatch(toggleProductStatus({ productId, variantId }));
       toast({
@@ -148,7 +177,7 @@ const ProductManagement = () => {
       toast({
         variant: "destructive",
         title: "Status Update Failed",
-        description: error || "There is some error!",
+        description: error || "There was an error updating the variant status",
       });
     }
   };

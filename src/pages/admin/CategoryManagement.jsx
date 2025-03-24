@@ -69,11 +69,25 @@ const CategoryManagement = () => {
   };
 
   const handleDeleteCategory = async (categoryId) => {
+    const category = categories.find(c => c._id === categoryId);
+    if (!category) return;
+
+    const action = category.status === 'Activated' ? 'deactivate' : 'activate';
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} category "${category.name}"? ${
+        action === 'deactivate' 
+          ? 'This category will no longer be available in the system.'
+          : 'This category will be available again in the system.'
+      }`
+    );
+
+    if (!confirmed) return;
+
     try {
       setLoadingCategories(prev => ({ ...prev, [categoryId]: true }));
       await dispatch(deleteCategory(categoryId)).unwrap();
     } catch (error) {
-      // Handle error if needed
+      alert(`Failed to ${action} category. Please try again.`);
     } finally {
       setLoadingCategories(prev => ({ ...prev, [categoryId]: false }));
     }

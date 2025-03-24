@@ -106,11 +106,25 @@ const BrandManagement = () => {
   };
 
   const handleToggleStatus = async (brandId) => {
+    const brand = brands.find(b => b._id === brandId);
+    if (!brand) return;
+
+    const action = brand.status === 'Activated' ? 'deactivate' : 'activate';
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} brand "${brand.name}"? ${
+        action === 'deactivate' 
+          ? 'This brand will no longer be available in the system.'
+          : 'This brand will be available again in the system.'
+      }`
+    );
+
+    if (!confirmed) return;
+
     try {
       setLoadingBrands(prev => ({ ...prev, [brandId]: true }));
       await dispatch(toggleBrandStatus(brandId)).unwrap();
     } catch (error) {
-      // Handle error if needed
+      alert(`Failed to ${action} brand. Please try again.`);
     } finally {
       setLoadingBrands(prev => ({ ...prev, [brandId]: false }));
     }
