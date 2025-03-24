@@ -11,27 +11,27 @@ import { getAllProductsForUsers } from '../../redux/features/productSlice';
 const categories = [
   {
     id: '1',
-    name: 'Baseball Caps',
+    name: 'Shop',
     image: 'https://images.unsplash.com/photo-1534215754734-18e55d13e346?q=80&w=1548&auto=format&fit=crop',
-    path: '/products?category=baseball-caps',
+    path: '/products',
   },
   {
     id: '2',
-    name: 'Trucker Caps',
-    image: 'https://images.unsplash.com/photo-1521369909029-2afed882baee?q=80&w=1470&auto=format&fit=crop',
-    path: '/products?category=trucker-caps',
+    name: 'Men',
+    image: 'https://cdn.shopify.com/s/files/1/0275/2099/1332/files/23_GC_MMH_TJA_9658.jpg?v=1694489521',
+    path: '/products?category=Men',
   },
   {
     id: '3',
-    name: 'Snapbacks',
-    image: 'https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=1587&auto=format&fit=crop',
-    path: '/products?category=snapbacks',
+    name: 'Women',
+    image: 'https://assets.myntassets.com/h_1440,q_100,w_1080/v1/assets/images/21460928/2023/1/8/e31e5534-5036-48a1-a1a7-bb1ac707a5891673145016494Cottoncap1.jpg',
+    path: '/products?category=women',
   },
   {
     id: '4',
-    name: 'Dad Hats',
-    image: 'https://images.unsplash.com/photo-1552060155-4b9a038bc4d3?q=80&w=1587&auto=format&fit=crop',
-    path: '/products?category=dad-hats',
+    name: 'Kids',
+    image: 'https://images-cdn.ubuy.co.in/63513a6f3632d005812b1453-julerwoo-kids-girls-unicorn-baseball-cap.jpg',
+    path: '/products?category=kids',
   },
 ];
 
