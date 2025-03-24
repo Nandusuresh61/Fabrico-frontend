@@ -16,3 +16,7 @@ export const sendForgotPasswordEmailApi = (data) => API.post("/users/forgot-pass
 export const verifyForgotOtpApi = (data) => API.post("/users/verify-forgot-otp", data)
 export const resendForgotOtpApi = (data) => API.post("/users/resend-forgot-otp", data)
 export const resetPasswordApi = (data) => API.post("/users/reset-password", data)
+
+
+
+export const googleAuthApi = (code) => API.post(`/users/google?code=${code}`, code)

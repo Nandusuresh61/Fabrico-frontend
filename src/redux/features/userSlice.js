@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi, sendForgotPasswordEmailApi, verifyForgotOtpApi, resendForgotOtpApi, resetPasswordApi } from '../../api/userApi';
+import { googleAuthApi, resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi, sendForgotPasswordEmailApi, verifyForgotOtpApi, resendForgotOtpApi, resetPasswordApi } from '../../api/userApi';
 import Cookies from 'js-cookie'
 
 
@@ -9,6 +9,20 @@ const initialState = {
     error: null,
     forgotOtpVerified: false,
 };
+
+//google auth login 
+export const googleAuthUser = createAsyncThunk(
+    "user/googleAuthUser",
+    async (code, { rejectWithValue }) => {
+        try {
+            const response = await googleAuthApi(code);
+            localStorage.setItem("user", JSON.stringify(response.data));
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data.message);
+        }
+    }
+);
 
 export const registerUser = createAsyncThunk(
     'user/register',
@@ -173,16 +187,16 @@ const userSlice = createSlice({
                 state.error = action.payload;
             })
             //Verify Otp
-            .addCase(verifyOtp.pending, (state)=>{
+            .addCase(verifyOtp.pending, (state) => {
                 state.loading = true;
                 state.error = null;
                 state.verificationSuccess = false;
             })
-            .addCase(verifyOtp.fulfilled,(state)=>{
+            .addCase(verifyOtp.fulfilled, (state) => {
                 state.loading = false;
                 state.verificationSuccess = true;
             })
-            .addCase(verifyOtp.rejected,(state,action)=>{
+            .addCase(verifyOtp.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
@@ -213,7 +227,7 @@ const userSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            
+
             .addCase(verifyForgotOtp.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -227,7 +241,7 @@ const userSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            
+
             .addCase(resendForgotOtp.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -239,7 +253,7 @@ const userSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            
+
             .addCase(resetPassword.pending, (state) => {
                 state.loading = true;
                 state.error = null;
@@ -248,6 +262,19 @@ const userSlice = createSlice({
                 state.loading = false;
             })
             .addCase(resetPassword.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+            //user google login
+            .addCase(googleAuthUser.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(googleAuthUser.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload;
+            })
+            .addCase(googleAuthUser.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
