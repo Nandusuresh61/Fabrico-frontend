@@ -41,13 +41,13 @@ const Index = () => {
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Fetch available products
+   
     dispatch(getAllProductsForUsers({
       status: 'active',
-      limit: 6 // Limit to 6 products for the featured section
+      limit: 6 
     }));
 
-    // Simulate loading
+    
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 400);
