@@ -195,6 +195,12 @@ const userSlice = createSlice({
             .addCase(verifyOtp.fulfilled, (state) => {
                 state.loading = false;
                 state.verificationSuccess = true;
+                // Update the user's verified status in localStorage
+                const user = JSON.parse(localStorage.getItem("user"));
+                if (user) {
+                    user.isVerified = true;
+                    localStorage.setItem("user", JSON.stringify(user));
+                }
             })
             .addCase(verifyOtp.rejected, (state, action) => {
                 state.loading = false;

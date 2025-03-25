@@ -56,7 +56,7 @@ const OTPVerification = () => {
         title: "Verification successful",
         description: "Your account has been verified",
       });
-      navigate('/login');
+      navigate('/');
     }
   }, [verificationSuccess, navigate, toast]);
 
