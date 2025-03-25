@@ -79,13 +79,59 @@ const Products = () => {
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
-    updateFilters({ search: searchTerm, page: 1 });
+    
+    // Check if the search term matches any category
+    const matchedCategory = categories.find(
+      category => category.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    // Check if the search term matches any brand
+    const matchedBrand = brands.find(
+      brand => brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (matchedCategory) {
+      // If search matches a category, update category filter
+      setActiveCategory(matchedCategory.name.toLowerCase());
+      updateFilters({ 
+        category: matchedCategory.name.toLowerCase(),
+        brand: 'all', // Reset brand when searching by category
+        search: '',
+        page: 1 
+      });
+    } else if (matchedBrand) {
+      // If search matches a brand, update brand filter using the brand ID
+      setActiveBrand(matchedBrand._id);
+      updateFilters({ 
+        brand: matchedBrand._id, // Use brand ID instead of name
+        category: 'all', // Reset category when searching by brand
+        search: '',
+        page: 1 
+      });
+    } else {
+      // If no category/brand match, search in product names
+      setActiveCategory('all');
+      setActiveBrand('all');
+      updateFilters({ 
+        search: searchTerm,
+        category: 'all',
+        brand: 'all',
+        page: 1 
+      });
+    }
   };
 
-  // Clear search
+  // Update the handleClearSearch function
   const handleClearSearch = () => {
     setSearchTerm('');
-    updateFilters({ search: '', page: 1 });
+    setActiveCategory('all');
+    setActiveBrand('all');
+    updateFilters({ 
+      search: '',
+      category: 'all',
+      brand: 'all',
+      page: 1 
+    });
   };
 
   // Fetch products when URL params change
