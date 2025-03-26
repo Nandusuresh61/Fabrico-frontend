@@ -43,6 +43,9 @@ const { loading, error} = useSelector((state)=>state.user);
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
       isValid = false;
+    } else if (formData.name.trim().length < 4) {
+      newErrors.name = 'Name must be at least 4 characters long';
+      isValid = false;
     }
 
     if (!formData.email) {
