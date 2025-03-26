@@ -153,9 +153,13 @@ const Header = () => {
           <div className="relative user-menu">
             <button 
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+              className="flex h-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 px-4"
             >
-              <User className="h-5 w-5" />
+              {user ? (
+                <User className="h-5 w-5" />
+              ) : (
+                <span className="text-sm font-medium">Login</span>
+              )}
             </button>
 
             {/* Dropdown Menu */}
