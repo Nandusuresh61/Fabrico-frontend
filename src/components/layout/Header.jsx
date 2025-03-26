@@ -15,6 +15,7 @@ const Header = () => {
   const [searchParams] = useSearchParams();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
+  console.log(user)
   const dispatch = useDispatch();
 
   // Navigation options with proper category values
@@ -153,12 +154,18 @@ const Header = () => {
           <div className="relative user-menu">
             <button 
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex h-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 px-4"
+              className="flex h-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 "
             >
               {user ? (
-                <User className="h-5 w-5" />
+                <div className="flex items-center gap-2">
+                  {user.profileImage ? (
+                    <img src={user.profileImage} alt="Profile" className="h-10 w-10 rounded-full" />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                </div>
               ) : (
-                <span className="text-sm font-medium">Login</span>
+                <span className="text-sm font-medium px-4">Login</span>
               )}
             </button>
 
