@@ -164,6 +164,31 @@ const OTPVerification = () => {
     dispatch(verifyOtp({ email, otp: otpString }));
   };
 
+  // OTP pasting 
+
+  const handlePaste = (e, index) =>{
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    const digits = pastedData.match(/\d/g); // extract only digit
+    if(!digits)return;
+
+    const newOtp = [...otp];
+    let nextIndex = index;
+
+    digits.slice(0, 6 - index).forEach((digit)=>{
+      if(nextIndex < 6){
+        newOtp[nextIndex] = digit;
+        nextIndex++;
+      }
+    });
+     setOtp(newOtp);
+
+     if(nextIndex < 6){
+      inputRefs.current[nextIndex]?.focus();
+     }
+  };
+
+
   return (
     <Layout hideFooter>
       <div className="container flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-8 md:px-6">
@@ -194,6 +219,7 @@ const OTPVerification = () => {
                   value={digit}
                   onChange={(e) => handleChange(index, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(index, e)}
+                  onPaste={(e) => handlePaste(e, index)}
                   className="h-12 w-12 rounded-lg border border-gray-300 text-center text-xl font-semibold text-gray-900 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary sm:h-14 sm:w-14"
                   required
                 />
