@@ -9,11 +9,12 @@ import { logoutUser } from '../../redux/features/userSlice'
 const UserProfile = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   
+  
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
     name: user.username,
     email: user.email,
-    profilePicture: 'https://imgs.search.brave.com/j78lJvavdwf_iHaHFpgZDpsva8wX8eIAeRb3jMepqQE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzEwLzAzLzA3Lzc2/LzM2MF9GXzEwMDMw/Nzc2MTBfVWo0WEFS/WW1EVmN4NUV3eUNE/OEYxOUhoMExLa3Ay/WFkuanBn',
+    profilePicture: user.profileImage || 'https://imgs.search.brave.com/j78lJvavdwf_iHaHFpgZDpsva8wX8eIAeRb3jMepqQE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzEwLzAzLzA3Lzc2/LzM2MF9GXzEwMDMw/Nzc2MTBfVWo0WEFS/WW1EVmN4NUV3eUNE/OEYxOUhoMExLa3Ay/WFkuanBn',
   });
   const dispatch = useDispatch();
   

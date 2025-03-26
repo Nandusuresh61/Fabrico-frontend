@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, ArrowLeft, Check, X } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Check, X, Camera } from 'lucide-react';
 import Layout from '../../components/layout/Layout'
 import CustomButton from '../../components/ui/CustomButton';
 import { useToast } from "../../hooks/use-toast";
 import { useDispatch, useSelector} from 'react-redux'
 import { registerUser } from '../../redux/features/userSlice';
 import GoogleLogin from '../../pages/users/GoogleLogin.jsx'
+import { uploadToCloudinary } from '../../api/cloudinary';
 
 const UserSignup = () => {
 const { loading, error} = useSelector((state)=>state.user);
@@ -16,12 +17,14 @@ const { loading, error} = useSelector((state)=>state.user);
     email: '',
     password: '',
     confirmPassword: '',
+    profileImage: null
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [imagePreview, setImagePreview] = useState(null);
 
   const passwordRequirements = [
     { id: 'length', label: 'At least 8 characters', test: (p) => p.length >= 8 },
@@ -34,6 +37,14 @@ const { loading, error} = useSelector((state)=>state.user);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+      setFormData(prev => ({ ...prev, profileImage: file }));
+    }
   };
 
   const validateForm = () => {
@@ -84,27 +95,44 @@ const { loading, error} = useSelector((state)=>state.user);
     if (loading) return;
 
     try {
-      const resultAction = await dispatch(registerUser({
-        username: formData.name,
-        email: formData.email,
-        password: formData.password,
-      })).unwrap();
+        // Upload image first if exists
+        let profileImageUrl = null;
+        if (formData.profileImage) {
+            try {
+                profileImageUrl = await uploadToCloudinary(formData.profileImage);
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Image upload failed",
+                    description: "Failed to upload profile image. Please try again.",
+                });
+                return;
+            }
+        }
 
-      // Store user data in localStorage
-      localStorage.setItem("user", JSON.stringify(resultAction));
+        // Register user with profile image
+        const resultAction = await dispatch(registerUser({
+            username: formData.name,
+            email: formData.email,
+            password: formData.password,
+            profileImage: profileImageUrl
+        })).unwrap();
 
-      toast({
-        title: "Registration successful!",
-        description: "Please verify your email!",
-      });
-      navigate('/otp-verification', { state: { email: formData.email }});
-      
+        // Store user data in localStorage
+        localStorage.setItem("user", JSON.stringify(resultAction));
+
+        toast({
+            title: "Registration successful!",
+            description: "Please verify your email!",
+        });
+        navigate('/otp-verification', { state: { email: formData.email }});
+        
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Registration failed",
-        description: error?.message || "Please try again later",
-      });
+        toast({
+            variant: "destructive",
+            title: "Registration failed",
+            description: error?.message || "Please try again later",
+        });
     }
   };
 
@@ -152,6 +180,39 @@ const { loading, error} = useSelector((state)=>state.user);
                 placeholder="your@email.com"
               />
               {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+            </div>
+            
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">
+                Profile Picture (Optional)
+              </label>
+              <div className="flex items-center gap-4">
+                {imagePreview && (
+                  <div className="h-16 w-16 overflow-hidden rounded-full">
+                    <img 
+                      src={imagePreview} 
+                      alt="Profile preview" 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="profile-image"
+                  />
+                  <label
+                    htmlFor="profile-image"
+                    className="inline-flex cursor-pointer items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    {imagePreview ? 'Change Photo' : 'Upload Photo'}
+                  </label>
+                </div>
+              </div>
             </div>
             
             <div className="space-y-1">
