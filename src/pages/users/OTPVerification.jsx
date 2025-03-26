@@ -22,6 +22,9 @@ const OTPVerification = () => {
 
   const email = location.state?.email || '';
 
+  // Add a resetTimer state
+  const [resetTimer, setResetTimer] = useState(0);
+
   // Redirect if no email is provided
   useEffect(() => {
     if (!email) {
@@ -47,7 +50,7 @@ const OTPVerification = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [resetTimer]); // Add resetTimer as a dependency
 
   // Effect to handle successful verification
   useEffect(() => {
@@ -69,6 +72,7 @@ const OTPVerification = () => {
       });
       setTimeLeft(60);
       setResendDisabled(true);
+      setResetTimer(prev => prev + 1); // Increment resetTimer to trigger timer reset
     }
   }, [otpResent, email, toast]);
 
