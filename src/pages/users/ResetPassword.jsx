@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, Check, X } from 'lucide-react';
 import Layout from '../../components/layout/Layout';
@@ -18,6 +18,18 @@ const ResetPassword = () => {
   const location = useLocation();
   const { toast } = useToast();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (!location.state?.email) {
+      toast({
+        variant: "destructive",
+        title: "Unauthorized Access",
+        description: "Please follow the password reset process",
+      });
+      navigate('/forgot-password');
+      return;
+    }
+  }, [location.state, navigate, toast]);
 
   const passwordRequirements = [
     { id: 'length', label: 'At least 8 characters', test: (p) => p.length >= 8 },

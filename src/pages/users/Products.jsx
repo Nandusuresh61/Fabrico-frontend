@@ -310,7 +310,7 @@ const Products = () => {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {totalPages >= 1 && (
               <div className="mt-8 flex justify-center gap-2">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <button
