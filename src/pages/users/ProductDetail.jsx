@@ -183,15 +183,15 @@ const ProductDetail = () => {
               {selectedVariant?.discountPrice ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl font-bold">${selectedVariant.discountPrice}</span>
-                    <span className="text-lg text-gray-500 line-through">${selectedVariant.price}</span>
+                    <span className="text-2xl font-bold">₹{selectedVariant.discountPrice}</span>
+                    <span className="text-lg text-gray-500 line-through">₹{selectedVariant.price}</span>
                     <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
                       {Math.round(((selectedVariant.price - selectedVariant.discountPrice) / selectedVariant.price) * 100)}% OFF
                     </span>
                   </div>
                 </>
               ) : (
-                <span className="text-2xl font-bold">${selectedVariant?.price}</span>
+                <span className="text-2xl font-bold">₹{selectedVariant?.price}</span>
               )}
               <p className={selectedVariant?.stock>0 ? "text-sm text-green-600":"text-sm text-red-600"}>
                 {selectedVariant?.stock > 0 ? `Stock Available (${selectedVariant?.stock})` : 'Out of Stock'}

@@ -131,14 +131,14 @@ const ProductCard = ({
         <div className="mt-auto flex items-center gap-2">
           {hasDiscount ? (
             <>
-              <span className="text-sm font-semibold">${discountPrice.toFixed(2)}</span>
-              <span className="text-xs text-gray-500 line-through">${price.toFixed(2)}</span>
+              <span className="text-sm font-semibold">₹{discountPrice.toFixed(2)}</span>
+              <span className="text-xs text-gray-500 line-through">₹{price.toFixed(2)}</span>
               <span className="ml-auto text-xs font-medium text-green-600">
                 {Math.round(((price - discountPrice) / price) * 100)}% OFF
               </span>
             </>
           ) : (
-            <span className="text-sm font-semibold">${price.toFixed(2)}</span>
+            <span className="text-sm font-semibold">₹{price.toFixed(2)}</span>
           )}
         </div>
 
