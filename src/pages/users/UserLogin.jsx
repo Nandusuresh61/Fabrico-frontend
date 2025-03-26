@@ -60,7 +60,7 @@ const UserLogin = () => {
       
       toast({
         title: "Login successful",
-        description: `Welcome back, ${result?.name || "User"}!`,
+        description: `Welcome back, ${result?.username || "User"}!`,
       });
 
       navigate('/'); // Redirect to homepage on success
