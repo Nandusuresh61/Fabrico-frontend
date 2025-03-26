@@ -9,13 +9,14 @@ const CategoryManagement = () => {
   const dispatch = useDispatch();
   let count = 1;
   const [searchParams, setSearchParams] = useSearchParams();
-  const { categories, loading, error, page, totalPages, total } = useSelector((state) => state.category);
+  const { categories, loading, error: apiError, page, totalPages, total } = useSelector((state) => state.category);
   
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loadingCategories, setLoadingCategories] = useState({});
+  const [formError, setFormError] = useState('');
 
   // Search and filter states
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
@@ -95,17 +96,30 @@ const CategoryManagement = () => {
 
   const handleAddCategory = async () => {
     if (newCategoryName.trim()) {
-     dispatch(addCategory({ name: newCategoryName }));
-      setIsAddModalOpen(false);
-      setNewCategoryName('');
+      try {
+        await dispatch(addCategory({ name: newCategoryName })).unwrap();
+        setIsAddModalOpen(false);
+        setNewCategoryName('');
+        setFormError('');
+      } catch (err) {
+        setFormError(err);
+      }
     }
   };
 
   const handleEditCategory = async () => {
     if (newCategoryName.trim() && selectedCategory) {
-     dispatch(editCategory({ categoryId: selectedCategory._id, data: { name: newCategoryName } }));
-      setIsEditModalOpen(false);
-      setSelectedCategory(null);
+      try {
+        await dispatch(editCategory({ 
+          categoryId: selectedCategory._id, 
+          data: { name: newCategoryName } 
+        })).unwrap();
+        setIsEditModalOpen(false);
+        setSelectedCategory(null);
+        setFormError('');
+      } catch (err) {
+        setFormError(err);
+      }
     }
   };
 
@@ -261,9 +275,17 @@ const CategoryManagement = () => {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none"
                 placeholder="Enter category name"
               />
+              {formError && (
+                <p className="mt-1 text-sm text-red-600">{formError}</p>
+              )}
             </div>
             <div className="flex justify-end gap-2">
-              <CustomButton onClick={() => setIsAddModalOpen(false)}>
+              <CustomButton 
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setFormError('');
+                }}
+              >
                 Cancel
               </CustomButton>
               <CustomButton onClick={handleAddCategory}>
@@ -287,9 +309,17 @@ const CategoryManagement = () => {
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none"
                 placeholder="Enter category name"
               />
+              {formError && (
+                <p className="mt-1 text-sm text-red-600">{formError}</p>
+              )}
             </div>
             <div className="flex justify-end gap-2">
-              <CustomButton onClick={() => setIsEditModalOpen(false)}>
+              <CustomButton 
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setFormError('');
+                }}
+              >
                 Cancel
               </CustomButton>
               <CustomButton onClick={handleEditCategory}>
