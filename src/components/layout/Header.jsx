@@ -34,21 +34,21 @@ const Header = () => {
     setIsMenuOpen(false);
   }, [location]);
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Preserve existing params and add/update search
-      const currentParams = Object.fromEntries(searchParams.entries());
-      navigate({
-        pathname: '/products',
-        search: new URLSearchParams({
-          ...currentParams,
-          search: searchQuery.trim(),
-          page: '1' // Reset to first page on new search
-        }).toString()
-      });
-    }
-  };
+  // const handleSearchSubmit = (e) => {
+  //   e.preventDefault();
+  //   if (searchQuery.trim()) {
+  //     // Preserve existing params and add/update search
+  //     const currentParams = Object.fromEntries(searchParams.entries());
+  //     navigate({
+  //       pathname: '/products',
+  //       search: new URLSearchParams({
+  //         ...currentParams,
+  //         search: searchQuery.trim(),
+  //         page: '1' // Reset to first page on new search
+  //       }).toString()
+  //     });
+  //   }
+  // };
 
   const handleNavigation = (option) => {
     if (option.path) {
@@ -106,7 +106,7 @@ const Header = () => {
         {/* Search, User, and Cart - Desktop */}
         <div className="hidden items-center space-x-4 md:flex">
           {/* Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="relative">
+          {/* <form onSubmit={handleSearchSubmit} className="relative">
             <input
               type="text"
               placeholder="Search..."
@@ -115,7 +115,7 @@ const Header = () => {
               className="w-64 rounded-full border-none bg-gray-100 py-2 pl-10 pr-4 text-sm transition-all focus:bg-gray-200 focus:outline-none focus:ring-0"
             />
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-          </form>
+          </form> */}
 
           {/* Wishlist Icon */}
           <Link 
