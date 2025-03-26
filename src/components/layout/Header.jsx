@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ShoppingCart, User, Menu, X, Heart } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, X, Heart, LogOut, LogIn } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../../redux/features/userSlice';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -10,6 +13,9 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { user } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
 
   // Navigation options with proper category values
   const navOptions = [
@@ -67,6 +73,23 @@ const Header = () => {
       });
     }
   };
+
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    setIsUserMenuOpen(false);
+  };
+
+  // Add this useEffect after your other useEffects
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isUserMenuOpen && !event.target.closest('.user-menu')) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isUserMenuOpen]);
 
   return (
     <header
@@ -127,12 +150,48 @@ const Header = () => {
           </Link>
 
           {/* User Icon */}
-          <Link 
-            to="/login" 
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
-          >
-            <User className="h-5 w-5" />
-          </Link>
+          <div className="relative user-menu">
+            <button 
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+            >
+              <User className="h-5 w-5" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {isUserMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                {user ? (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Login
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Cart Icon */}
           <Link 
