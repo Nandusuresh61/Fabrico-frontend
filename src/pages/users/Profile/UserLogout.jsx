@@ -2,15 +2,18 @@ import { useState } from 'react';
 import { LogOut, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CustomButton from '../../../components/ui/CustomButton';
+import { useDispatch } from 'react-redux'
+import { logoutUser } from '../../../redux/features/userSlice';
 
 const UserLogout = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogout = () => {
     setIsLoading(true);
     
-    // Simulate logout API call
+    dispatch(logoutUser());
     setTimeout(() => {
       // Redirect to home page after logout
       navigate('/');
@@ -24,21 +27,14 @@ const UserLogout = () => {
           <LogOut className="h-10 w-10 text-red-500" />
         </div>
         
-        <h2 className="mt-6 text-2xl font-bold">Sign Out</h2>
+        <h2 className="mt-6 text-2xl font-bold">LogOut</h2>
         
         <p className="mt-3 text-gray-600">
           Are you sure you want to sign out of your account? You'll need to login again to access your profile.
         </p>
         
         <div className="mt-8 w-full rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-left">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
-            <div>
-              <p className="text-sm text-yellow-700">
-                Any unsaved changes in your current session may be lost. Make sure you've saved any important information before logging out.
-              </p>
-            </div>
-          </div>
+          
         </div>
         
         <div className="mt-8 flex w-full gap-4">
@@ -57,7 +53,7 @@ const UserLogout = () => {
             isLoading={isLoading}
             onClick={handleLogout}
           >
-            Sign Out
+            LogOut
           </CustomButton>
         </div>
       </div>

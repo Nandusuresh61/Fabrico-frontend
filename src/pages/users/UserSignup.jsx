@@ -15,6 +15,7 @@ const { loading, error} = useSelector((state)=>state.user);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
     profileImage: null
@@ -66,6 +67,13 @@ const { loading, error} = useSelector((state)=>state.user);
       newErrors.email = 'Email is invalid';
       isValid = false;
     }
+    if (!formData.phone) {
+      newErrors.phone = 'Phone number is required';
+      isValid = false;
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number is invalid';
+      isValid = false;
+    }
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -114,6 +122,7 @@ const { loading, error} = useSelector((state)=>state.user);
         const resultAction = await dispatch(registerUser({
             username: formData.name,
             email: formData.email,
+            phone: formData.phone,
             password: formData.password,
             profileImage: profileImageUrl
         })).unwrap();
@@ -131,7 +140,7 @@ const { loading, error} = useSelector((state)=>state.user);
         toast({
             variant: "destructive",
             title: "Registration failed",
-            description: error?.message || "Please try again later",
+            description: error || "An error occurred during registration",
         });
     }
   };
@@ -180,6 +189,21 @@ const { loading, error} = useSelector((state)=>state.user);
                 placeholder="your@email.com"
               />
               {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
+            </div>
+            <div className="space-y-1">
+              <label  className="text-sm font-medium text-gray-700">
+                Phone
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="number"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="Phone Number"
+              />
+              {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
             </div>
             
             <div className="space-y-1">

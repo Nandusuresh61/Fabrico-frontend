@@ -1,17 +1,18 @@
 import { useState } from 'react';
 import { User, Mail, Phone, Save, X } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
+import { useSelector } from 'react-redux'
 
 const PersonalInformation = () => {
+  const { user } = useSelector((state) => state.user)
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    mobile: '+1 (555) 123-4567',
-    profilePicture: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1740&auto=format&fit=crop',
+    name: user.username,
+    email: user.email,
+    mobile: user.phone || 'No phone number provided',
+    profilePicture: user.profileImage,
   });
-  
+
   const [formData, setFormData] = useState({ ...userData });
 
   const handleChange = (e) => {
@@ -34,42 +35,38 @@ const PersonalInformation = () => {
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-semibold">Personal Information</h2>
         {!isEditing && (
-          <CustomButton 
-            variant="outline" 
-            size="sm" 
+          <CustomButton
+            variant="outline"
+            size="sm"
             onClick={() => setIsEditing(true)}
           >
             Edit
           </CustomButton>
         )}
       </div>
-      
+
       <div className="flex flex-col md:flex-row md:gap-8">
         <div className="mb-6 md:mb-0">
           <div className="relative h-24 w-24 overflow-hidden rounded-full md:h-32 md:w-32">
-            <img 
-              src={userData.profilePicture} 
-              alt="Profile" 
-              className="h-full w-full object-cover transition-transform duration-500 hover:scale-110" 
+            <img
+              src={userData.profilePicture}
+              alt="Profile"
+              className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
             />
           </div>
         </div>
-        
+
         <div className="flex-1">
           {!isEditing ? (
             <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols">
                 <div className="rounded-lg border border-gray-200 p-4">
-                  <span className="text-sm font-medium text-gray-500">First Name</span>
-                  <p className="mt-1 font-medium">{userData.firstName}</p>
-                </div>
-                <div className="rounded-lg border border-gray-200 p-4">
-                  <span className="text-sm font-medium text-gray-500">Last Name</span>
-                  <p className="mt-1 font-medium">{userData.lastName}</p>
+                  <span className="text-sm font-medium text-gray-500">Name</span>
+                  <p className="mt-1 font-medium">{userData.name}</p>
                 </div>
               </div>
-              
-              <div className="grid gap-4 md:grid-cols-2">
+
+              <div className="grid gap-4 md:grid-cols">
                 <div className="rounded-lg border border-gray-200 p-4">
                   <span className="text-sm font-medium text-gray-500">Email Address</span>
                   <p className="mt-1 font-medium">{userData.email}</p>
@@ -96,7 +93,7 @@ const PersonalInformation = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">Last Name</label>
                   <div className="flex items-center rounded-lg border border-gray-300 px-3 py-2">
@@ -111,7 +108,7 @@ const PersonalInformation = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">Email Address</label>
@@ -126,7 +123,7 @@ const PersonalInformation = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-700">Mobile Number</label>
                   <div className="flex items-center rounded-lg border border-gray-300 px-3 py-2">
@@ -141,16 +138,16 @@ const PersonalInformation = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
-                <CustomButton 
+                <CustomButton
                   onClick={handleSave}
                   icon={<Save className="h-4 w-4" />}
                 >
                   Save Changes
                 </CustomButton>
-                <CustomButton 
-                  variant="outline" 
+                <CustomButton
+                  variant="outline"
                   onClick={handleCancel}
                   icon={<X className="h-4 w-4" />}
                 >

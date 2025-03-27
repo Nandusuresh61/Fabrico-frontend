@@ -31,7 +31,8 @@ export const registerUser = createAsyncThunk(
             const response = await userRegApi(userData);
             return response.data;
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Registration failed');
+            const errorMessage = error.response?.data?.message || 'Registration failed';
+            return rejectWithValue(errorMessage);
         }
     }
 );
