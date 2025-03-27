@@ -10,7 +10,7 @@ const PersonalInformation = () => {
     name: user.username,
     email: user.email,
     mobile: user.phone || 'No phone number provided',
-    profilePicture: user.profileImage,
+    profilePicture: user.profileImage || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0fuTXALquBtHtoCOWExZ2SWKPms87ZKWnWo3RMnAWGBbTGGBMfGtJ4dKbvjvvfc-kgxc&usqp=CAU",
   });
 
   const [formData, setFormData] = useState({ ...userData });
