@@ -128,11 +128,11 @@ const AdminLayout = ({ children }) => {
             <Menu className="h-6 w-6" />
           </button>
           
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
               <span className="text-sm font-medium">A</span>
             </div>
-          </div>
+          </div> */}
         </header>
         
         {/* Page content */}
