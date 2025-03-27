@@ -4,6 +4,7 @@ import CustomButton from '../../../components/ui/CustomButton';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProfile, sendEmailUpdateOtp, verifyEmailUpdate } from '../../../redux/features/userSlice';
 import { useToast } from "../../../hooks/use-toast";
+import { uploadToCloudinary } from '../../../api/cloudinary';
 
 const PersonalInformation = () => {
   const dispatch = useDispatch();
@@ -42,9 +43,30 @@ const PersonalInformation = () => {
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Add your image upload logic here
-      const imageUrl = await uploadToCloudinary(file);
-      setFormData(prev => ({ ...prev, profileImage: imageUrl }));
+      try {
+        // Create a preview
+        const previewUrl = URL.createObjectURL(file);
+        setFormData(prev => ({ ...prev, profileImage: previewUrl }));
+
+        // Upload to cloudinary
+        const imageUrl = await uploadToCloudinary(file);
+        
+        // Update form data with actual URL
+        setFormData(prev => ({ ...prev, profileImage: imageUrl }));
+        
+        toast({
+          title: "Success",
+          description: "Profile picture uploaded successfully"
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to upload profile picture"
+        });
+        // Revert to original image if upload fails
+        setFormData(prev => ({ ...prev, profileImage: user.profileImage }));
+      }
     }
   };
 
@@ -257,7 +279,7 @@ const PersonalInformation = () => {
                 <div className="flex gap-2">
                   <CustomButton
                     onClick={handleUpdate}
-                    loading={loading}
+                    isLoading={loading}
                   >
                     Update
                   </CustomButton>
@@ -341,7 +363,7 @@ const PersonalInformation = () => {
               </CustomButton>
               <CustomButton
                 onClick={handleUpdate}
-                loading={loading}
+                isLoading={loading}
                 disabled={loading}
               >
                 {loading ? 'Updating...' : 'Update'}
@@ -401,7 +423,7 @@ const PersonalInformation = () => {
               </CustomButton>
               <CustomButton
                 onClick={handleVerifyOtp}
-                loading={loading}
+                isLoading={loading}
                 disabled={loading}
               >
                 {loading ? 'Verifying...' : 'Verify'}

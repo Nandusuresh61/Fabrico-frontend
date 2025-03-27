@@ -32,14 +32,16 @@ const CustomButton = React.forwardRef((
     return (
       <button
         ref={ref}
-        disabled={isLoading || disabled}
+        disabled={disabled || isLoading}
         className={cn(
           'relative inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
           variantStyles[variant],
           sizeStyles[size],
           fullWidth && 'w-full',
           'overflow-hidden group',
-          className
+          className,
+          isLoading ? 'cursor-not-allowed opacity-70' : '',
+          disabled ? 'cursor-not-allowed opacity-50' : ''
         )}
         {...props}
       >
