@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { googleAuthApi, resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi, sendForgotPasswordEmailApi, verifyForgotOtpApi, resendForgotOtpApi, resetPasswordApi } from '../../api/userApi';
+import { googleAuthApi, resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi, sendForgotPasswordEmailApi, verifyForgotOtpApi, resendForgotOtpApi, resetPasswordApi, updateProfileApi, sendEmailUpdateOtpApi, verifyEmailUpdateOtpApi } from '../../api/userApi';
 import Cookies from 'js-cookie'
 
 
@@ -133,6 +133,46 @@ export const resetPassword = createAsyncThunk(
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Failed to reset password');
+        }
+    }
+);
+
+export const updateProfile = createAsyncThunk(
+    'user/updateProfile',
+    async (userData, { rejectWithValue }) => {
+        try {
+            const response = await updateProfileApi(userData);
+            // Update localStorage
+            const currentUser = JSON.parse(localStorage.getItem("user"));
+            const updatedUser = { ...currentUser, ...response.data.user };
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            return response.data.user;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Update failed');
+        }
+    }
+);
+
+export const sendEmailUpdateOtp = createAsyncThunk(
+    'user/sendEmailUpdateOtp',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await sendEmailUpdateOtpApi(data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to send verification code');
+        }
+    }
+);
+
+export const verifyEmailUpdate = createAsyncThunk(
+    'user/verifyEmailUpdate',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await verifyEmailUpdateOtpApi(data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Verification failed');
         }
     }
 );
@@ -282,6 +322,53 @@ const userSlice = createSlice({
                 state.user = action.payload;
             })
             .addCase(googleAuthUser.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            .addCase(updateProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(updateProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.user = action.payload;
+            })
+            .addCase(updateProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            .addCase(sendEmailUpdateOtp.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(sendEmailUpdateOtp.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(sendEmailUpdateOtp.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            .addCase(verifyEmailUpdate.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(verifyEmailUpdate.fulfilled, (state, action) => {
+                state.loading = false;
+                // Update the user's email in the state and localStorage
+                if (action.payload.email) {
+                    state.user.email = action.payload.email;
+                    // Update localStorage
+                    const currentUser = JSON.parse(localStorage.getItem("user"));
+                    if (currentUser) {
+                        currentUser.email = action.payload.email;
+                        localStorage.setItem("user", JSON.stringify(currentUser));
+                    }
+                }
+            })
+            .addCase(verifyEmailUpdate.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
