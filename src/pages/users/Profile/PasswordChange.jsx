@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { KeyRound, EyeOff, Eye, Check, X } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
+import { useDispatch } from 'react-redux';
+import { changePassword } from '../../../redux/features/userSlice';
+import { useToast } from "../../../hooks/use-toast";
 
 const PasswordChange = () => {
   const [formData, setFormData] = useState({
@@ -13,7 +16,10 @@ const PasswordChange = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [successMessage, setSuccessMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const dispatch = useDispatch();
+  const { toast } = useToast();
 
   const passwordRequirements = [
     { id: 'length', label: 'At least 8 characters', test: (p) => p.length >= 8 },
@@ -33,10 +39,6 @@ const PasswordChange = () => {
         delete newErrors[name];
         return newErrors;
       });
-    }
-    
-    if (successMessage) {
-      setSuccessMessage('');
     }
   };
 
@@ -71,19 +73,37 @@ const PasswordChange = () => {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      // Here you would typically make an API call to update the password
-      setTimeout(() => {
-        setSuccessMessage('Your password has been successfully updated');
-        setFormData({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: '',
-        });
-      }, 1000);
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      await dispatch(changePassword({ 
+        currentPassword: formData.currentPassword,
+        newPassword: formData.newPassword 
+      })).unwrap();
+      
+      toast({
+        title: "Success",
+        description: "Password changed successfully",
+      });
+      
+      setFormData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to change password",
+        description: error || "Please try again later",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -93,13 +113,6 @@ const PasswordChange = () => {
         <h2 className="text-xl font-semibold">Change Password</h2>
         <p className="mt-1 text-sm text-gray-600">Update your password to keep your account secure</p>
       </div>
-      
-      {successMessage && (
-        <div className="mb-6 flex items-center gap-2 rounded-lg bg-green-100 p-4 text-green-800">
-          <Check className="h-5 w-5 text-green-500" />
-          <p>{successMessage}</p>
-        </div>
-      )}
       
       <form onSubmit={handleSubmit} className="max-w-md space-y-6">
         <div className="space-y-1">
@@ -188,7 +201,11 @@ const PasswordChange = () => {
           {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
         </div>
 
-        <CustomButton type="submit" icon={<KeyRound className="h-4 w-4" />}>
+        <CustomButton 
+          type="submit" 
+          icon={<KeyRound className="h-4 w-4" />}
+          isLoading={isLoading}
+        >
           Update Password
         </CustomButton>
       </form>

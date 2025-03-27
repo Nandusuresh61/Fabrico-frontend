@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { googleAuthApi, resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi, sendForgotPasswordEmailApi, verifyForgotOtpApi, resendForgotOtpApi, resetPasswordApi, updateProfileApi, sendEmailUpdateOtpApi, verifyEmailUpdateOtpApi } from '../../api/userApi';
+import { googleAuthApi, resendOtpApi, userLoginApi, userLogoutApi, userRegApi, verifyOtpApi, sendForgotPasswordEmailApi, verifyForgotOtpApi, resendForgotOtpApi, resetPasswordApi, updateProfileApi, sendEmailUpdateOtpApi, verifyEmailUpdateOtpApi, changePasswordApi } from '../../api/userApi';
 import Cookies from 'js-cookie'
 
 
@@ -173,6 +173,18 @@ export const verifyEmailUpdate = createAsyncThunk(
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Verification failed');
+        }
+    }
+);
+
+export const changePassword = createAsyncThunk(
+    'user/changePassword',
+    async (data, { rejectWithValue }) => {
+        try {
+            const response = await changePasswordApi(data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to change password');
         }
     }
 );
@@ -369,6 +381,18 @@ const userSlice = createSlice({
                 }
             })
             .addCase(verifyEmailUpdate.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+
+            .addCase(changePassword.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(changePassword.fulfilled, (state) => {
+                state.loading = false;
+            })
+            .addCase(changePassword.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })

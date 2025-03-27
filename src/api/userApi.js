@@ -24,3 +24,5 @@ export const googleAuthApi = (code) => API.post(`/users/google?code=${code}`, co
 export const updateProfileApi = (data) => API.post("/users/update-profile", data)
 export const sendEmailUpdateOtpApi = (data) => API.post("/users/send-email-update-otp", data)
 export const verifyEmailUpdateOtpApi = (data) => API.post("/users/verify-email-update", data)
+
+export const changePasswordApi = (data) => API.post("/users/change-password", data)
