@@ -15,7 +15,6 @@ const Header = () => {
   const [searchParams] = useSearchParams();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
-  console.log(user)
   const dispatch = useDispatch();
 
   // Navigation options with proper category values
