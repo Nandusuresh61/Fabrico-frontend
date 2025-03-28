@@ -69,7 +69,7 @@ const AddressSection = () => {
     setIsModalOpen(false);
   };
 
-  const handleEditAddress = (e) => {
+  const handleEditAddress = async (e) => {
     e.preventDefault();
     if (!editingId) return;
     
@@ -84,9 +84,21 @@ const AddressSection = () => {
       isDefault: formData.isDefault
     };
 
-    dispatch(updateExistingAddress({ id: editingId, addressData }));
-    resetForm();
-    setIsModalOpen(false);
+    try {
+      await dispatch(updateExistingAddress({ id: editingId, addressData })).unwrap();
+      toast({
+        title: "Success",
+        description: "Address updated successfully",
+      });
+      resetForm();
+      setIsModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update address",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteClick = (address) => {
@@ -129,7 +141,7 @@ const AddressSection = () => {
       isDefault: address.isDefault
     });
     setEditingId(address._id);
-    setIsAdding(true);
+    setIsModalOpen(true);
   };
 
   const resetForm = () => {
