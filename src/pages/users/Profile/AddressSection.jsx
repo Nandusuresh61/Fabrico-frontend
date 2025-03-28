@@ -64,6 +64,7 @@ const AddressSection = () => {
     };
 
     dispatch(addNewAddress(addressData));
+    console.log(addressData)
     resetForm();
     setIsModalOpen(false);
   };
@@ -160,7 +161,7 @@ const AddressSection = () => {
           onClick={() => setIsModalOpen(true)}
           icon={<PlusCircle className="h-4 w-4" />}
         >
-          + ADD A NEW ADDRESS
+          ADD A NEW ADDRESS
         </CustomButton>
       </div>
 
@@ -168,7 +169,7 @@ const AddressSection = () => {
       <div className="grid gap-4 md:grid-cols-2">
         {addresses.map((address) => (
           <div
-            key={address.id}
+            key={address._id}
             className="rounded-lg border border-gray-200 p-4 shadow-sm transition-all hover:shadow-md"
           >
             <div className="mb-2 flex items-center justify-between">
@@ -198,7 +199,7 @@ const AddressSection = () => {
             <div className="space-y-1 text-sm text-gray-600">
               <p className="font-medium text-gray-900">{address.name}</p>
               <p>{address.street}</p>
-              <p>{`${address.city}, ${address.state} ${address.zipCode}`}</p>
+              <p>{`${address.city}, ${address.state} ${address.pincode}`}</p>
               <p className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
                 {address.phone}
@@ -305,7 +306,7 @@ const AddressSection = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                ZIP Code
+                Pincode
               </label>
               <input
                 type="text"
@@ -403,6 +404,7 @@ const AddressSection = () => {
               type="button"
               variant="destructive"
               onClick={handleDeleteConfirm}
+              className="hover:bg-red-600"
             >
               Delete Address
             </CustomButton>

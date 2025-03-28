@@ -22,14 +22,14 @@ function UserRoutes() {
         <Route path='/' element={<Index />} />
         <Route path='/login' element={<UserLogin />} />
         <Route path='/signup' element={<UserSignup />} />
-        <Route path='/otp-verification' element={<OTPVerification/>}/>
-        <Route path='/forgot-password' element={<ForgotPassword/>}/>
-        <Route path='/forgot-otp' element={<ForgotOTP/>}/>
-        
+        <Route path='/otp-verification' element={<OTPVerification />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/forgot-otp' element={<ForgotOTP />} />
+
         <Route element={<ResetPasswordProtectedRoute />}>
-          <Route path='/reset-password' element={<ResetPassword/>}/>
+          <Route path='/reset-password' element={<ResetPassword />} />
         </Route>
-        
+
         <Route path='/products/:id' element={<ProductDetail />} />
         <Route path='/products' element={<Products />} />
         <Route path='/*' element={<NotFound />} />
@@ -37,7 +37,7 @@ function UserRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route path='/profile' element={<UserProfile />} />
           {/* <Route path='/wishlist' element={<WishList />} />
-          <Route path='/orders' element={<Orders />} />*/}
+          <Route path='/cart' element={<Cart />} /> */}
         </Route>
       </Routes>
     </>
