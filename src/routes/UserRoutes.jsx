@@ -14,6 +14,11 @@ import ForgotOTP from '../pages/users/ForgotOTP'
 import ResetPassword from '../pages/users/ResetPassword'
 import ResetPasswordProtectedRoute from './ResetPasswordProtectedRoute'
 
+import Cart from '../pages/users/Cart'
+import Wishlist from '../pages/users/Wishlist'
+import Checkout from '../pages/users/Checkout'
+
+
 
 function UserRoutes() {
   return (
@@ -36,8 +41,9 @@ function UserRoutes() {
 
         <Route element={<ProtectedRoute />}>
           <Route path='/profile' element={<UserProfile />} />
-          {/* <Route path='/wishlist' element={<WishList />} />
-          <Route path='/cart' element={<Cart />} /> */}
+          <Route path='/wishlist' element={<Wishlist />} />
+          <Route path='/cart' element={<Cart />} />
+          <Route path='/checkout' element={<Checkout />} />
         </Route>
       </Routes>
     </>
