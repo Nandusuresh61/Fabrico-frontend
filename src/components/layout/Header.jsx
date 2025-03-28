@@ -98,11 +98,11 @@ const Header = () => {
         isScrolled ? 'bg-white/90 shadow-sm backdrop-blur-md' : 'bg-white'
       )}
     >
-      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
+      <div className="container flex h-20 items-center justify-between px-4 md:px-6">
         {/* Logo */}
         <Link 
           to="/" 
-          className="flex items-center text-xl font-semibold transition-opacity hover:opacity-80"
+          className="flex items-center text-2xl font-semibold transition-opacity hover:opacity-80"
         >
           <span className="mr-1 text-primary">FAB</span>
           <span className="text-gray-500">RICO</span>
@@ -114,7 +114,7 @@ const Header = () => {
             <button
               key={option.name}
               onClick={() => handleNavigation(option)}
-              className={`text-base font-medium text-gray-700 transition-colors hover:text-primary ${
+              className={`text-lg font-medium text-gray-700 transition-colors hover:text-primary ${
                 (option.category && searchParams.get('category') === option.category) ||
                 (!option.category && location.pathname === option.path)
                   ? 'text-primary'
@@ -127,7 +127,7 @@ const Header = () => {
         </nav>
 
         {/* Search, User, and Cart - Desktop */}
-        <div className="hidden items-center space-x-4 md:flex">
+        <div className="hidden items-center space-x-6 md:flex">
           {/* Search Bar */}
           {/* <form onSubmit={handleSearchSubmit} className="relative">
             <input
@@ -143,10 +143,10 @@ const Header = () => {
           {/* Wishlist Icon */}
           <Link 
             to="/wishlist" 
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
             aria-label="View your wishlist"
           >
-            <Heart className="h-5 w-5" />
+            <Heart className="h-6 w-6" />
           </Link>
 
           {/* User Icon */}
@@ -154,41 +154,41 @@ const Header = () => {
             {user ? (
               <button 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex h-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
               >
                 <div className="flex items-center gap-2">
                   {user.profileImage ? (
-                    <img src={user.profileImage} alt="Profile" className="h-10 w-10 rounded-full" />
+                    <img src={user.profileImage} alt="Profile" className="h-12 w-12 rounded-full" />
                   ) : (
-                    <User className="h-5 w-5" />
+                    <User className="h-6 w-6" />
                   )}
                 </div>
               </button>
             ) : (
               <Link 
                 to="/login"
-                className="flex h-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+                className="flex h-12 items-center justify-center rounded-full bg-gray-100 px-6 text-gray-700 transition-colors hover:bg-gray-200"
               >
-                <span className="text-sm font-medium px-4">Login</span>
+                <span className="text-base font-medium">Login</span>
               </Link>
             )}
 
             {/* Dropdown Menu - Only show if user is logged in */}
             {isUserMenuOpen && user && (
-              <div className="absolute right-0 mt-2 w-48 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+              <div className="absolute right-0 mt-2 w-52 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
                 <Link
                   to="/profile"
-                  className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex items-center px-4 py-3 text-base text-gray-700 hover:bg-gray-100"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
-                  <User className="mr-2 h-4 w-4" />
+                  <User className="mr-2 h-5 w-5" />
                   Profile
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="flex w-full items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  className="flex w-full items-center px-4 py-3 text-base text-gray-700 hover:bg-gray-100"
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
+                  <LogOut className="mr-2 h-5 w-5" />
                   Logout
                 </button>
               </div>
@@ -198,10 +198,10 @@ const Header = () => {
           {/* Cart Icon */}
           <Link 
             to="/cart" 
-            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+            className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
           >
-            <ShoppingCart className="h-5 w-5" />
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+            <ShoppingCart className="h-6 w-6" />
+            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
               0
             </span>
           </Link>
@@ -212,35 +212,35 @@ const Header = () => {
           {/* Wishlist Icon (Mobile) */}
           <Link 
             to="/wishlist" 
-            className="flex h-10 w-10 items-center justify-center text-gray-700"
+            className="flex h-12 w-12 items-center justify-center text-gray-700"
             aria-label="View your wishlist"
           >
-            <Heart className="h-5 w-5" />
+            <Heart className="h-6 w-6" />
           </Link>
           
           <Link 
             to="/cart" 
-            className="relative flex h-10 w-10 items-center justify-center text-gray-700"
+            className="relative flex h-12 w-12 items-center justify-center text-gray-700"
           >
-            <ShoppingCart className="h-5 w-5" />
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+            <ShoppingCart className="h-6 w-6" />
+            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
               0
             </span>
           </Link>
           
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center text-gray-700"
+            className="flex h-12 w-12 items-center justify-center text-gray-700"
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {isMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
           </button>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="fixed inset-0 top-16 z-40 bg-white animate-fade-in md:hidden">
+        <div className="fixed inset-0 top-20 z-40 bg-white animate-fade-in md:hidden">
           <div className="container px-4 py-6">
             {/* Mobile Search */}
             <form onSubmit={handleSearchSubmit} className="relative mb-6">
@@ -260,7 +260,7 @@ const Header = () => {
                 <button
                   key={option.name}
                   onClick={() => handleNavigation(option)}
-                  className={`flex items-center py-2 text-lg font-medium ${
+                  className={`flex items-center py-2 text-xl font-medium ${
                     (option.category && searchParams.get('category') === option.category) ||
                     (!option.category && location.pathname === option.path)
                       ? 'text-primary'
@@ -273,13 +273,13 @@ const Header = () => {
               
               <div className="my-4 h-px bg-gray-200" />
               
-              <Link to="/wishlist" className="flex items-center py-2 text-lg font-medium text-gray-800">
-                <Heart className="mr-3 h-5 w-5" />
+              <Link to="/wishlist" className="flex items-center py-2 text-xl font-medium text-gray-800">
+                <Heart className="mr-3 h-6 w-6" />
                 Wishlist
               </Link>
               
-              <Link to="/login" className="flex items-center py-2 text-lg font-medium text-gray-800">
-                <User className="mr-3 h-5 w-5" />
+              <Link to="/login" className="flex items-center py-2 text-xl font-medium text-gray-800">
+                <User className="mr-3 h-6 w-6" />
                 Account
               </Link>
             </nav>
