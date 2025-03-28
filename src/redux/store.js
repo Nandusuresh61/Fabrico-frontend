@@ -3,7 +3,8 @@ import userReducer from './features/userSlice';
 import adminReducer from './features/adminSlice';
 import categoryReducer from './features/categorySlice'
 import brandReducer from './features/brandSlice';
-import productReducer from './features/productSlice'
+import productReducer from './features/productSlice';
+import addressReducer from './features/addressSlice'
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     category: categoryReducer,
     brands: brandReducer,
     product: productReducer,
+    address: addressReducer,
   },
 });
 

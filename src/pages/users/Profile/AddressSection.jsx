@@ -1,37 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapPin, PlusCircle, Pencil, Trash2, Check, Home, Briefcase } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
 import Modal from '../../../components/ui/Modal';
+import { useDispatch, useSelector } from 'react-redux';
+import { 
+  fetchAddresses, 
+  addNewAddress, 
+  updateExistingAddress, 
+  removeAddress,
+  setAddressAsDefault 
+} from '../../../redux/features/addressSlice';
+import { useToast } from '../../../hooks/use-toast';
 
 const AddressSection = () => {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [addressToDelete, setAddressToDelete] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
-  const [addresses, setAddresses] = useState([
-    {
-      id: '1',
-      type: 'home',
-      name: 'John Doe',
-      street: '123 Main Street, Apt 4B',
-      city: 'New York',
-      state: 'NY',
-      zipCode: '10001',
-      phone: '+1 (555) 123-4567',
-      isDefault: true,
-    },
-    {
-      id: '2',
-      type: 'work',
-      name: 'John Doe',
-      street: '456 Business Ave, Floor 8',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94103',
-      phone: '+1 (555) 987-6543',
-      isDefault: false,
-    },
-  ]);
-  
+  const dispatch = useDispatch();
+  const {toast} = useToast();
+  const { addresses, loading } = useSelector(state => state.address);
+
+  useEffect(() => {
+    dispatch(fetchAddresses());
+  }, [dispatch]);
+
   const [formData, setFormData] = useState({
     type: 'home',
     name: '',
@@ -55,52 +49,85 @@ const AddressSection = () => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
-  const handleAddAddress = () => {
-    const newAddress = {
-      ...formData,
-      id: Date.now().toString(),
+  const handleAddAddress = (e) => {
+    e.preventDefault();
+    
+    const addressData = {
+      type: formData.type,
+      name: formData.name,
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.zipCode,
+      phone: formData.phone,
+      isDefault: formData.isDefault
     };
-    
-    if (formData.isDefault) {
-      setAddresses(prev => prev.map(addr => ({
-        ...addr,
-        isDefault: false
-      })));
-    }
-    
-    setAddresses((prev) => [...prev, newAddress]);
+
+    dispatch(addNewAddress(addressData));
     resetForm();
     setIsModalOpen(false);
   };
 
-  const handleEditAddress = () => {
+  const handleEditAddress = (e) => {
+    e.preventDefault();
     if (!editingId) return;
     
-    if (formData.isDefault) {
-      setAddresses(prev => prev.map(addr => ({
-        ...addr,
-        isDefault: addr.id === editingId ? formData.isDefault : false
-      })));
-    }
-    
-    setAddresses((prev) =>
-      prev.map((addr) =>
-        addr.id === editingId
-          ? { ...formData, id: editingId }
-          : addr
-      )
-    );
-    
+    const addressData = {
+      type: formData.type,
+      name: formData.name,
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.zipCode,
+      phone: formData.phone,
+      isDefault: formData.isDefault
+    };
+
+    dispatch(updateExistingAddress({ id: editingId, addressData }));
     resetForm();
+    setIsModalOpen(false);
   };
 
-  const handleDeleteAddress = (id) => {
-    setAddresses((prev) => prev.filter((addr) => addr.id !== id));
+  const handleDeleteClick = (address) => {
+    setAddressToDelete(address);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!addressToDelete) return;
+    
+    try {
+      await dispatch(removeAddress(addressToDelete._id)).unwrap();
+      dispatch(fetchAddresses());
+      toast({
+        title: "Success",
+        description: "Address deleted successfully",
+      });
+    } catch (error) {
+      console.error('Failed to delete address:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete address. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteConfirm(false);
+      setAddressToDelete(null);
+    }
   };
 
   const startEdit = (address) => {
-    setFormData({ ...address });
-    setEditingId(address.id);
+    setFormData({
+      type: address.type || 'home',
+      name: address.name,
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      zipCode: address.pincode,
+      phone: address.phone,
+      isDefault: address.isDefault
+    });
+    setEditingId(address._id);
     setIsAdding(true);
   };
 
@@ -120,10 +147,7 @@ const AddressSection = () => {
   };
 
   const handleDefaultChange = (addressId) => {
-    setAddresses(prev => prev.map(addr => ({
-      ...addr,
-      isDefault: addr.id === addressId
-    })));
+    dispatch(setAddressAsDefault(addressId));
   };
 
   return (
@@ -164,7 +188,7 @@ const AddressSection = () => {
                   <Pencil className="h-4 w-4 text-gray-500" />
                 </button>
                 <button
-                  onClick={() => handleDeleteAddress(address.id)}
+                  onClick={() => handleDeleteClick(address)}
                   className="rounded p-1 hover:bg-gray-100"
                 >
                   <Trash2 className="h-4 w-4 text-red-500" />
@@ -185,11 +209,11 @@ const AddressSection = () => {
                 type="checkbox"
                 id={`default-${address.id}`}
                 checked={address.isDefault}
-                onChange={() => handleDefaultChange(address.id)}
+                onChange={() => handleDefaultChange(address._id)}
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label 
-                htmlFor={`default-${address.id}`} 
+                htmlFor={`default-${address._id}`} 
                 className="ml-2 text-sm text-gray-700 cursor-pointer select-none"
               >
                 Set as default address
@@ -208,7 +232,7 @@ const AddressSection = () => {
         }}
         title={editingId ? "Edit Address" : "Add New Address"}
       >
-        <form className="space-y-4">
+        <form onSubmit={editingId ? handleEditAddress : handleAddAddress} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -322,6 +346,7 @@ const AddressSection = () => {
 
           <div className="mt-6 flex justify-end gap-3">
             <CustomButton
+              type="button"
               variant="outline"
               onClick={() => {
                 setIsModalOpen(false);
@@ -331,12 +356,58 @@ const AddressSection = () => {
               Cancel
             </CustomButton>
             <CustomButton
-              onClick={editingId ? handleEditAddress : handleAddAddress}
+              type="submit"
             >
               {editingId ? 'Save Changes' : 'Save Address'}
             </CustomButton>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setAddressToDelete(null);
+        }}
+        title="Delete Address"
+      >
+        <div className="space-y-4">
+          {addressToDelete && (
+            <div className="rounded-lg border border-gray-200 p-4">
+              <p className="font-medium text-gray-900">{addressToDelete.name}</p>
+              <p className="text-sm text-gray-600">{addressToDelete.street}</p>
+              <p className="text-sm text-gray-600">
+                {`${addressToDelete.city}, ${addressToDelete.state} ${addressToDelete.pincode}`}
+              </p>
+            </div>
+          )}
+          
+          <p className="text-gray-600">
+            Are you sure you want to delete this address? This action cannot be undone.
+          </p>
+          
+          <div className="flex items-center justify-end gap-2 border-t pt-4">
+            <CustomButton
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setShowDeleteConfirm(false);
+                setAddressToDelete(null);
+              }}
+            >
+              Cancel
+            </CustomButton>
+            <CustomButton
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+            >
+              Delete Address
+            </CustomButton>
+          </div>
+        </div>
       </Modal>
     </div>
   );
