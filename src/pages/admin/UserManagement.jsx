@@ -5,6 +5,7 @@ import { getAllUsers, toggleUserStatus } from '../../redux/features/adminSlice';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 // import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 const UserManagement = () => {
   const dispatch = useDispatch();
@@ -12,6 +13,11 @@ const UserManagement = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { users, loading, error, pagination } = useSelector((state) => state.admin);
   const [togglingUsers, setTogglingUsers] = useState(new Set()); // Track users being toggled
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    userId: null,
+    user: null,
+  });
 
   // Get URL parameters or set defaults
   const page = parseInt(searchParams.get('page')) || 1;
@@ -57,17 +63,16 @@ const UserManagement = () => {
   const toggleStatus = async (userId, user) => {
     if (user.isAdmin) return;
     
-    // Add confirmation dialog
-    const action = user.status === 'active' ? 'block' : 'unblock';
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} user "${user.username}"? ${
-        action === 'block' 
-          ? 'They will not be able to access the system.'
-          : 'They will regain access to the system.'
-      }`
-    );
+    setModalState({
+      isOpen: true,
+      userId,
+      user,
+    });
+  };
 
-    if (!confirmed) return;
+  const handleConfirmToggle = async () => {
+    const { userId, user } = modalState;
+    const action = user.status === 'active' ? 'block' : 'unblock';
 
     try {
       setTogglingUsers(prev => new Set(prev).add(userId));
@@ -81,6 +86,7 @@ const UserManagement = () => {
         newSet.delete(userId);
         return newSet;
       });
+      setModalState({ isOpen: false, userId: null, user: null });
     }
   };
 
@@ -190,6 +196,24 @@ const UserManagement = () => {
             ))}
           </div>
         )}
+
+        <ConfirmationModal
+          isOpen={modalState.isOpen}
+          onClose={() => setModalState({ isOpen: false, userId: null, user: null })}
+          onConfirm={handleConfirmToggle}
+          title="Confirm User Status Change"
+          message={
+            modalState.user
+              ? `Are you sure you want to ${
+                  modalState.user.status === 'active' ? 'block' : 'unblock'
+                } user "${modalState.user.username}"? ${
+                  modalState.user.status === 'active'
+                    ? 'They will not be able to access the system.'
+                    : 'They will regain access to the system.'
+                }`
+              : ''
+          }
+        />
       </div>
     // </AdminLayout>
   );

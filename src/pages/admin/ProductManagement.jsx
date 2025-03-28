@@ -9,6 +9,7 @@ import EditProductForm from './Product/EditProductForm';
 import EditProductNameForm from './Product/EditProductNameForm';
 import { useToast } from "../../hooks/use-toast";
 import React from 'react';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 const ProductManagement = () => {
   let count = 1;
@@ -31,6 +32,14 @@ const ProductManagement = () => {
   const [loadingProducts, setLoadingProducts] = useState({});
   const [isEditNameModalOpen, setIsEditNameModalOpen] = useState(false);
   const [selectedProductForName, setSelectedProductForName] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    type: null, // 'product' or 'variant'
+    productId: null,
+    variantId: null,
+    product: null,
+    variant: null
+  });
 
   const updateUrlAndFetch = (newParams) => {
     const currentParams = Object.fromEntries(searchParams.entries());
@@ -88,32 +97,14 @@ const ProductManagement = () => {
     const product = products.find(p => p._id === productId);
     if (!product) return;
 
-    const action = product.status === 'active' ? 'block' : 'unblock';
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} product "${product.name}"? ${
-        action === 'block' 
-          ? 'This product and all its variants will no longer be available for purchase.'
-          : 'This product and all its variants will be available for purchase again.'
-      }`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      setLoadingProducts(prev => ({ ...prev, [productId]: true }));
-      await dispatch(toggleProductMainStatus(productId)).unwrap();
-      toast({
-        title: "Product Status Updated Successfully",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Status Update Failed",
-        description: error || "There was an error updating the product status",
-      });
-    } finally {
-      setLoadingProducts(prev => ({ ...prev, [productId]: false }));
-    }
+    setConfirmModal({
+      isOpen: true,
+      type: 'product',
+      productId,
+      product,
+      variantId: null,
+      variant: null
+    });
   };
 
   const handleAddProduct = () => setIsModalOpen(!isModalOpen);
@@ -157,29 +148,14 @@ const ProductManagement = () => {
     const variant = product?.variants?.find(v => v._id === variantId);
     if (!product || !variant) return;
 
-    const action = variant.isBlocked ? 'activate' : 'block';
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} this variant of "${product.name}" (${variant.color})? ${
-        action === 'block' 
-          ? 'This variant will no longer be available for purchase.'
-          : 'This variant will be available for purchase again.'
-      }`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await dispatch(toggleProductStatus({ productId, variantId }));
-      toast({
-        title: "Variant Status Updated Successfully",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Status Update Failed",
-        description: error || "There was an error updating the variant status",
-      });
-    }
+    setConfirmModal({
+      isOpen: true,
+      type: 'variant',
+      productId,
+      variantId,
+      product,
+      variant
+    });
   };
 
   const handleEditProductName = (product) => {
@@ -202,6 +178,43 @@ const ProductManagement = () => {
         variant: "destructive",
         title: "Update Failed",
         description: error || "There was an error updating the product name",
+      });
+    }
+  };
+
+  const handleConfirmStatusToggle = async () => {
+    const { type, productId, variantId, product, variant } = confirmModal;
+
+    try {
+      if (type === 'product') {
+        setLoadingProducts(prev => ({ ...prev, [productId]: true }));
+        await dispatch(toggleProductMainStatus(productId)).unwrap();
+        toast({
+          title: "Product Status Updated Successfully",
+        });
+      } else if (type === 'variant') {
+        await dispatch(toggleProductStatus({ productId, variantId }));
+        toast({
+          title: "Variant Status Updated Successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Status Update Failed",
+        description: error || "There was an error updating the status",
+      });
+    } finally {
+      if (type === 'product') {
+        setLoadingProducts(prev => ({ ...prev, [productId]: false }));
+      }
+      setConfirmModal({
+        isOpen: false,
+        type: null,
+        productId: null,
+        variantId: null,
+        product: null,
+        variant: null
       });
     }
   };
@@ -453,6 +466,34 @@ const ProductManagement = () => {
           onClose={() => setIsEditNameModalOpen(false)}
         />
       )}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({
+          isOpen: false,
+          type: null,
+          productId: null,
+          variantId: null,
+          product: null,
+          variant: null
+        })}
+        onConfirm={handleConfirmStatusToggle}
+        title="Confirm Status Change"
+        message={
+          confirmModal.type === 'product' && confirmModal.product
+            ? `Are you sure you want to ${confirmModal.product.status === 'active' ? 'block' : 'unblock'} product "${confirmModal.product.name}"? ${
+                confirmModal.product.status === 'active' 
+                  ? 'This product and all its variants will no longer be available for purchase.'
+                  : 'This product and all its variants will be available for purchase again.'
+              }`
+            : confirmModal.type === 'variant' && confirmModal.product && confirmModal.variant
+            ? `Are you sure you want to ${confirmModal.variant.isBlocked ? 'activate' : 'block'} this variant of "${confirmModal.product.name}" (${confirmModal.variant.color})? ${
+                !confirmModal.variant.isBlocked
+                  ? 'This variant will no longer be available for purchase.'
+                  : 'This variant will be available for purchase again.'
+              }`
+            : ''
+        }
+      />
     </div>
   );
 };

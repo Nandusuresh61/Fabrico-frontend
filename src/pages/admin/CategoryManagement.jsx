@@ -4,6 +4,8 @@ import { useSearchParams } from 'react-router-dom';
 import { Edit, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getAllCategories, addCategory, editCategory, deleteCategory } from '../../redux/features/categorySlice';
 import CustomButton from '../../components/ui/CustomButton';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import { toast } from 'react-hot-toast';
 
 const CategoryManagement = () => {
   const dispatch = useDispatch();
@@ -23,6 +25,13 @@ const CategoryManagement = () => {
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '');
   const [sortField, setSortField] = useState(searchParams.get('sortField') || 'createdAt');
   const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
+
+  // Add new state for confirmation modal
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    categoryId: null,
+    category: null
+  });
 
   const updateUrlAndFetch = (newParams) => {
     const currentParams = Object.fromEntries(searchParams.entries());
@@ -73,24 +82,30 @@ const CategoryManagement = () => {
     const category = categories.find(c => c._id === categoryId);
     if (!category) return;
 
-    const action = category.status === 'Activated' ? 'deactivate' : 'activate';
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} category "${category.name}"? ${
-        action === 'deactivate' 
-          ? 'This category will no longer be available in the system.'
-          : 'This category will be available again in the system.'
-      }`
-    );
+    setConfirmModal({
+      isOpen: true,
+      categoryId,
+      category
+    });
+  };
 
-    if (!confirmed) return;
+  const handleConfirmDelete = async () => {
+    const { categoryId, category } = confirmModal;
+    const action = category.status === 'Activated' ? 'deactivate' : 'activate';
 
     try {
       setLoadingCategories(prev => ({ ...prev, [categoryId]: true }));
       await dispatch(deleteCategory(categoryId)).unwrap();
+      toast.success(`Category ${action}d successfully`);
     } catch (error) {
-      alert(`Failed to ${action} category. Please try again.`);
+      toast.error(`Failed to ${action} category. Please try again.`);
     } finally {
       setLoadingCategories(prev => ({ ...prev, [categoryId]: false }));
+      setConfirmModal({
+        isOpen: false,
+        categoryId: null,
+        category: null
+      });
     }
   };
 
@@ -329,6 +344,27 @@ const CategoryManagement = () => {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({
+          isOpen: false,
+          categoryId: null,
+          category: null
+        })}
+        onConfirm={handleConfirmDelete}
+        title="Confirm Status Change"
+        message={
+          confirmModal.category
+            ? `Are you sure you want to ${confirmModal.category.status === 'Activated' ? 'deactivate' : 'activate'} category "${confirmModal.category.name}"? ${
+                confirmModal.category.status === 'Activated' 
+                  ? 'This category will no longer be available in the system.'
+                  : 'This category will be available again in the system.'
+              }`
+            : ''
+        }
+      />
     </>
   );
 };

@@ -10,6 +10,8 @@ import {
     toggleBrandStatus,
     clearError 
 } from '../../redux/features/brandSlice';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import { toast } from 'react-hot-toast';
 
 const BrandManagement = () => {
   const dispatch = useDispatch();
@@ -28,6 +30,12 @@ const BrandManagement = () => {
   const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
 
   const [loadingBrands, setLoadingBrands] = useState({});
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    brandId: null,
+    brand: null
+  });
 
   const updateUrlAndFetch = (newParams) => {
     const currentParams = Object.fromEntries(searchParams.entries());
@@ -109,24 +117,33 @@ const BrandManagement = () => {
     const brand = brands.find(b => b._id === brandId);
     if (!brand) return;
 
-    const action = brand.status === 'Activated' ? 'deactivate' : 'activate';
-    const confirmed = window.confirm(
-      `Are you sure you want to ${action} brand "${brand.name}"? ${
-        action === 'deactivate' 
-          ? 'This brand will no longer be available in the system.'
-          : 'This brand will be available again in the system.'
-      }`
-    );
+    setConfirmModal({
+      isOpen: true,
+      brandId,
+      brand
+    });
+  };
 
-    if (!confirmed) return;
+  const handleConfirmToggle = async () => {
+    const { brandId, brand } = confirmModal;
+    const action = brand.status === 'Activated' ? 'deactivate' : 'activate';
 
     try {
       setLoadingBrands(prev => ({ ...prev, [brandId]: true }));
       await dispatch(toggleBrandStatus(brandId)).unwrap();
     } catch (error) {
-      alert(`Failed to ${action} brand. Please try again.`);
+      toast({
+        variant: "destructive",
+        title: `Failed to ${action} brand`,
+        description: "Please try again."
+      });
     } finally {
       setLoadingBrands(prev => ({ ...prev, [brandId]: false }));
+      setConfirmModal({
+        isOpen: false,
+        brandId: null,
+        brand: null
+      });
     }
   };
 
@@ -335,6 +352,26 @@ const BrandManagement = () => {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({
+          isOpen: false,
+          brandId: null,
+          brand: null
+        })}
+        onConfirm={handleConfirmToggle}
+        title="Confirm Status Change"
+        message={
+          confirmModal.brand
+            ? `Are you sure you want to ${confirmModal.brand.status === 'Activated' ? 'deactivate' : 'activate'} brand "${confirmModal.brand.name}"? ${
+                confirmModal.brand.status === 'Activated' 
+                  ? 'This brand will no longer be available in the system.'
+                  : 'This brand will be available again in the system.'
+              }`
+            : ''
+        }
+      />
     </>
   );
 };
