@@ -60,16 +60,16 @@ const Index = () => {
       <div className={`transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
         {/* Hero Section */}
         <section className="relative overflow-hidden bg-gray-50">
-          <div className="container relative z-10 px-4 py-20 sm:py-24 md:px-6 md:py-28 lg:py-32">
-            <div className="grid gap-12 md:grid-cols-2 md:items-center">
+          <div className="container relative z-10 px-4 py-12 sm:py-16 md:px-6 md:py-20 lg:py-24">
+            <div className="grid gap-8 md:grid-cols-2 md:items-center">
               <div className="animate-slide-in">
                 <div className="mb-2 inline-block rounded-full bg-gray-200 px-3 py-1 text-xs font-medium text-gray-800">
                   New Collection
                 </div>
-                <h1 className="mb-6 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                <h1 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl md:text-5xl">
                   Elevate Your Style With Premium Caps
                 </h1>
-                <p className="mb-8 max-w-md text-lg text-gray-600">
+                <p className="mb-6 max-w-md text-base text-gray-600">
                   Discover our curated collection of high-quality caps designed for comfort, style, and everyday wear.
                 </p>
                 <div className="flex flex-wrap gap-4">
@@ -85,17 +85,17 @@ const Index = () => {
                 <img
                   src="https://capsapparel.com/cdn/shop/files/JOURNEY-Black-Front.jpg?v=1736757822&width=1200"
                   alt="Featured cap"
-                  className="mx-auto rounded-xl shadow-lg md:ml-auto"
+                  className="mx-auto max-h-[400px] rounded-xl shadow-lg md:ml-auto"
                 />
-                <div className="absolute -bottom-6 -left-6 h-24 w-24 rounded-full bg-primary/10 backdrop-blur-xl"></div>
-                <div className="absolute -right-8 top-1/4 h-16 w-16 rounded-full bg-primary/10 backdrop-blur-xl"></div>
+                <div className="absolute -bottom-4 -left-4 h-16 w-16 rounded-full bg-primary/10 backdrop-blur-xl"></div>
+                <div className="absolute -right-6 top-1/4 h-12 w-12 rounded-full bg-primary/10 backdrop-blur-xl"></div>
               </div>
             </div>
           </div>
           
           {/* Background elements */}
-          <div className="absolute -left-12 -top-12 h-64 w-64 rounded-full bg-primary/5"></div>
-          <div className="absolute bottom-0 right-0 h-96 w-96 rounded-full bg-primary/5"></div>
+          <div className="absolute -left-8 -top-8 h-48 w-48 rounded-full bg-primary/5"></div>
+          <div className="absolute bottom-0 right-0 h-72 w-72 rounded-full bg-primary/5"></div>
         </section>
 
         {/* Featured Products Section */}

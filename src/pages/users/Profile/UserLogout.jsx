@@ -33,7 +33,8 @@ const UserLogout = () => {
           Are you sure you want to sign out of your account? You'll need to login again to access your profile.
         </p>
         
-        <div className="mt-8 w-full rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-left">
+        <div className="mt-8 w-full rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-center">
+          <span>Confirm Logout ⚠️⛓️‍💥⌛</span>
           
         </div>
         

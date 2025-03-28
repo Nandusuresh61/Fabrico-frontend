@@ -143,10 +143,10 @@ const Header = () => {
           {/* Wishlist Icon */}
           <Link 
             to="/wishlist" 
-            className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
             aria-label="View your wishlist"
           >
-            <Heart className="h-6 w-6" />
+            <Heart className="h-5 w-5" />
           </Link>
 
           {/* User Icon */}
@@ -154,22 +154,22 @@ const Header = () => {
             {user ? (
               <button 
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
               >
                 <div className="flex items-center gap-2">
                   {user.profileImage ? (
-                    <img src={user.profileImage} alt="Profile" className="h-12 w-12 rounded-full" />
+                    <img src={user.profileImage} alt="Profile" className="h-10 w-10 rounded-full" />
                   ) : (
-                    <User className="h-6 w-6" />
+                    <User className="h-5 w-5" />
                   )}
                 </div>
               </button>
             ) : (
               <Link 
                 to="/login"
-                className="flex h-12 items-center justify-center rounded-full bg-gray-100 px-6 text-gray-700 transition-colors hover:bg-gray-200"
+                className="flex h-10 items-center justify-center rounded-full bg-gray-100 px-5 text-gray-700 transition-colors hover:bg-gray-200"
               >
-                <span className="text-base font-medium">Login</span>
+                <span className="text-sm font-medium">Login</span>
               </Link>
             )}
 
@@ -198,10 +198,10 @@ const Header = () => {
           {/* Cart Icon */}
           <Link 
             to="/cart" 
-            className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
           >
-            <ShoppingCart className="h-6 w-6" />
-            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
+            <ShoppingCart className="h-5 w-5" />
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
               0
             </span>
           </Link>
@@ -212,18 +212,18 @@ const Header = () => {
           {/* Wishlist Icon (Mobile) */}
           <Link 
             to="/wishlist" 
-            className="flex h-12 w-12 items-center justify-center text-gray-700"
+            className="flex h-10 w-10 items-center justify-center text-gray-700"
             aria-label="View your wishlist"
           >
-            <Heart className="h-6 w-6" />
+            <Heart className="h-5 w-5" />
           </Link>
           
           <Link 
             to="/cart" 
-            className="relative flex h-12 w-12 items-center justify-center text-gray-700"
+            className="relative flex h-10 w-10 items-center justify-center text-gray-700"
           >
-            <ShoppingCart className="h-6 w-6" />
-            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-sm font-medium text-white">
+            <ShoppingCart className="h-5 w-5" />
+            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
               0
             </span>
           </Link>
