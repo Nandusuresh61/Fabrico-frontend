@@ -8,6 +8,7 @@ import ProductCard from '../../components/ui/ProductCard';
 import { getProductById, clearSelectedProduct } from '../../redux/features/productSlice';
 import { useToast } from '../../hooks/use-toast';
 import { getAllProductsForUsers } from '../../redux/features/productSlice';
+import { addToWishlist } from '../../redux/features/wishlistSlice';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -15,6 +16,7 @@ const ProductDetail = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const { selectedProduct: product, products, loading } = useSelector((state) => state.product);
+  const { user } = useSelector(state => state.user);
 
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -68,6 +70,40 @@ const ProductDetail = () => {
     const y = ((e.clientY - top) / height) * 100;
     
     setMousePosition({ x, y });
+  };
+
+  const handleAddToWishlist = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedVariant) {
+      toast({
+        title: "Error",
+        description: "Please select a variant first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await dispatch(addToWishlist({
+        productId: product._id,
+        variantId: selectedVariant._id
+      })).unwrap();
+
+      toast({
+        title: "Success",
+        description: "Added to wishlist",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
   };
 
   if (loading) {
@@ -257,7 +293,11 @@ const ProductDetail = () => {
               >
                 Add to Cart
               </CustomButton>
-              <CustomButton variant="outline" icon={<Heart className="h-4 w-4" />}>
+              <CustomButton 
+                variant="outline" 
+                icon={<Heart className="h-4 w-4" />}
+                onClick={handleAddToWishlist}
+              >
                 Add to Wishlist
               </CustomButton>
             </div>
