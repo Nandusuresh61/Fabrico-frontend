@@ -16,6 +16,7 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user } = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const { products } = useSelector((state) => state.cart);
 
   // Navigation options with proper category values
   const navOptions = [
@@ -195,15 +196,17 @@ const Header = () => {
             )}
           </div>
 
-          {/* Cart Icon */}
+          {/* Desktop Cart Icon */}
           <Link 
             to="/cart" 
             className="relative flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200"
           >
             <ShoppingCart className="h-5 w-5" />
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
-              0
-            </span>
+            {products.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+                {products.length}
+              </span>
+            )}
           </Link>
         </div>
 
@@ -218,14 +221,17 @@ const Header = () => {
             <Heart className="h-5 w-5" />
           </Link>
           
+          {/* Mobile Cart Icon */}
           <Link 
             to="/cart" 
             className="relative flex h-10 w-10 items-center justify-center text-gray-700"
           >
             <ShoppingCart className="h-5 w-5" />
-            <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
-              0
-            </span>
+            {products.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
+                {products.length}
+              </span>
+            )}
           </Link>
           
           <button
