@@ -1,79 +1,68 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
-import { cn } from '../../lib/utils';
-
-// Mock data for cart items
-const initialCartItems = [
-  {
-    id: '1',
-    name: 'Premium Fitted Cap',
-    imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80',
-    price: 29.99,
-    quantity: 1,
-    color: 'Black',
-    size: 'M',
-  },
-  {
-    id: '2',
-    name: 'Vintage Snapback',
-    imageUrl: 'https://images.unsplash.com/photo-1556306535-0f09a537f0a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80',
-    price: 24.99,
-    quantity: 2,
-    color: 'Navy Blue',
-    size: 'L',
-  },
-  {
-    id: '3',
-    name: 'Classic Trucker Hat',
-    imageUrl: 'https://images.unsplash.com/photo-1517941823-815bea90d291?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80',
-    price: 19.99,
-    quantity: 1,
-    color: 'Gray',
-    size: 'One Size',
-  }
-];
+import { useDispatch, useSelector } from 'react-redux';
+import { getCart, removeFromCart } from '../../redux/features/cartSlice';
+import { useToast } from '../../hooks/use-toast';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+  const { products, loading } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    dispatch(getCart());
+  }, [dispatch, navigate, user]);
+
+  const handleRemoveItem = async (productId) => {
+    try {
+      await dispatch(removeFromCart(productId)).unwrap();
+      toast({
+        title: "Success",
+        description: "Item removed from cart",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Calculate totals
+  const subtotal = products.reduce((sum, product) => {
+    const variant = product.variants[0]; // Using first variant for now
+    return sum + (variant.discountPrice || variant.price);
+  }, 0);
   
-  // Calculate subtotal
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  
-  // Calculate tax (assumed 8%)
   const tax = subtotal * 0.08;
-  
-  // Calculate total price
   const total = subtotal + tax;
 
-  // Handle quantity change
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    setCartItems(prevItems => 
-      prevItems.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container flex items-center justify-center px-4 py-8">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </Layout>
     );
-  };
-
-  // Handle item removal
-  const removeItem = (id) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== id));
-  };
-
-  // Check if cart is empty
-  const isCartEmpty = cartItems.length === 0;
+  }
 
   return (
     <Layout>
       <div className="container max-w-7xl px-4 py-8 mx-auto">
         <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
         
-        {isCartEmpty ? (
+        {products.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
             <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
             <h2 className="text-xl font-medium text-gray-700 mb-2">Your cart is empty</h2>
@@ -87,70 +76,53 @@ const Cart = () => {
             {/* Cart Items - Left side */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-1">
-                {cartItems.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
-                  >
-                    {/* Product Image */}
-                    <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.imageUrl} 
-                        alt={item.name} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    
-                    {/* Product Details */}
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:justify-between">
-                        <div>
-                          <h3 className="text-base font-medium text-gray-900 line-clamp-1">
-                            {item.name}
-                          </h3>
-                          <div className="mt-1 text-sm text-gray-500">
-                            <span>Color: {item.color}</span>
-                            {item.size && <span> • Size: {item.size}</span>}
-                          </div>
-                        </div>
-                        <div className="mt-2 sm:mt-0 sm:text-right">
-                          <span className="font-medium">${item.price.toFixed(2)}</span>
-                        </div>
+                {products.map((product) => {
+                  const variant = product.variants[0]; // Using first variant for now
+                  return (
+                    <div 
+                      key={product._id} 
+                      className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
+                    >
+                      {/* Product Image */}
+                      <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
+                        <img 
+                          src={variant.mainImage} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       
-                      <div className="flex flex-col sm:flex-row sm:justify-between mt-3 gap-3">
-                        {/* Quantity Selector */}
-                        <div className="flex items-center">
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-full"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          <span className="w-8 text-center">{item.quantity}</span>
-                          <Button 
-                            variant="outline" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-full"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
+                      {/* Product Details */}
+                      <div className="flex-1">
+                        <div className="flex flex-col sm:flex-row sm:justify-between">
+                          <div>
+                            <h3 className="text-base font-medium text-gray-900 line-clamp-1">
+                              {product.name}
+                            </h3>
+                            <div className="mt-1 text-sm text-gray-500">
+                              <span>Color: {variant.color}</span>
+                            </div>
+                          </div>
+                          <div className="mt-2 sm:mt-0 sm:text-right">
+                            <span className="font-medium">
+                              ${variant.discountPrice || variant.price}
+                            </span>
+                          </div>
                         </div>
                         
-                        {/* Remove Button */}
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-sm text-gray-500 hover:text-red-500 transition-colors"
-                        >
-                          Remove
-                        </button>
+                        <div className="flex flex-col sm:flex-row sm:justify-between mt-3 gap-3">
+                          {/* Remove Button */}
+                          <button
+                            onClick={() => handleRemoveItem(product._id)}
+                            className="text-sm text-gray-500 hover:text-red-500 transition-colors"
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
             

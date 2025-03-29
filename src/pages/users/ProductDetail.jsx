@@ -9,6 +9,7 @@ import { getProductById, clearSelectedProduct } from '../../redux/features/produ
 import { useToast } from '../../hooks/use-toast';
 import { getAllProductsForUsers } from '../../redux/features/productSlice';
 import { addToWishlist } from '../../redux/features/wishlistSlice';
+import { addToCart } from '../../redux/features/cartSlice';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -96,6 +97,39 @@ const ProductDetail = () => {
       toast({
         title: "Success",
         description: "Added to wishlist",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedVariant) {
+      toast({
+        title: "Error",
+        description: "Please select a variant first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await dispatch(addToCart({
+        productId: product._id,
+      })).unwrap();
+
+      toast({
+        title: "Success",
+        description: "Added to cart",
       });
     } catch (error) {
       toast({
@@ -290,6 +324,7 @@ const ProductDetail = () => {
               <CustomButton 
                 icon={<ShoppingCart className="h-4 w-4" />}
                 disabled={!selectedVariant || selectedVariant.stock === 0}
+                onClick={handleAddToCart}
               >
                 Add to Cart
               </CustomButton>
