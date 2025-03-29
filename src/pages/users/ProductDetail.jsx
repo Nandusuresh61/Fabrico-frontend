@@ -125,6 +125,8 @@ const ProductDetail = () => {
     try {
       await dispatch(addToCart({
         productId: product._id,
+        variantId: selectedVariant._id,
+        quantity: quantity
       })).unwrap();
 
       toast({

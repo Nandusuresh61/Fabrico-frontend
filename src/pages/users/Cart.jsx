@@ -11,7 +11,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { toast } = useToast();
-  const { products, loading } = useSelector((state) => state.cart);
+  const { items, loading, totalAmount } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
 
   useEffect(() => {
@@ -22,9 +22,9 @@ const Cart = () => {
     dispatch(getCart());
   }, [dispatch, navigate, user]);
 
-  const handleRemoveItem = async (productId) => {
+  const handleRemoveItem = async (itemId) => {
     try {
-      await dispatch(removeFromCart(productId)).unwrap();
+      await dispatch(removeFromCart(itemId)).unwrap();
       toast({
         title: "Success",
         description: "Item removed from cart",
@@ -39,9 +39,9 @@ const Cart = () => {
   };
 
   // Calculate totals
-  const subtotal = products.reduce((sum, product) => {
-    const variant = product.variants[0]; // Using first variant for now
-    return sum + (variant.discountPrice || variant.price);
+  const subtotal = items.reduce((sum, item) => {
+    const price = item.variant.discountPrice || item.variant.price;
+    return sum + (price * item.quantity);
   }, 0);
   
   const tax = subtotal * 0.08;
@@ -62,7 +62,7 @@ const Cart = () => {
       <div className="container max-w-7xl px-4 py-8 mx-auto">
         <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
         
-        {products.length === 0 ? (
+        {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
             <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
             <h2 className="text-xl font-medium text-gray-700 mb-2">Your cart is empty</h2>
@@ -76,53 +76,48 @@ const Cart = () => {
             {/* Cart Items - Left side */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-1">
-                {products.map((product) => {
-                  const variant = product.variants[0]; // Using first variant for now
-                  return (
-                    <div 
-                      key={product._id} 
-                      className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
-                    >
-                      {/* Product Image */}
-                      <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
-                        <img 
-                          src={variant.mainImage} 
-                          alt={product.name} 
-                          className="w-full h-full object-cover"
-                        />
+                {items.map((item) => (
+                  <div 
+                    key={item._id} 
+                    className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
+                  >
+                    <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
+                      <img 
+                        src={item.variant.mainImage} 
+                        alt={item.product.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:justify-between">
+                        <div>
+                          <h3 className="text-base font-medium text-gray-900 line-clamp-1">
+                            {item.product.name}
+                          </h3>
+                          <div className="mt-1 text-sm text-gray-500">
+                            <span>Color: {item.variant.color}</span>
+                            <span className="ml-4">Quantity: {item.quantity}</span>
+                          </div>
+                        </div>
+                        <div className="mt-2 sm:mt-0 sm:text-right">
+                          <span className="font-medium">
+                            ${(item.variant.discountPrice || item.variant.price) * item.quantity}
+                          </span>
+                        </div>
                       </div>
                       
-                      {/* Product Details */}
-                      <div className="flex-1">
-                        <div className="flex flex-col sm:flex-row sm:justify-between">
-                          <div>
-                            <h3 className="text-base font-medium text-gray-900 line-clamp-1">
-                              {product.name}
-                            </h3>
-                            <div className="mt-1 text-sm text-gray-500">
-                              <span>Color: {variant.color}</span>
-                            </div>
-                          </div>
-                          <div className="mt-2 sm:mt-0 sm:text-right">
-                            <span className="font-medium">
-                              ${variant.discountPrice || variant.price}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="flex flex-col sm:flex-row sm:justify-between mt-3 gap-3">
-                          {/* Remove Button */}
-                          <button
-                            onClick={() => handleRemoveItem(product._id)}
-                            className="text-sm text-gray-500 hover:text-red-500 transition-colors"
-                          >
-                            Remove
-                          </button>
-                        </div>
+                      <div className="flex flex-col sm:flex-row sm:justify-between mt-3 gap-3">
+                        <button
+                          onClick={() => handleRemoveItem(item._id)}
+                          className="text-sm text-gray-500 hover:text-red-500 transition-colors"
+                        >
+                          Remove
+                        </button>
                       </div>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
             

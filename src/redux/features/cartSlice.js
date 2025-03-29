@@ -40,7 +40,8 @@ export const removeFromCart = createAsyncThunk(
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
-        products: [],
+        items: [],
+        totalAmount: 0,
         loading: false,
         error: null
     },
@@ -53,17 +54,20 @@ const cartSlice = createSlice({
             })
             .addCase(getCart.fulfilled, (state, action) => {
                 state.loading = false;
-                state.products = action.payload.products;
+                state.items = action.payload.items;
+                state.totalAmount = action.payload.totalAmount;
             })
             .addCase(getCart.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload;
             })
             .addCase(addToCart.fulfilled, (state, action) => {
-                state.products = action.payload.products;
+                state.items = action.payload.items;
+                state.totalAmount = action.payload.totalAmount;
             })
             .addCase(removeFromCart.fulfilled, (state, action) => {
-                state.products = action.payload.products;
+                state.items = action.payload.items;
+                state.totalAmount = action.payload.totalAmount;
             });
     }
 });

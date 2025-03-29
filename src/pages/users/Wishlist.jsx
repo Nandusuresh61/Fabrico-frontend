@@ -6,6 +6,7 @@ import Layout from '../../components/layout/Layout';
 import { Link } from 'react-router-dom';
 import { getWishlist, removeFromWishlist } from '../../redux/features/wishlistSlice';
 import { useToast } from '../../hooks/use-toast';
+import { addToCart } from '../../redux/features/cartSlice';
 
 const Wishlist = () => {
     const dispatch = useDispatch();
@@ -22,6 +23,30 @@ const Wishlist = () => {
             toast({
                 title: "Success",
                 description: "Item removed from wishlist",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error,
+                variant: "destructive",
+            });
+        }
+    };
+
+    const handleAddToCart = async (item) => {
+        try {
+            // Add to cart
+            await dispatch(addToCart({
+                productId: item.product._id,
+                variantId: item.variant._id
+            })).unwrap();
+
+            // Remove from wishlist
+            await dispatch(removeFromWishlist(item._id)).unwrap();
+
+            toast({
+                title: "Success",
+                description: "Item added to cart",
             });
         } catch (error) {
             toast({
@@ -106,6 +131,7 @@ const Wishlist = () => {
                                         size="sm" 
                                         className="sm:w-auto w-full"
                                         disabled={item.variant.stock === 0}
+                                        onClick={() => handleAddToCart(item)}
                                     >
                                         <ShoppingCart className="mr-2 h-4 w-4" />
                                         Add to Cart
