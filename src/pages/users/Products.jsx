@@ -301,6 +301,9 @@ const Products = () => {
                     price={Math.min(...product.variants
                       .filter(v => !v.isBlocked)
                       .map(v => v.price))}
+                    discountPrice={Math.min(...product.variants
+                      .filter(v => !v.isBlocked)
+                      .map(v => v.discountPrice || v.price))}
                     imageUrl={product.variants.find(v => !v.isBlocked)?.mainImage}
                     link={`/products/${product._id}`}
                     rating={4.5}

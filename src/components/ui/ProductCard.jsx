@@ -18,7 +18,14 @@ const ProductCard = ({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
 
-  const hasDiscount = discountPrice !== undefined && discountPrice < price;
+  // Calculate discount percentage
+  const calculateDiscount = () => {
+    if (!discountPrice || discountPrice >= price) return 0;
+    return Math.round(((price - discountPrice) / price) * 100);
+  };
+
+  const discountPercentage = calculateDiscount();
+  const hasDiscount = discountPrice && discountPrice < price;
   
   const toggleFavorite = (e) => {
     e.preventDefault();
@@ -74,8 +81,8 @@ const ProductCard = ({
         className
       )}
     >
-      {/* Image container */}
-      <div className="product-image-container aspect-square overflow-hidden bg-gray-100">
+      {/* Image container with discount badge */}
+      <div className="product-image-container aspect-square overflow-hidden bg-gray-100 relative">
         {!isImageLoaded && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
@@ -91,6 +98,15 @@ const ProductCard = ({
           onLoad={() => setIsImageLoaded(true)}
         />
         
+        {/* Updated Discount Badge */}
+        {hasDiscount && (
+          <div className="absolute left-0 top-2">
+            <span className="bg-red-500 text-white px-2.5 py-1 text-sm font-bold rounded-r-md shadow-sm">
+              {discountPercentage}% OFF
+            </span>
+          </div>
+        )}
+
         {/* Favorite button */}
         <button 
           onClick={toggleFavorite}
@@ -106,9 +122,9 @@ const ProductCard = ({
           />
         </button>
 
-        {/* Badge indicators */}
+        {/* Badge indicators - moved below discount badge */}
         {(isNew || isFeatured) && (
-          <div className="absolute left-3 top-3 flex flex-col gap-2">
+          <div className="absolute left-3 top-14 flex flex-col gap-2">
             {isNew && (
               <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-white">
                 New
@@ -123,27 +139,44 @@ const ProductCard = ({
         )}
       </div>
 
-      {/* Content */}
+      {/* Content section with updated price display */}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="mb-1 text-sm font-medium text-gray-900 line-clamp-1">{name}</h3>
+        <h3 className="mb-2 text-sm font-medium text-gray-900 line-clamp-1">{name}</h3>
         
-        {/* Price */}
-        <div className="mt-auto flex items-center gap-2">
-          {hasDiscount ? (
-            <>
-              <span className="text-sm font-semibold">₹{discountPrice.toFixed(2)}</span>
-              <span className="text-xs text-gray-500 line-through">₹{price.toFixed(2)}</span>
-              <span className="ml-auto text-xs font-medium text-green-600">
-                {Math.round(((price - discountPrice) / price) * 100)}% OFF
+        {/* Price Display */}
+        <div className="mt-auto space-y-1.5">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {/* Current Price */}
+            <span className="text-lg font-bold text-primary">
+              ₹{(hasDiscount ? discountPrice : price).toFixed(2)}
+            </span>
+            
+            {/* Original Price with MRP tag */}
+            {hasDiscount && (
+              <div className="flex items-center gap-1">
+                <span className="text-xs text-gray-500">M.R.P:</span>
+                <span className="text-sm text-gray-400 line-through">
+                  ₹{price.toFixed(2)}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Discount Info */}
+          {hasDiscount && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                {discountPercentage}% OFF
               </span>
-            </>
-          ) : (
-            <span className="text-sm font-semibold">₹{price.toFixed(2)}</span>
+              <span className="text-xs text-green-600">
+                Save ₹{(price - discountPrice).toFixed(2)}
+              </span>
+            </div>
           )}
         </div>
 
         {/* Ratings */}
-        <div className="mt-2 flex items-center gap-1">
+        <div className="mt-3 flex items-center gap-1">
           {renderStars(rating)}
           <span className="text-xs text-gray-600">({rating.toFixed(1)})</span>
         </div>

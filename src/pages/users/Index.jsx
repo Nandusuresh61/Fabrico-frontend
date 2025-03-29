@@ -124,7 +124,12 @@ const Index = () => {
                   {products.map((product) => {
                     const lowestPriceVariant = product.variants
                       .filter(v => !v.isBlocked)
-                      .reduce((min, v) => v.price < min.price ? v : min, product.variants[0]);
+                      .reduce((min, v) => {
+                        // Consider discountPrice when finding the lowest price variant
+                        const effectivePrice = v.discountPrice && v.discountPrice < v.price ? v.discountPrice : v.price;
+                        const minEffectivePrice = min.discountPrice && min.discountPrice < min.price ? min.discountPrice : min.price;
+                        return effectivePrice < minEffectivePrice ? v : min;
+                      }, product.variants[0]);
 
                     return (
                       <div key={product._id} className="min-w-[240px] max-w-[240px] snap-start sm:min-w-[280px] sm:max-w-[280px]">
@@ -132,6 +137,7 @@ const Index = () => {
                           id={product._id}
                           name={product.name}
                           price={lowestPriceVariant.price}
+                          discountPrice={lowestPriceVariant.discountPrice}
                           imageUrl={lowestPriceVariant.mainImage}
                           link={`/products/${product._id}`}
                           rating={4.5}

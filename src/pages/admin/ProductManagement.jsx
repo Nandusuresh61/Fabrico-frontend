@@ -351,6 +351,7 @@ const ProductManagement = () => {
                                   <th className="px-4 py-2">Category</th>
                                   <th className="px-4 py-2">Brand</th>
                                   <th className="px-4 py-2">Price</th>
+                                  <th className="px-4 py-2">Discount Price</th>
                                   <th className="px-4 py-2">Color</th>
                                   <th className="px-4 py-2">Quantity</th>
                                   <th className="px-4 py-2">Status</th>
@@ -377,6 +378,13 @@ const ProductManagement = () => {
                                     <td className="px-4 py-2">{product.category?.name || 'N/A'}</td>
                                     <td className="px-4 py-2">{product.brand?.name || 'N/A'}</td>
                                     <td className="px-4 py-2">₹{variant.price}</td>
+                                    <td className="px-4 py-2">
+                                      {variant.discountPrice ? (
+                                        <span className="text-green-600">₹{variant.discountPrice}</span>
+                                      ) : (
+                                        <span className="text-gray-400">-</span>
+                                      )}
+                                    </td>
                                     <td className="px-4 py-2">{variant.color}</td>
                                     <td className="px-4 py-2">{variant.stock}</td>
                                     <td className="px-4 py-2">

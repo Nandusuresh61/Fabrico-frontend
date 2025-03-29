@@ -35,6 +35,7 @@ const AddProductForm = ({ onClose }) => {
     color: '',
     quantity: 0,
     price: '',
+    discountPrice: '',
     images: []
   }]);
   const [previewUrls, setPreviewUrls] = useState([[]]);
@@ -81,7 +82,7 @@ const AddProductForm = ({ onClose }) => {
 
   const addVariant = () => {
     if (variants.length < 5) {
-      setVariants([...variants, { color: '', quantity: 0, price: '', images: [] }]);
+      setVariants([...variants, { color: '', quantity: 0, price: '', discountPrice: '', images: [] }]);
       setPreviewUrls([...previewUrls, []]);
     }
   };
@@ -174,10 +175,11 @@ const AddProductForm = ({ onClose }) => {
       const formData = new FormData();
       formData.append('data', JSON.stringify({
         ...productData,
-        variants: variants.map(({ color, quantity, price }) => ({
+        variants: variants.map(({ color, quantity, price, discountPrice }) => ({
           color,
           quantity,
-          price
+          price,
+          discountPrice
         }))
       }));
 
@@ -349,6 +351,17 @@ const AddProductForm = ({ onClose }) => {
                         onChange={(e) => handleVariantChange(variantIndex, 'price', e.target.value)}
                         placeholder="Enter price"
                         required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-700 mb-1">
+                        Discount Price
+                      </label>
+                      <Input
+                        type="number"
+                        value={variant.discountPrice}
+                        onChange={(e) => handleVariantChange(variantIndex, 'discountPrice', e.target.value)}
+                        placeholder="Enter discount price"
                       />
                     </div>
                     <div>

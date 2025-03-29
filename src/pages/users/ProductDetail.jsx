@@ -41,10 +41,13 @@ const ProductDetail = () => {
   }, [dispatch, id, navigate, toast]);
 
   useEffect(() => {
-    dispatch(getAllProductsForUsers({
-      status: 'active',
-      limit: 6 // Limit to 6 products for the featured section
-    }));
+    if (product?.category?._id) {
+      dispatch(getAllProductsForUsers({
+        status: 'active',
+        limit: 6,
+        category: product.category.name // Use the current product's category
+      }));
+    }
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 400);
@@ -307,10 +310,10 @@ const ProductDetail = () => {
           <div className="container px-4 md:px-6">
             <div className="mb-10 flex items-center justify-between">
               <h2 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
-                Related Products
+                Similar Products
               </h2>
               <Link 
-                to="/products" 
+                to={`/products?category=${product.category?.name?.toLowerCase()}`}
                 className="group flex items-center text-sm font-medium text-gray-600 transition-colors hover:text-primary"
               >
                 View All 
@@ -325,24 +328,49 @@ const ProductDetail = () => {
                 </div>
               ) : (
                 <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6">
-                  {products.map((product) => {
-                    const lowestPriceVariant = product.variants
-                      .filter(v => !v.isBlocked)
-                      .reduce((min, v) => v.price < min.price ? v : min, product.variants[0]);
+                  {products
+                    .filter(p => p._id !== product._id) // Exclude current product
+                    .map((product) => {
+                      const lowestPriceVariant = product.variants
+                        .filter(v => !v.isBlocked)
+                        .reduce((min, v) => {
+                          // Consider discountPrice when finding the lowest price variant
+                          const effectivePrice = v.discountPrice && v.discountPrice < v.price 
+                            ? v.discountPrice 
+                            : v.price;
+                          const minEffectivePrice = min.discountPrice && min.discountPrice < min.price 
+                            ? min.discountPrice 
+                            : min.price;
+                          return effectivePrice < minEffectivePrice ? v : min;
+                        }, product.variants[0]);
 
-                    return (
-                      <div key={product._id} className="min-w-[240px] max-w-[240px] snap-start sm:min-w-[280px] sm:max-w-[280px]">
-                        <ProductCard 
-                          id={product._id}
-                          name={product.name}
-                          price={lowestPriceVariant.price}
-                          imageUrl={lowestPriceVariant.mainImage}
-                          link={`/products/${product._id}`}
-                          rating={4.5}
-                        />
-                      </div>
-                    );
-                  })}
+                      // Skip products without valid variants
+                      if (!lowestPriceVariant) return null;
+
+                      return (
+                        <div key={product._id} className="min-w-[240px] max-w-[240px] snap-start sm:min-w-[280px] sm:max-w-[280px]">
+                          <ProductCard 
+                            id={product._id}
+                            name={product.name}
+                            price={lowestPriceVariant.price}
+                            discountPrice={lowestPriceVariant.discountPrice}
+                            imageUrl={lowestPriceVariant.mainImage}
+                            link={`/products/${product._id}`}
+                            rating={4.5}
+                          />
+                        </div>
+                      );
+                    })
+                    .filter(Boolean) // Remove null entries
+                    .slice(0, 6) // Limit to 6 products
+                  }
+                </div>
+              )}
+              
+              {/* Show message if no related products */}
+              {products.filter(p => p._id !== product._id).length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  No similar products found
                 </div>
               )}
             </div>

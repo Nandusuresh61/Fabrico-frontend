@@ -9,6 +9,7 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
     color: product.variant.color || '',
     price: product.variant.price || '',
+    discountPrice: product.variant.discountPrice || '',
     stock: product.variant.stock || '',
     images: []
   });
@@ -179,6 +180,20 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
                 onChange={handleChange}
                 className="w-full"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Discount Price
+              </label>
+              <Input
+                type="number"
+                name="discountPrice"
+                value={formData.discountPrice}
+                onChange={handleChange}
+                className="w-full"
+                placeholder="Enter discount price"
               />
             </div>
 
