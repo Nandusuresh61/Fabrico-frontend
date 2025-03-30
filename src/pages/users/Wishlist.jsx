@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Heart, ShoppingCart, X } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import Layout from '../../components/layout/Layout';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getWishlist, removeFromWishlist } from '../../redux/features/wishlistSlice';
 import { useToast } from '../../hooks/use-toast';
 import { addToCart } from '../../redux/features/cartSlice';
@@ -11,7 +11,9 @@ import Loader from '../../components/layout/Loader'
 
 const Wishlist = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const { items, loading } = useSelector((state) => state.wishlist);
+    console.log("items", items)
     const { toast } = useToast();
 
     useEffect(() => {
@@ -58,6 +60,15 @@ const Wishlist = () => {
         }
     };
 
+    const calculateDiscount = (price, discountPrice) => {
+        if (!discountPrice || discountPrice >= price) return 0;
+        return Math.round(((price - discountPrice) / price) * 100);
+    };
+
+    const handleProductClick = (productId) => {
+        navigate(`/products/${productId}`);
+    };
+
     if (loading) {
         return (
             <Layout>
@@ -93,20 +104,31 @@ const Wishlist = () => {
                                 key={item._id} 
                                 className="bg-white rounded-lg shadow-sm p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 relative group"
                             >
-                                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-md overflow-hidden">
-                                    <img 
-                                        src={item.variant.mainImage} 
-                                        alt={item.product.name} 
-                                        className="w-full h-full object-cover"
-                                    />
+                                <div 
+                                    onClick={() => handleProductClick(item.product._id)}
+                                    className="cursor-pointer group"
+                                >
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-md overflow-hidden transition-transform group-hover:scale-105">
+                                        <img 
+                                            src={item.variant.mainImage} 
+                                            alt={item.product.name} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
                                 </div>
                                 
                                 <div className="flex-1 pr-8 sm:pr-0">
-                                    <h3 className="text-base font-medium text-gray-900">
+                                    <h3 
+                                        onClick={() => handleProductClick(item.product._id)}
+                                        className="text-base font-medium text-gray-900 hover:text-primary transition-colors cursor-pointer"
+                                    >
                                         {item.product.name}
                                     </h3>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Brand: {item.product.brand?.name}
+                                    </p>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        Category: {item.product.category?.name}
                                     </p>
                                     <p className="text-sm text-gray-500 mt-1">
                                         Color: {item.variant.color}
@@ -125,9 +147,21 @@ const Wishlist = () => {
                                 </div>
                                 
                                 <div className="mt-4 sm:mt-0 w-full sm:w-auto flex flex-col sm:items-end gap-2">
-                                    <span className="text-lg font-medium">
-                                        ₹{item.variant.discountPrice || item.variant.price}
-                                    </span>
+                                    <div className="flex flex-col items-end gap-1">
+                                        {item.variant.discountPrice ? (
+                                            <>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg font-medium">₹{item.variant.discountPrice}</span>
+                                                    <span className="text-sm text-gray-500 line-through">₹{item.variant.price}</span>
+                                                </div>
+                                                <span className="text-sm text-green-600">
+                                                    {calculateDiscount(item.variant.price, item.variant.discountPrice)}% OFF
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <span className="text-lg font-medium">₹{item.variant.price}</span>
+                                        )}
+                                    </div>
                                     <Button 
                                         variant="default" 
                                         size="sm" 

@@ -49,6 +49,11 @@ const Cart = () => {
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
+  // Add this click handler function
+  const handleProductClick = (productId) => {
+    navigate(`/products/${productId}`);
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -85,28 +90,52 @@ const Cart = () => {
                     key={item._id}
                     className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
                   >
-                    <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
-                      <img
-                        src={item.variant.mainImage}
-                        alt={item.product.name}
-                        className="w-full h-full object-cover"
-                      />
+                    {/* Make the image and product name clickable */}
+                    <div 
+                      onClick={() => handleProductClick(item.product._id)}
+                      className="cursor-pointer group"
+                    >
+                      <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0 transition-transform group-hover:scale-105">
+                        <img
+                          src={item.variant.mainImage}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     </div>
 
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:justify-between">
                         <div>
-                          <h3 className="text-base font-medium text-gray-900 line-clamp-1">
+                          <h3 
+                            onClick={() => handleProductClick(item.product._id)}
+                            className="text-base font-medium text-gray-900 line-clamp-1 cursor-pointer hover:text-primary transition-colors"
+                          >
                             {item.product.name}
                           </h3>
-                          <div className="mt-1 text-sm text-gray-500">
-                            <span>Color: {item.variant.color}</span>
-                            <span className="ml-4">Quantity: {item.quantity}</span>
+                          <div className="mt-1 text-sm text-gray-500 space-y-1">
+                            <p>Brand: {item.product.brand?.name}</p>
+                            <p>Category: {item.product.category?.name}</p>
+                            <p>Color: {item.variant.color}</p>
+                            <p>Quantity: {item.quantity}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                ₹{item.variant.discountPrice || item.variant.price}
+                              </span>
+                              {item.variant.discountPrice && (
+                                <>
+                                  <span className="text-gray-400 line-through">₹{item.variant.price}</span>
+                                  <span className="text-green-600 text-sm">
+                                    {Math.round(((item.variant.price - item.variant.discountPrice) / item.variant.price) * 100)}% OFF
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="mt-2 sm:mt-0 sm:text-right">
-                          <span className="font-medium">
-                            ${(item.variant.discountPrice || item.variant.price) * item.quantity}
+                          <span className="font-medium text-lg">
+                           Total: ₹{(item.variant.discountPrice || item.variant.price) * item.quantity}
                           </span>
                         </div>
                       </div>
@@ -131,17 +160,17 @@ const Cart = () => {
                 <h2 className="text-lg font-medium mb-4">Order Summary</h2>
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span className="text-gray-600">Subtotal ({items.length} items)</span>
+                    <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Tax (8%)</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>₹{tax.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-3 mt-3">
-                    <div className="flex justify-between font-medium">
-                      <span>Total</span>
-                      <span>${total.toFixed(2)}</span>
+                    <div className="flex justify-between font-medium text-lg">
+                      <span>Total Amount</span>
+                      <span className="text-primary">₹{total.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
