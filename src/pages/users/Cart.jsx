@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { useDispatch, useSelector } from 'react-redux';
-import { getCart, removeFromCart } from '../../redux/features/cartSlice';
+import { getCart, removeFromCart, updateCartQuantity } from '../../redux/features/cartSlice';
 import { useToast } from '../../hooks/use-toast';
 
 import Loader from '../../components/layout/Loader'
@@ -30,6 +30,34 @@ const Cart = () => {
       toast({
         title: "Success",
         description: "Item removed from cart",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateQuantity = async (itemId, newQuantity, stock) => {
+    if (newQuantity < 1) return;
+    
+    // Add stock validation
+    if (newQuantity > stock) {
+      toast({
+        title: "Error",
+        description: "Requested quantity exceeds available stock",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      await dispatch(updateCartQuantity({ itemId, quantity: newQuantity })).unwrap();
+      toast({
+        title: "Success",
+        description: "Quantity updated",
       });
     } catch (error) {
       toast({
@@ -117,7 +145,35 @@ const Cart = () => {
                             <p>Brand: {item.product.brand?.name}</p>
                             <p>Category: {item.product.category?.name}</p>
                             <p>Color: {item.variant.color}</p>
-                            <p>Quantity: {item.quantity}</p>
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className="mr-2">Quantity:</span>
+                                <button
+                                  onClick={() => handleUpdateQuantity(item._id, item.quantity - 1, item.variant.stock)}
+                                  className="p-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  disabled={item.quantity <= 1}
+                                >
+                                  <Minus className="h-4 w-4" />
+                                </button>
+                                <span className="w-8 text-center">{item.quantity}</span>
+                                <button
+                                  onClick={() => handleUpdateQuantity(item._id, item.quantity + 1, item.variant.stock)}
+                                  className="p-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  disabled={item.quantity >= item.variant.stock}
+                                >
+                                  <Plus className="h-4 w-4" />
+                                </button>
+                              </div>
+                              
+                              {/* Add stock status message */}
+                              {item.variant.stock === 0 ? (
+                                <span className="text-red-500 text-sm">Out of stock</span>
+                              ) : item.quantity >= item.variant.stock ? (
+                                <span className="text-orange-500 text-sm">Maximum stock reached</span>
+                              ) : item.variant.stock <= 5 ? (
+                                <span className="text-orange-500 text-sm">Only {item.variant.stock} items left</span>
+                              ) : null}
+                            </div>
                             <div className="flex items-center gap-2">
                               <span className="font-medium">
                                 ₹{item.variant.discountPrice || item.variant.price}
