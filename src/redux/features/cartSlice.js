@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getCartApi, addToCartApi, removeFromCartApi, updateCartQuantityApi } from '../../api/cartApi';
+import { getCartApi, addToCartApi, removeFromCartApi, updateCartQuantityApi, clearCartApi } from '../../api/cartApi';
 
 export const getCart = createAsyncThunk(
     'cart/getCart',
@@ -49,6 +49,18 @@ export const updateCartQuantity = createAsyncThunk(
     }
 );
 
+export const clearCart = createAsyncThunk(
+    'cart/clearCart',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await clearCartApi();
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Failed to clear cart');
+        }
+    }
+);
+
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
@@ -84,6 +96,10 @@ const cartSlice = createSlice({
             .addCase(updateCartQuantity.fulfilled, (state, action) => {
                 state.items = action.payload.items;
                 state.totalAmount = action.payload.totalAmount;
+            })
+            .addCase(clearCart.fulfilled, (state) => {
+                state.items = [];
+                state.totalAmount = 0;
             });
     }
 });

@@ -82,6 +82,49 @@ const Cart = () => {
     navigate(`/products/${productId}`);
   };
 
+  const checkAvailability = () => {
+    let isAvailable = true;
+    let message = '';
+
+    for (const item of items) {
+      if (item.variant.stock < item.quantity) {
+        isAvailable = false;
+        message = `${item.product.name} (${item.variant.color}) has insufficient stock. Available: ${item.variant.stock}`;
+        break;
+      }
+      if (item.variant.stock === 0) {
+        isAvailable = false;
+        message = `${item.product.name} (${item.variant.color}) is out of stock`;
+        break;
+      }
+    }
+
+    if (!isAvailable) {
+      toast({
+        title: "Stock Issue",
+        description: message,
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const handleProceedToCheckout = () => {
+    if (checkAvailability()) {
+      navigate('/checkout', { 
+        state: { 
+          cartItems: items,
+          orderSummary: {
+            subtotal,
+            tax,
+            total
+          }
+        } 
+      });
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -233,7 +276,7 @@ const Cart = () => {
                 <Button
                   className="w-full"
                   size="lg"
-                  onClick={() => navigate('/checkout')}
+                  onClick={handleProceedToCheckout}
                 >
                   Proceed to Checkout
                 </Button>

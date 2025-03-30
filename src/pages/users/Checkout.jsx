@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Check, CreditCard, MapPin } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
@@ -8,7 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Input } from '../../components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../components/ui/form';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { clearCart } from '../../redux/features/cartSlice';
 
 // Mock data for cart items in checkout
 const cartItems = [
@@ -57,7 +59,18 @@ const savedAddresses = [
 ];
 
 const Checkout = () => {
+  const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { cartItems, orderSummary } = location.state || { cartItems: [], orderSummary: {} };
+
+  // Redirect if no cart items
+  useEffect(() => {
+    if (!cartItems.length) {
+      navigate('/cart');
+    }
+  }, [cartItems, navigate]);
+
   const [selectedAddress, setSelectedAddress] = useState(savedAddresses.find(addr => addr.isDefault)?.id || '');
   const [paymentMethod, setPaymentMethod] = useState('credit-card');
   
@@ -67,11 +80,18 @@ const Checkout = () => {
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
 
-  const handlePlaceOrder = () => {
-    toast.success('Your order has been placed successfully!');
-    setTimeout(() => {
-      navigate('/');
-    }, 2000);
+  const handlePlaceOrder = async () => {
+    try {
+      // Clear the cart
+      await dispatch(clearCart()).unwrap();
+      
+      toast.success('Your order has been placed successfully!');
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (error) {
+      toast.error('Failed to place order. Please try again.');
+    }
   };
 
   return (
@@ -91,19 +111,24 @@ const Checkout = () => {
               <CardContent>
                 <div className="space-y-4">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="flex gap-4">
+                    <div key={item._id} className="flex gap-4">
                       <div className="w-16 h-16 rounded-md overflow-hidden">
                         <img 
-                          src={item.imageUrl} 
-                          alt={item.name} 
+                          src={item.variant.mainImage} 
+                          alt={item.product.name} 
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-base font-medium">{item.name}</h3>
+                        <h3 className="text-base font-medium">{item.product.name}</h3>
                         <div className="flex justify-between mt-1">
-                          <span className="text-sm text-gray-500">Qty: {item.quantity}</span>
-                          <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                          <div className="text-sm text-gray-500">
+                            <p>Color: {item.variant.color}</p>
+                            <p>Qty: {item.quantity}</p>
+                          </div>
+                          <span className="font-medium">
+                            ₹{((item.variant.discountPrice || item.variant.price) * item.quantity).toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -282,7 +307,7 @@ const Checkout = () => {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{orderSummary.subtotal?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Shipping</span>
@@ -290,12 +315,12 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Tax (8%)</span>
-                  <span>${tax.toFixed(2)}</span>
+                  <span>₹{orderSummary.tax?.toFixed(2)}</span>
                 </div>
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>₹{orderSummary.total?.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
