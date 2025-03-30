@@ -10,6 +10,7 @@ import { useToast } from '../../hooks/use-toast';
 import { getAllProductsForUsers } from '../../redux/features/productSlice';
 import { addToWishlist } from '../../redux/features/wishlistSlice';
 import { addToCart } from '../../redux/features/cartSlice';
+import Loader from '../../components/layout/Loader'
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -145,9 +146,9 @@ const ProductDetail = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="container flex items-center justify-center px-4 py-8 md:px-6 md:py-12">
-          <div className="text-lg">Loading...</div>
-        </div>
+        <div className="col-span-full flex items-center justify-center min-h-[400px]">
+        <Loader />
+      </div>
       </Layout>
     );
   }
@@ -214,7 +215,7 @@ const ProductDetail = () => {
 
             {/* Main Image */}
             <div 
-              className="relative h-[500px] w-[500px] overflow-hidden rounded-xl"
+              className="relative h-[450px] w-[450px] overflow-hidden rounded-xl"
               onMouseEnter={() => setIsZoomed(true)}
               onMouseLeave={() => setIsZoomed(false)}
               onMouseMove={handleMouseMove}
