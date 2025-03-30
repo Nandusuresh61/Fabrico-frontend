@@ -3,6 +3,7 @@ import { Edit, Trash2, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import CustomButton from '../../components/ui/CustomButton';
+import Loader from '../../components/layout/Loader'
 import { 
     fetchBrands, 
     createBrand, 
@@ -154,7 +155,11 @@ const BrandManagement = () => {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    return (
+      <div className="col-span-full flex items-center justify-center min-h-[400px]">
+        <Loader />
+      </div>
+    );
   }
 
   if (error) {

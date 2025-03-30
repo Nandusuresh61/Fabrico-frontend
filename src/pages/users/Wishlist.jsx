@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { getWishlist, removeFromWishlist } from '../../redux/features/wishlistSlice';
 import { useToast } from '../../hooks/use-toast';
 import { addToCart } from '../../redux/features/cartSlice';
+import Loader from '../../components/layout/Loader'
 
 const Wishlist = () => {
     const dispatch = useDispatch();
@@ -60,10 +61,11 @@ const Wishlist = () => {
     if (loading) {
         return (
             <Layout>
-                <div className="container max-w-7xl px-4 py-8 mx-auto">
-                    <h1 className="text-2xl font-bold mb-6">My Wishlist</h1>
-                    <div>Loading...</div>
+                
+                <div className="col-span-full flex items-center justify-center min-h-[400px]">
+                  <Loader />
                 </div>
+              
             </Layout>
         );
     }

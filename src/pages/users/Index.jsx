@@ -7,6 +7,8 @@ import CustomButton from '../../components/ui/CustomButton';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllProductsForUsers } from '../../redux/features/productSlice';
 
+import Loader from '../../components/layout/Loader';
+
 // Categories
 const categories = [
   {
@@ -116,8 +118,8 @@ const Index = () => {
             
             <div className="relative">
               {loading ? (
-                <div className="flex justify-center py-8">
-                  <span>Loading...</span>
+                <div className="col-span-full flex items-center justify-center min-h-[400px]">
+                  <Loader />
                 </div>
               ) : (
                 <div className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6">

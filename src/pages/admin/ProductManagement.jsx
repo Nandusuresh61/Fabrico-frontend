@@ -10,6 +10,7 @@ import EditProductNameForm from './Product/EditProductNameForm';
 import { useToast } from "../../hooks/use-toast";
 import React from 'react';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import Loader from '../../components/layout/Loader'
 
 const ProductManagement = () => {
   let count = 1;
@@ -221,8 +222,8 @@ const ProductManagement = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="col-span-full flex items-center justify-center min-h-[400px]">
+        <Loader />
       </div>
     );
   }

@@ -6,6 +6,7 @@ import { getAllCategories, addCategory, editCategory, deleteCategory } from '../
 import CustomButton from '../../components/ui/CustomButton';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { toast } from 'react-hot-toast';
+import Loader from '../../components/layout/Loader'
 
 const CategoryManagement = () => {
   const dispatch = useDispatch();
@@ -143,6 +144,18 @@ const CategoryManagement = () => {
     setNewCategoryName(category.name);
     setIsEditModalOpen(true);
   };
+
+  if (loading) {
+    return (
+      <div className="col-span-full flex items-center justify-center min-h-[400px]">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (apiError) {
+    return <div className="text-red-500 text-center">{error}</div>;
+  }
 
   return (
     <>

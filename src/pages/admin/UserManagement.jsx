@@ -6,6 +6,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 // import AdminLayout from '../../components/layout/AdminLayout';
 import CustomButton from '../../components/ui/CustomButton';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import Loader from '../../components/layout/Loader'
 
 const UserManagement = () => {
   const dispatch = useDispatch();
@@ -127,7 +128,11 @@ const UserManagement = () => {
         </div>
 
         {/*  Show loading state */}
-        {loading && <p className="text-center text-gray-500">Loading users...</p>}
+        {loading && (
+                <div className="col-span-full flex items-center justify-center min-h-[400px]">
+                  <Loader />
+                </div>
+              )}
 
         {/*  Show error state */}
         {error && <p className="text-center text-red-500">{error}</p>}

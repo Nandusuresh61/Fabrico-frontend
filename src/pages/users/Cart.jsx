@@ -7,6 +7,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCart, removeFromCart } from '../../redux/features/cartSlice';
 import { useToast } from '../../hooks/use-toast';
 
+import Loader from '../../components/layout/Loader'
+
 const Cart = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -43,16 +45,18 @@ const Cart = () => {
     const price = item.variant.discountPrice || item.variant.price;
     return sum + (price * item.quantity);
   }, 0);
-  
+
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
 
   if (loading) {
     return (
       <Layout>
-        <div className="container flex items-center justify-center px-4 py-8">
-          <div className="text-lg">Loading...</div>
+
+        <div className="col-span-full flex items-center justify-center min-h-[400px]">
+          <Loader />
         </div>
+
       </Layout>
     );
   }
@@ -61,7 +65,7 @@ const Cart = () => {
     <Layout>
       <div className="container max-w-7xl px-4 py-8 mx-auto">
         <h1 className="text-2xl font-bold mb-6">Shopping Cart</h1>
-        
+
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
             <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
@@ -77,18 +81,18 @@ const Cart = () => {
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-1">
                 {items.map((item) => (
-                  <div 
-                    key={item._id} 
+                  <div
+                    key={item._id}
                     className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
                   >
                     <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
-                      <img 
-                        src={item.variant.mainImage} 
-                        alt={item.product.name} 
+                      <img
+                        src={item.variant.mainImage}
+                        alt={item.product.name}
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    
+
                     <div className="flex-1">
                       <div className="flex flex-col sm:flex-row sm:justify-between">
                         <div>
@@ -106,7 +110,7 @@ const Cart = () => {
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="flex flex-col sm:flex-row sm:justify-between mt-3 gap-3">
                         <button
                           onClick={() => handleRemoveItem(item._id)}
@@ -120,7 +124,7 @@ const Cart = () => {
                 ))}
               </div>
             </div>
-            
+
             {/* Order Summary - Right side */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
@@ -141,16 +145,16 @@ const Cart = () => {
                     </div>
                   </div>
                 </div>
-                <Button 
-                  className="w-full" 
+                <Button
+                  className="w-full"
                   size="lg"
                   onClick={() => navigate('/checkout')}
                 >
                   Proceed to Checkout
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-3" 
+                <Button
+                  variant="outline"
+                  className="w-full mt-3"
                   size="lg"
                   asChild
                 >
