@@ -6,6 +6,7 @@ import ProductCard from '../../components/ui/ProductCard';
 import { getAllProductsForUsers } from '../../redux/features/productSlice';
 import { getAllCategories } from '../../redux/features/categorySlice';
 import { fetchBrands } from '../../redux/features/brandSlice';
+import Loader from '../../components/layout/Loader';
 
 const Products = () => {
   const dispatch = useDispatch();
@@ -291,7 +292,9 @@ const Products = () => {
             {/* Products grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {loading ? (
-                <div>Loading...</div>
+                <div className="col-span-full flex items-center justify-center min-h-[400px]">
+                  <Loader />
+                </div>
               ) : (
                 products.map((product) => (
                   <ProductCard

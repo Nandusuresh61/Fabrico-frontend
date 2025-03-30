@@ -128,3 +128,12 @@
 .btn-hover-effect:hover::after {
   @apply scale-x-100;
 }
+
+@keyframes animloader {
+  0% {
+    height: 48px;
+  }
+  100% {
+    height: 4px;
+  }
+}
