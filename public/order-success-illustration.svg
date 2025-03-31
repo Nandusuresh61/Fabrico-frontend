@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="200" cy="150" r="120" fill="#F3F4F6"/>
+  
+  <!-- Shopping Bag -->
+  <path d="M160 100H240V200H160V100Z" fill="#4F46E5"/>
+  <path d="M180 90C180 80 190 70 200 70C210 70 220 80 220 90V100H180V90Z" fill="#4F46E5"/>
+  
+  <!-- Check Mark -->
+  <path d="M185 140L195 160L215 120" stroke="white" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Decorative Elements -->
+  <circle cx="120" cy="80" r="10" fill="#34D399"/>
+  <circle cx="280" cy="220" r="15" fill="#F59E0B"/>
+  <circle cx="300" cy="100" r="8" fill="#EC4899"/>
+  <circle cx="100" cy="180" r="12" fill="#6366F1"/>
+</svg> 

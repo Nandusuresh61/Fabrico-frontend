@@ -17,7 +17,7 @@ import ResetPasswordProtectedRoute from './ResetPasswordProtectedRoute'
 import Cart from '../pages/users/Cart'
 import Wishlist from '../pages/users/Wishlist'
 import Checkout from '../pages/users/Checkout'
-
+import OrderSuccess from '../pages/users/OrderSuccess'
 
 
 function UserRoutes() {
@@ -44,6 +44,7 @@ function UserRoutes() {
           <Route path='/wishlist' element={<Wishlist />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/checkout' element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
         </Route>
       </Routes>
     </>

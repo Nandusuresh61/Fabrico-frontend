@@ -7,7 +7,6 @@ import Layout from '../../components/layout/Layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../components/ui/form';
-import { toast } from 'sonner';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCart } from '../../redux/features/cartSlice';
@@ -16,6 +15,7 @@ import Modal from '../../components/ui/Modal';
 import CustomButton from '../../components/ui/CustomButton';
 import { Home, Briefcase } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
+import { createOrder } from '../../redux/features/orderSlice';
 
 // Mock data for cart items in checkout
 const cartItems = [
@@ -76,16 +76,49 @@ const Checkout = () => {
   const total = subtotal + shipping + tax;
 
   const handlePlaceOrder = async () => {
+    if (!selectedAddress) {
+      toast({
+        title: "Error",
+        description: "Please select a shipping address",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      const orderData = {
+        items: cartItems.map(item => ({
+          product: item.product._id,
+          variant: item.variant._id,
+          quantity: item.quantity,
+          price: item.variant.discountPrice || item.variant.price
+        })),
+        shippingAddress: selectedAddress,
+        paymentMethod,
+        totalAmount: orderSummary.total
+      };
+
+      const result = await dispatch(createOrder(orderData)).unwrap();
+      
       // Clear the cart
       await dispatch(clearCart()).unwrap();
       
-      toast.success('Your order has been placed successfully!');
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
+      toast({
+        title: "Success",
+        description: "Your order has been placed successfully!"
+      });
+
+      // Navigate to success page with order ID
+      navigate('/order-success', { 
+        state: { orderId: result.orderId },
+        replace: true
+      });
     } catch (error) {
-      toast.error('Failed to place order. Please try again.');
+      toast({
+        title: "Error",
+        description: error.message || "Failed to place order. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -252,7 +285,20 @@ const Checkout = () => {
                   className="grid gap-4 grid-cols-1 md:grid-cols-2"
                 >
                   {addresses.map((address) => (
-                    <div key={address._id} className="relative">
+                    <div key={address._id} className="relative group">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          startEdit(address);
+                        }}
+                        className="absolute right-2 top-2 rounded p-1.5 hover:bg-gray-100 transition-colors z-10 bg-white shadow-sm"
+                        title="Edit address"
+                        aria-label={`Edit ${address.type} address`}
+                      >
+                        <Pencil className="h-4 w-4 text-gray-600 hover:text-primary" />
+                      </button>
+                      
                       <RadioGroupItem 
                         value={address._id} 
                         id={`address-${address._id}`} 
@@ -263,19 +309,8 @@ const Checkout = () => {
                         className="flex flex-col p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50"
                       >
                         <div className="flex justify-between items-start">
-                          <span className="font-medium">{address.type}</span>
                           <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                startEdit(address);
-                              }}
-                              className="rounded p-1 hover:bg-gray-100"
-                            >
-                              <Pencil className="h-4 w-4 text-gray-500" />
-                            </button>
+                            <span className="font-medium">{address.type}</span>
                             {address.isDefault && (
                               <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                                 Default

@@ -8,6 +8,7 @@ import Layout from '../pages/admin/Layout';
 import CategoryManagement from '../pages/admin/CategoryManagement';
 import BrandManagement from '../pages/admin/BrandManagement';
 import AdminProtectedRoute from './AdminProtectedRoute';
+import OrderManagement from '../pages/admin/OrderManagement';
 
 function AdminRoutes() {
   return (
@@ -23,6 +24,7 @@ function AdminRoutes() {
           <Route path='users' element={<UserManagement />} />
           <Route path='categories' element={<CategoryManagement />} />
           <Route path='brands' element={<BrandManagement />} />
+          <Route path='orders' element={<OrderManagement />} />
         </Route>
       </Route>
       
