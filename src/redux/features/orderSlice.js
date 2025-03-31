@@ -1,5 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { createOrderApi, getOrdersApi, getOrderByIdApi, updateOrderStatusApi, cancelOrderApi } from '../../api/orderApi';
+import { 
+  createOrderApi, 
+  getOrdersApi, 
+  getOrderByIdApi, 
+  updateOrderStatusApi, 
+  cancelOrderApi,
+  verifyReturnRequestApi 
+} from '../../api/orderApi';
 
 // Create Order
 export const createOrder = createAsyncThunk(
@@ -14,12 +21,12 @@ export const createOrder = createAsyncThunk(
   }
 );
 
-// Get Orders
+// Get Orders with pagination, search, sort and filter
 export const getOrders = createAsyncThunk(
   'order/getOrders',
-  async (_, { rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      const response = await getOrdersApi();
+      const response = await getOrdersApi(params);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -40,12 +47,49 @@ export const getOrderById = createAsyncThunk(
   }
 );
 
+// Update Order Status
+export const updateOrderStatus = createAsyncThunk(
+  'order/updateStatus',
+  async ({ id, status }, { rejectWithValue }) => {
+    try {
+      const response = await updateOrderStatusApi(id, { status });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Verify Return Request
+export const verifyReturnRequest = createAsyncThunk(
+  'order/verifyReturn',
+  async ({ orderId, itemId, status }, { rejectWithValue }) => {
+    try {
+      const response = await verifyReturnRequestApi(orderId, itemId, status);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const initialState = {
   orders: [],
   currentOrder: null,
   loading: false,
   error: null,
   success: false,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalOrders: 0
+  },
+  filters: {
+    search: '',
+    status: 'all',
+    sortBy: 'createdAt',
+    sortOrder: 'desc'
+  }
 };
 
 const orderSlice = createSlice({
@@ -58,6 +102,15 @@ const orderSlice = createSlice({
     resetOrderSuccess: (state) => {
       state.success = false;
     },
+    setFilters: (state, action) => {
+      state.filters = { ...state.filters, ...action.payload };
+    },
+    resetFilters: (state) => {
+      state.filters = initialState.filters;
+    },
+    setCurrentPage: (state, action) => {
+      state.pagination.currentPage = action.payload;
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -82,7 +135,12 @@ const orderSlice = createSlice({
       })
       .addCase(getOrders.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = action.payload;
+        state.orders = action.payload.orders;
+        state.pagination = {
+          currentPage: action.payload.page,
+          totalPages: action.payload.pages,
+          totalOrders: action.payload.total
+        };
       })
       .addCase(getOrders.rejected, (state, action) => {
         state.loading = false;
@@ -100,9 +158,58 @@ const orderSlice = createSlice({
       .addCase(getOrderById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to fetch order';
+      })
+      // Update Order Status
+      .addCase(updateOrderStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Update order in the list if it exists
+        const index = state.orders.findIndex(order => order._id === action.payload._id);
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+        if (state.currentOrder?._id === action.payload._id) {
+          state.currentOrder = action.payload;
+        }
+      })
+      .addCase(updateOrderStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to update order status';
+      })
+      // Verify Return Request
+      .addCase(verifyReturnRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyReturnRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Update order in the list if it exists
+        const index = state.orders.findIndex(order => order._id === action.payload._id);
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+        if (state.currentOrder?._id === action.payload._id) {
+          state.currentOrder = action.payload;
+        }
+      })
+      .addCase(verifyReturnRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to verify return request';
       });
   },
 });
 
-export const { clearOrderError, resetOrderSuccess } = orderSlice.actions;
+export const { 
+  clearOrderError, 
+  resetOrderSuccess, 
+  setFilters, 
+  resetFilters,
+  setCurrentPage 
+} = orderSlice.actions;
+
 export default orderSlice.reducer;

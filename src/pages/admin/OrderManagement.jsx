@@ -45,7 +45,8 @@ import {
   ArrowDown, 
   ArrowUp,
   RefreshCcw,
-  Eye
+  Eye,
+  Loader2
 } from 'lucide-react';
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
@@ -59,6 +60,8 @@ const OrderManagement = () => {
   const {
     orders,
     totalOrders,
+    loading,
+    error,
     updateOrderStatus,
     updateReturnStatus,
     searchTerm,
@@ -84,11 +87,18 @@ const OrderManagement = () => {
     }
   };
 
-  const handleOrderStatusChange = (orderId, newStatus) => {
-    if (updateOrderStatus(orderId, newStatus)) {
+  const handleOrderStatusChange = async (orderId, newStatus) => {
+    const success = await updateOrderStatus(orderId, newStatus);
+    if (success) {
       toast({
         title: "Order Status Updated",
         description: `Order ${orderId} status changed to ${newStatus}`,
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to update order status",
+        variant: "destructive",
       });
     }
   };
@@ -98,15 +108,22 @@ const OrderManagement = () => {
     setReturnDialogOpen(true);
   };
 
-  const processReturn = (status) => {
+  const processReturn = async (status) => {
     if (!returnToVerify) return;
     
-    if (updateReturnStatus(returnToVerify.orderId, returnToVerify.itemId, status)) {
+    const success = await updateReturnStatus(returnToVerify.orderId, returnToVerify.itemId, status);
+    if (success) {
       toast({
         title: "Return Request Processed",
         description: status === 'approved' 
           ? "Return approved and refund issued to customer's wallet" 
           : "Return request has been rejected",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to process return request",
+        variant: "destructive",
       });
     }
     
@@ -125,7 +142,7 @@ const OrderManagement = () => {
       shipped: "bg-blue-100 text-blue-800",
       "out for delivery": "bg-purple-100 text-purple-800",
       delivered: "bg-green-100 text-green-800",
-      canceled: "bg-red-100 text-red-800",
+      cancelled: "bg-red-100 text-red-800",
     };
 
     return (
@@ -139,7 +156,7 @@ const OrderManagement = () => {
     if (!status) return null;
     
     const statusColors = {
-      pending: "bg-yellow-100 text-yellow-800",
+      requested: "bg-yellow-100 text-yellow-800",
       approved: "bg-green-100 text-green-800",
       rejected: "bg-red-100 text-red-800",
     };
@@ -155,6 +172,19 @@ const OrderManagement = () => {
     if (sortBy !== field) return <ArrowUpDown className="h-4 w-4" />;
     return sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
   };
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="text-center text-red-600">
+          <p>Error loading orders: {error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -201,24 +231,24 @@ const OrderManagement = () => {
                 <SelectItem value="shipped">Shipped</SelectItem>
                 <SelectItem value="out for delivery">Out for Delivery</SelectItem>
                 <SelectItem value="delivered">Delivered</SelectItem>
-                <SelectItem value="canceled">Canceled</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
             
             <Button
               variant="outline" 
-              onClick={() => handleSort('date')}
+              onClick={() => handleSort('createdAt')}
               className="px-3"
             >
-              Date {getSortIcon('date')}
+              Date {getSortIcon('createdAt')}
             </Button>
             
             <Button
               variant="outline" 
-              onClick={() => handleSort('total')}
+              onClick={() => handleSort('totalAmount')}
               className="px-3"
             >
-              Total {getSortIcon('total')}
+              Total {getSortIcon('totalAmount')}
             </Button>
             
             <Button 
@@ -235,7 +265,16 @@ const OrderManagement = () => {
         <Card>
           <CardHeader className="px-6 py-4">
             <CardTitle className="text-xl">Orders</CardTitle>
-            <CardDescription>Showing {orders.length} of {totalOrders} orders</CardDescription>
+            <CardDescription>
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading orders...
+                </div>
+              ) : (
+                `Showing ${orders.length} of ${totalOrders} orders`
+              )}
+            </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -250,19 +289,28 @@ const OrderManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {orders.length > 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex justify-center items-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        Loading orders...
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : orders.length > 0 ? (
                   orders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell className="font-medium">{order.id}</TableCell>
-                      <TableCell>{formatDate(order.date)}</TableCell>
+                    <TableRow key={order._id}>
+                      <TableCell className="font-medium">{order.orderId}</TableCell>
+                      <TableCell>{formatDate(order.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{order.userName}</span>
-                          <span className="text-sm text-gray-500">{order.userEmail}</span>
+                          <span className="font-medium">{order.user.name}</span>
+                          <span className="text-sm text-gray-500">{order.user.email}</span>
                         </div>
                       </TableCell>
                       <TableCell>{renderOrderStatusBadge(order.status)}</TableCell>
-                      <TableCell>${order.total.toFixed(2)}</TableCell>
+                      <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Dialog>
@@ -276,19 +324,19 @@ const OrderManagement = () => {
                                 <>
                                   <DialogHeader>
                                     <DialogTitle className="flex justify-between">
-                                      <span>Order Details - {selectedOrder.id}</span>
+                                      <span>Order Details - {selectedOrder.orderId}</span>
                                       <span>{renderOrderStatusBadge(selectedOrder.status)}</span>
                                     </DialogTitle>
                                     <DialogDescription className="text-sm text-gray-500">
-                                      Placed on {formatDate(selectedOrder.date)}
+                                      Placed on {formatDate(selectedOrder.createdAt)}
                                     </DialogDescription>
                                   </DialogHeader>
                                   
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                                     <div>
                                       <h3 className="font-semibold mb-2">Customer Information</h3>
-                                      <p>{selectedOrder.userName}</p>
-                                      <p>{selectedOrder.userEmail}</p>
+                                      <p>{selectedOrder.user.name}</p>
+                                      <p>{selectedOrder.user.email}</p>
                                     </div>
                                     
                                     <div>
@@ -317,37 +365,43 @@ const OrderManagement = () => {
                                       </thead>
                                       <tbody className="bg-white divide-y divide-gray-200">
                                         {selectedOrder.items.map((item) => (
-                                          <tr key={item.id}>
+                                          <tr key={item._id}>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                               <div className="flex items-center">
                                                 <div className="h-10 w-10 flex-shrink-0">
-                                                  <img className="h-10 w-10 rounded-md" src={item.productImage} alt={item.productName} />
+                                                  <img 
+                                                    className="h-10 w-10 rounded-md object-cover" 
+                                                    src={item.product.images[0]} 
+                                                    alt={item.product.name} 
+                                                  />
                                                 </div>
                                                 <div className="ml-4">
-                                                  <div className="text-sm font-medium text-gray-900">{item.productName}</div>
-                                                  <div className="text-sm text-gray-500">ID: {item.productId}</div>
+                                                  <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
+                                                  <div className="text-sm text-gray-500">
+                                                    {item.variant.name} (SKU: {item.variant.sku})
+                                                  </div>
                                                 </div>
                                               </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.price.toFixed(2)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                              {item.returnRequested ? (
+                                              {item.returnRequest && item.returnRequest.status !== 'none' ? (
                                                 <div className="flex flex-col gap-1">
                                                   <Badge variant="outline">Return Requested</Badge>
-                                                  {renderReturnStatusBadge(item.returnStatus)}
-                                                  {item.returnReason && (
-                                                    <span className="text-xs text-gray-500">Reason: {item.returnReason}</span>
+                                                  {renderReturnStatusBadge(item.returnRequest.status)}
+                                                  {item.returnRequest.reason && (
+                                                    <span className="text-xs text-gray-500">Reason: {item.returnRequest.reason}</span>
                                                   )}
                                                 </div>
                                               ) : 'No request'}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                              {item.returnRequested && item.returnStatus === 'pending' && (
+                                              {item.returnRequest && item.returnRequest.status === 'requested' && (
                                                 <Button
                                                   variant="outline"
                                                   size="sm"
-                                                  onClick={() => handleReturnVerify(selectedOrder.id, item.id)}
+                                                  onClick={() => handleReturnVerify(selectedOrder._id, item._id)}
                                                 >
                                                   Verify Return
                                                 </Button>
@@ -358,16 +412,10 @@ const OrderManagement = () => {
                                       </tbody>
                                       <tfoot className="bg-gray-50">
                                         <tr>
-                                          <td colSpan={2} className="px-6 py-3 text-right text-sm font-medium text-gray-500">Subtotal:</td>
-                                          <td colSpan={3} className="px-6 py-3 text-left text-sm font-medium text-gray-900">${selectedOrder.subtotal.toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                          <td colSpan={2} className="px-6 py-3 text-right text-sm font-medium text-gray-500">Tax:</td>
-                                          <td colSpan={3} className="px-6 py-3 text-left text-sm font-medium text-gray-900">${selectedOrder.tax.toFixed(2)}</td>
-                                        </tr>
-                                        <tr>
-                                          <td colSpan={2} className="px-6 py-3 text-right text-sm font-bold text-gray-700">Total:</td>
-                                          <td colSpan={3} className="px-6 py-3 text-left text-sm font-bold text-gray-900">${selectedOrder.total.toFixed(2)}</td>
+                                          <td colSpan={2} className="px-6 py-3 text-right text-sm font-medium text-gray-500">Total:</td>
+                                          <td colSpan={3} className="px-6 py-3 text-left text-sm font-bold text-gray-900">
+                                            ${selectedOrder.totalAmount.toFixed(2)}
+                                          </td>
                                         </tr>
                                       </tfoot>
                                     </table>
@@ -378,7 +426,7 @@ const OrderManagement = () => {
                                       <div className="text-sm font-medium text-gray-500 mb-2">Update Order Status</div>
                                       <Select 
                                         value={selectedOrder.status} 
-                                        onValueChange={(value) => handleOrderStatusChange(selectedOrder.id, value)}
+                                        onValueChange={(value) => handleOrderStatusChange(selectedOrder._id,selectedOrder.orderId, value)}
                                       >
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select status" />
@@ -388,7 +436,7 @@ const OrderManagement = () => {
                                           <SelectItem value="shipped">Shipped</SelectItem>
                                           <SelectItem value="out for delivery">Out for Delivery</SelectItem>
                                           <SelectItem value="delivered">Delivered</SelectItem>
-                                          <SelectItem value="canceled">Canceled</SelectItem>
+                                          <SelectItem value="cancelled">Cancelled</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -401,7 +449,7 @@ const OrderManagement = () => {
                           
                           <Select 
                             value={order.status} 
-                            onValueChange={(value) => handleOrderStatusChange(order.id, value)}
+                            onValueChange={(value) => handleOrderStatusChange(order._id, value)}
                           >
                             <SelectTrigger className="w-[140px]">
                               <SelectValue placeholder="Update Status" />
@@ -411,7 +459,7 @@ const OrderManagement = () => {
                               <SelectItem value="shipped">Shipped</SelectItem>
                               <SelectItem value="out for delivery">Out for Delivery</SelectItem>
                               <SelectItem value="delivered">Delivered</SelectItem>
-                              <SelectItem value="canceled">Canceled</SelectItem>
+                              <SelectItem value="cancelled">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -475,27 +523,27 @@ const OrderManagement = () => {
             </Pagination>
           </CardFooter>
         </Card>
-      </div>
 
-      {/* Return verification dialog */}
-      <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Verify Return Request</DialogTitle>
-            <DialogDescription>
-              Approve or reject this return request. If approved, the refund amount will be credited to the customer's wallet.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-3 mt-4">
-            <Button variant="outline" onClick={() => processReturn('rejected')}>
-              Reject Return
-            </Button>
-            <Button onClick={() => processReturn('approved')}>
-              Approve & Refund
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        {/* Return verification dialog */}
+        <Dialog open={returnDialogOpen} onOpenChange={setReturnDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Verify Return Request</DialogTitle>
+              <DialogDescription>
+                Approve or reject this return request. If approved, the refund amount will be credited to the customer's wallet.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-3 mt-4">
+              <Button variant="outline" onClick={() => processReturn('rejected')}>
+                Reject Return
+              </Button>
+              <Button onClick={() => processReturn('approved')}>
+                Approve & Refund
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
     </>
   );
 };
