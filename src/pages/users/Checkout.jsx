@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, CreditCard, MapPin } from 'lucide-react';
+import { Check, CreditCard, MapPin, Pencil } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
@@ -11,7 +11,11 @@ import { toast } from 'sonner';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCart } from '../../redux/features/cartSlice';
-import { fetchAddresses } from '../../redux/features/addressSlice';
+import { fetchAddresses, addNewAddress, updateExistingAddress } from '../../redux/features/addressSlice';
+import Modal from '../../components/ui/Modal';
+import CustomButton from '../../components/ui/CustomButton';
+import { Home, Briefcase } from 'lucide-react';
+import { useToast } from '../../hooks/use-toast';
 
 // Mock data for cart items in checkout
 const cartItems = [
@@ -37,6 +41,19 @@ const Checkout = () => {
   const dispatch = useDispatch();
   const { cartItems, orderSummary } = location.state || { cartItems: [], orderSummary: {} };
   const { addresses } = useSelector(state => state.address);
+  const { toast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    type: 'home',
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    isDefault: false,
+  });
+  const [editingId, setEditingId] = useState(null);
 
   // Redirect if no cart items
   useEffect(() => {
@@ -50,7 +67,7 @@ const Checkout = () => {
   }, [dispatch]);
 
   const [selectedAddress, setSelectedAddress] = useState(addresses.find(addr => addr.isDefault)?._id || '');
-  const [paymentMethod, setPaymentMethod] = useState('credit-card');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   
   // Calculate order totals
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -69,6 +86,110 @@ const Checkout = () => {
       }, 2000);
     } catch (error) {
       toast.error('Failed to place order. Please try again.');
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { name, checked } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  const handleAddAddress = async (e) => {
+    e.preventDefault();
+    
+    const addressData = {
+      type: formData.type,
+      name: formData.name,
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.zipCode,
+      phone: formData.phone,
+      isDefault: formData.isDefault
+    };
+
+    try {
+      await dispatch(addNewAddress(addressData)).unwrap();
+      toast({
+        title: "Success",
+        description: "Address added successfully",
+      });
+      resetForm();
+      setIsModalOpen(false);
+      dispatch(fetchAddresses());
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add address",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const startEdit = (address) => {
+    setFormData({
+      type: address.type || 'home',
+      name: address.name,
+      street: address.street,
+      city: address.city,
+      state: address.state,
+      zipCode: address.pincode,
+      phone: address.phone,
+      isDefault: address.isDefault
+    });
+    setEditingId(address._id);
+    setIsModalOpen(true);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      type: 'home',
+      name: '',
+      street: '',
+      city: '',
+      state: '',
+      zipCode: '',
+      phone: '',
+      isDefault: false,
+    });
+    setEditingId(null);
+  };
+
+  const handleEditAddress = async (e) => {
+    e.preventDefault();
+    if (!editingId) return;
+    
+    const addressData = {
+      type: formData.type,
+      name: formData.name,
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.zipCode,
+      phone: formData.phone,
+      isDefault: formData.isDefault
+    };
+
+    try {
+      await dispatch(updateExistingAddress({ id: editingId, addressData })).unwrap();
+      toast({
+        title: "Success",
+        description: "Address updated successfully",
+      });
+      resetForm();
+      setIsModalOpen(false);
+      dispatch(fetchAddresses());
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update address",
+        variant: "destructive",
+      });
     }
   };
 
@@ -143,11 +264,24 @@ const Checkout = () => {
                       >
                         <div className="flex justify-between items-start">
                           <span className="font-medium">{address.type}</span>
-                          {address.isDefault && (
-                            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                              Default
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                startEdit(address);
+                              }}
+                              className="rounded p-1 hover:bg-gray-100"
+                            >
+                              <Pencil className="h-4 w-4 text-gray-500" />
+                            </button>
+                            {address.isDefault && (
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                                Default
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="mt-2 text-sm text-gray-700">
                           <p>{address.name}</p>
@@ -164,7 +298,7 @@ const Checkout = () => {
                   
                   {/* Add new address option */}
                   <div 
-                    onClick={() => navigate('/profile')} 
+                    onClick={() => setIsModalOpen(true)} 
                     className="flex items-center justify-center p-4 border rounded-lg border-dashed hover:bg-gray-50 cursor-pointer"
                   >
                     <div className="text-center">
@@ -191,25 +325,6 @@ const Checkout = () => {
                   className="grid gap-4"
                 >
                   <div className="relative">
-                    <RadioGroupItem value="credit-card" id="credit-card" className="peer sr-only" />
-                    <Label 
-                      htmlFor="credit-card"
-                      className="flex gap-3 p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50"
-                    >
-                      <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
-                        <CreditCard className="h-5 w-5 text-gray-600" />
-                      </div>
-                      <div>
-                        <span className="font-medium">Credit / Debit Card</span>
-                        <p className="text-sm text-gray-500">Pay securely with your card</p>
-                      </div>
-                      <div className="absolute right-4 top-4 text-primary opacity-0 peer-data-[state=checked]:opacity-100">
-                        <Check className="h-5 w-5" />
-                      </div>
-                    </Label>
-                  </div>
-                  
-                  <div className="relative">
                     <RadioGroupItem value="cod" id="cod" className="peer sr-only" />
                     <Label 
                       htmlFor="cod"
@@ -231,48 +346,6 @@ const Checkout = () => {
                       </div>
                     </Label>
                   </div>
-                  
-                  {/* Credit Card Form - only shown when credit card is selected */}
-                  {paymentMethod === 'credit-card' && (
-                    <div className="mt-4 p-4 border rounded-lg">
-                      <div className="grid gap-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="col-span-2">
-                            <Label htmlFor="card-name">Cardholder Name</Label>
-                            <Input 
-                              id="card-name" 
-                              placeholder="Name on card" 
-                              className="mt-1" 
-                            />
-                          </div>
-                          <div className="col-span-2">
-                            <Label htmlFor="card-number">Card Number</Label>
-                            <Input 
-                              id="card-number" 
-                              placeholder="1234 5678 9012 3456" 
-                              className="mt-1" 
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="expiry-date">Expiry Date</Label>
-                            <Input 
-                              id="expiry-date" 
-                              placeholder="MM/YY" 
-                              className="mt-1" 
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="cvv">CVV</Label>
-                            <Input 
-                              id="cvv" 
-                              placeholder="123" 
-                              className="mt-1" 
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </RadioGroup>
               </CardContent>
             </Card>
@@ -319,6 +392,143 @@ const Checkout = () => {
           </div>
         </div>
       </div>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          resetForm();
+        }}
+        title={editingId ? "Edit Address" : "Add New Address"}
+      >
+        <form onSubmit={editingId ? handleEditAddress : handleAddAddress} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Address Type
+              </label>
+              <select
+                name="type"
+                value={formData.type}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              >
+                <option value="home">Home</option>
+                <option value="work">Work</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Street Address
+            </label>
+            <input
+              type="text"
+              name="street"
+              value={formData.street}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                City
+              </label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                State
+              </label>
+              <input
+                type="text"
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Pincode
+              </label>
+              <input
+                type="text"
+                name="zipCode"
+                value={formData.zipCode}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isDefault"
+              name="isDefault"
+              checked={formData.isDefault}
+              onChange={handleCheckboxChange}
+              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <label htmlFor="isDefault" className="ml-2 text-sm text-gray-700">
+              Set as default address
+            </label>
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <CustomButton
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+            >
+              Cancel
+            </CustomButton>
+            <CustomButton type="submit">
+              {editingId ? 'Save Changes' : 'Save Address'}
+            </CustomButton>
+          </div>
+        </form>
+      </Modal>
     </Layout>
   );
 };
