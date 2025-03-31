@@ -186,6 +186,8 @@ const OrderManagement = () => {
     );
   }
 
+console.log(orders)
+  
   return (
     <>
       <div className="p-6">
@@ -305,12 +307,12 @@ const OrderManagement = () => {
                       <TableCell>{formatDate(order.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{order.user.name}</span>
+                          <span className="font-medium">{order.user.username}</span>
                           <span className="text-sm text-gray-500">{order.user.email}</span>
                         </div>
                       </TableCell>
                       <TableCell>{renderOrderStatusBadge(order.status)}</TableCell>
-                      <TableCell>${order.totalAmount.toFixed(2)}</TableCell>
+                      <TableCell>₹{order.totalAmount.toFixed(2)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Dialog>
@@ -426,7 +428,7 @@ const OrderManagement = () => {
                                       <div className="text-sm font-medium text-gray-500 mb-2">Update Order Status</div>
                                       <Select 
                                         value={selectedOrder.status} 
-                                        onValueChange={(value) => handleOrderStatusChange(selectedOrder._id,selectedOrder.orderId, value)}
+                                        onValueChange={(value) => handleOrderStatusChange(selectedOrder._id, value)}
                                       >
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select status" />
