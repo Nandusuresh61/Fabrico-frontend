@@ -9,6 +9,7 @@ import PasswordChange from './Profile/PasswordChange';
 import UserLogout from './Profile/UserLogout';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import Orders from './Profile/Orders';
+import Wallet from './Profile/Wallet';
 
 const UserProfile = () => {
   const [activeTab, setActiveTab] = useState('personal');
@@ -22,8 +23,8 @@ const UserProfile = () => {
         return <AddressSection />;
       case 'orders':
         return <Orders />;
-      // case 'wallet':
-      //   return <WalletSection />;
+      case 'wallet':
+        return <Wallet />;
       // case 'coupons':
       //   return <CouponsSection />;
       case 'password':

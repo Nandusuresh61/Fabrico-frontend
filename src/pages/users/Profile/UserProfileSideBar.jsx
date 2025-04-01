@@ -5,7 +5,7 @@ const UserProfileSidebar = ({ activeTab, onTabChange, isMobile }) => {
     { id: 'personal', label: 'Personal Information', icon: User },
     { id: 'address', label: 'Address', icon: MapPin },
     { id: 'orders', label: 'Orders', icon: ShoppingBag },
-    // { id: 'wallet', label: 'Wallet', icon: Wallet },
+    { id: 'wallet', label: 'Wallet', icon: Wallet },
     // { id: 'coupons', label: 'Coupons', icon: Tag },
     { id: 'password', label: 'Password Change', icon: KeyRound },
     { id: 'logout', label: 'Logout', icon: LogOut },
