@@ -5,7 +5,8 @@ import {
   getOrderByIdApi, 
   updateOrderStatusApi, 
   cancelOrderApi,
-  verifyReturnRequestApi 
+  verifyReturnRequestApi,
+  getUserOrdersApi
 } from '../../api/orderApi';
 
 // Create Order
@@ -66,6 +67,19 @@ export const verifyReturnRequest = createAsyncThunk(
   async ({ orderId, itemId, status }, { rejectWithValue }) => {
     try {
       const response = await verifyReturnRequestApi(orderId, itemId, status);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Get User Orders
+export const getUserOrders = createAsyncThunk(
+  'order/getUserOrders',
+  async (params, { rejectWithValue }) => {
+    try {
+      const response = await getUserOrdersApi(params);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -200,6 +214,24 @@ const orderSlice = createSlice({
       .addCase(verifyReturnRequest.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to verify return request';
+      })
+      // Get User Orders
+      .addCase(getUserOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getUserOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload.orders;
+        state.pagination = {
+          currentPage: action.payload.page,
+          totalPages: action.payload.pages,
+          totalOrders: action.payload.total
+        };
+      })
+      .addCase(getUserOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to fetch your orders';
       });
   },
 });

@@ -92,7 +92,7 @@ const OrderManagement = () => {
     if (success) {
       toast({
         title: "Order Status Updated",
-        description: `Order ${orderId} status changed to ${newStatus}`,
+        description: `Order status changed to ${newStatus}`,
       });
     } else {
       toast({
@@ -189,7 +189,7 @@ const OrderManagement = () => {
 console.log(orders)
   
   return (
-    <>
+    <div>
       <div className="p-6">
         <div className="flex flex-col mb-6">
           <h1 className="text-2xl font-bold">Order Management</h1>
@@ -283,8 +283,8 @@ console.log(orders)
               <TableHeader>
                 <TableRow>
                   <TableHead>Order ID</TableHead>
-                  <TableHead>Date</TableHead>
                   <TableHead>Customer</TableHead>
+                  <TableHead>Date</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Total</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -304,13 +304,13 @@ console.log(orders)
                   orders.map((order) => (
                     <TableRow key={order._id}>
                       <TableCell className="font-medium">{order.orderId}</TableCell>
-                      <TableCell>{formatDate(order.createdAt)}</TableCell>
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-medium">{order.user.username}</span>
                           <span className="text-sm text-gray-500">{order.user.email}</span>
                         </div>
                       </TableCell>
+                      <TableCell>{formatDate(order.createdAt)}</TableCell>
                       <TableCell>{renderOrderStatusBadge(order.status)}</TableCell>
                       <TableCell>₹{order.totalAmount.toFixed(2)}</TableCell>
                       <TableCell className="text-right">
@@ -321,7 +321,7 @@ console.log(orders)
                                 <Eye className="h-4 w-4 mr-1" /> View
                               </Button>
                             </DialogTrigger>
-                            <DialogContent className="max-w-3xl">
+                            <DialogContent className="max-w-[80vw] max-h-[90vh] overflow-y-auto">
                               {selectedOrder && (
                                 <>
                                   <DialogHeader>
@@ -373,7 +373,7 @@ console.log(orders)
                                                 <div className="h-10 w-10 flex-shrink-0">
                                                   <img 
                                                     className="h-10 w-10 rounded-md object-cover" 
-                                                    src={item.product.images[0]} 
+                                                    src={item.variant.mainImage || '/placeholder-image.jpg'} 
                                                     alt={item.product.name} 
                                                   />
                                                 </div>
@@ -386,7 +386,7 @@ console.log(orders)
                                               </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${item.price.toFixed(2)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{item.price.toFixed(2)}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                               {item.returnRequest && item.returnRequest.status !== 'none' ? (
                                                 <div className="flex flex-col gap-1">
@@ -416,7 +416,7 @@ console.log(orders)
                                         <tr>
                                           <td colSpan={2} className="px-6 py-3 text-right text-sm font-medium text-gray-500">Total:</td>
                                           <td colSpan={3} className="px-6 py-3 text-left text-sm font-bold text-gray-900">
-                                            ${selectedOrder.totalAmount.toFixed(2)}
+                                            ₹{selectedOrder.totalAmount.toFixed(2)}
                                           </td>
                                         </tr>
                                       </tfoot>
@@ -546,7 +546,7 @@ console.log(orders)
           </DialogContent>
         </Dialog>
       </div>
-    </>
+    </div>
   );
 };
 
