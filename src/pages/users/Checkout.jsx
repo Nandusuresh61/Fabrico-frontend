@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCart } from '../../redux/features/cartSlice';
 import { fetchAddresses, addNewAddress, updateExistingAddress } from '../../redux/features/addressSlice';
+import { updateProductStockApi } from '../../api/productApi';
 import Modal from '../../components/ui/Modal';
 import CustomButton from '../../components/ui/CustomButton';
 import { Home, Briefcase } from 'lucide-react';
@@ -86,6 +87,26 @@ const Checkout = () => {
     }
 
     try {
+      // Update stock for each item in the cart
+      const stockUpdatePromises = cartItems.map(item =>
+        updateProductStockApi(
+          item.product._id,
+          item.variant._id,
+          item.quantity
+        )
+      );
+
+      try {
+        await Promise.all(stockUpdatePromises);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Some items are out of stock",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const orderData = {
         items: cartItems.map(item => ({
           product: item.product._id,
