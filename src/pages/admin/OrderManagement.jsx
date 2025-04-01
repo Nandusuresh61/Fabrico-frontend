@@ -326,7 +326,7 @@ console.log(orders)
                                 <>
                                   {console.log('Selected Order Details:', selectedOrder)}
                                   <DialogHeader>
-                                    <DialogTitle className="flex justify-between">
+                                    <DialogTitle className="flex items-center gap-4">
                                       <span>Order Details - {selectedOrder.orderId}</span>
                                       <span>{renderOrderStatusBadge(selectedOrder.status)}</span>
                                     </DialogTitle>
@@ -338,7 +338,7 @@ console.log(orders)
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                                     <div>
                                       <h3 className="font-semibold mb-2">Customer Information</h3>
-                                      <p>{selectedOrder.user.name}</p>
+                                      <p>{selectedOrder.user.username}</p>
                                       <p>{selectedOrder.user.email}</p>
                                     </div>
                                     
@@ -349,9 +349,10 @@ console.log(orders)
                                         <p>{selectedOrder.shippingAddress.addressLine2}</p>
                                       )}
                                       <p>
-                                        {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.postalCode}
+                                        {selectedOrder.shippingAddress.street}, {selectedOrder.shippingAddress.city}  {selectedOrder.shippingAddress.pincode}
                                       </p>
-                                      <p>{selectedOrder.shippingAddress.country}</p>
+                                      <p>{selectedOrder.shippingAddress.phone}</p>
+                                      <p>{selectedOrder.shippingAddress.state}</p>
                                     </div>
                                   </div>
                                   
@@ -447,7 +448,7 @@ console.log(orders)
                                         </SelectContent>
                                       </Select>
                                     </div>
-                                    <Button variant="outline">Close</Button>
+                            
                                   </DialogFooter>
                                 </>
                               )}
