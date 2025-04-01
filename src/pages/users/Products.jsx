@@ -80,15 +80,30 @@ const Products = () => {
   // Handle search
   const handleSearch = (e) => {
     e.preventDefault();
+    const searchValue = e.target.value;
+    setSearchTerm(searchValue);
     
+    // If search is empty, clear filters
+    if (!searchValue.trim()) {
+      setActiveCategory('all');
+      setActiveBrand('all');
+      updateFilters({ 
+        search: '',
+        category: 'all',
+        brand: 'all',
+        page: 1 
+      });
+      return;
+    }
+
     // Check if the search term matches any category
     const matchedCategory = categories.find(
-      category => category.name.toLowerCase().includes(searchTerm.toLowerCase())
+      category => category.name.toLowerCase().includes(searchValue.toLowerCase())
     );
     
     // Check if the search term matches any brand
     const matchedBrand = brands.find(
-      brand => brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+      brand => brand.name.toLowerCase().includes(searchValue.toLowerCase())
     );
 
     if (matchedCategory) {
@@ -114,25 +129,12 @@ const Products = () => {
       setActiveCategory('all');
       setActiveBrand('all');
       updateFilters({ 
-        search: searchTerm,
+        search: searchValue,
         category: 'all',
         brand: 'all',
         page: 1 
       });
     }
-  };
-
-  // Update the handleClearSearch function
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setActiveCategory('all');
-    setActiveBrand('all');
-    updateFilters({ 
-      search: '',
-      category: 'all',
-      brand: 'all',
-      page: 1 
-    });
   };
 
   // Fetch products when URL params change
@@ -159,28 +161,16 @@ const Products = () => {
   return (
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="mb-6 flex gap-2">
+        {/* Search Bar - Updated to remove form and button */}
+        <div className="mb-6">
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search products..."
-            className="flex-1 rounded-lg border p-2"
+            onChange={handleSearch}
+            placeholder="Search products, categories, or brands..."
+            className="w-full rounded-lg border p-2"
           />
-          <button type="submit" className="rounded-lg bg-primary px-4 py-2 text-white">
-            Search
-          </button>
-          {searchTerm && (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              className="rounded-lg border px-4 py-2"
-            >
-              Clear
-            </button>
-          )}
-        </form>
+        </div>
 
         <div className="grid gap-8 md:grid-cols-4">
           {/* Filters Sidebar */}
