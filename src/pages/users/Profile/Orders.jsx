@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ShoppingBag, Eye, XCircle, AlertTriangle, Package, Truck, CheckCircle, CreditCard, Receipt } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
-import { getUserOrders } from '../../../redux/features/orderSlice';
+import { getUserOrders, cancelOrderForUser } from '../../../redux/features/orderSlice';
 import Loader from '../../../components/layout/Loader';
 
 const Orders = () => {
   const dispatch = useDispatch();
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [otherReason, setOtherReason] = useState('');
   const { orders, loading, error, pagination } = useSelector((state) => state.order);
 
   useEffect(() => {
@@ -63,6 +66,28 @@ const Orders = () => {
       maximumFractionDigits: 0
     }).format(amount);
   };
+
+  const handleCancelOrder = async () => {
+    if (!cancelReason) return;
+    
+    const reason = cancelReason === 'other' ? otherReason : cancelReason;
+    await dispatch(cancelOrderForUser({ 
+      id: selectedOrder._id, 
+      data: { reason } 
+    }));
+    setShowCancelModal(false);
+    setCancelReason('');
+    setOtherReason('');
+  };
+
+  const cancelReasons = [
+    'Changed my mind',
+    'Ordered by mistake',
+    'Found better price elsewhere',
+    'Delivery time too long',
+    'Payment issues',
+    'Other'
+  ];
 
   if (loading) {
     return (
@@ -322,13 +347,76 @@ const Orders = () => {
                   <CustomButton
                     variant="outline"
                     className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                    onClick={() => {
-                      // Handle cancel order
-                    }}
+                    onClick={() => setShowCancelModal(true)}
                   >
                     Cancel Order
                   </CustomButton>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-6 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200">
+            {/* Close button */}
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="absolute -right-2 -top-2 z-10 rounded-full bg-white p-1 shadow-lg ring-1 ring-gray-200 transition-transform hover:scale-110"
+            >
+              <XCircle className="h-6 w-6 text-gray-400" />
+            </button>
+
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900">Cancel Order</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Please select a reason for canceling your order
+              </p>
+
+              <div className="mt-4">
+                <select
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">Select a reason</option>
+                  {cancelReasons.map((reason) => (
+                    <option key={reason} value={reason.toLowerCase()}>
+                      {reason}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {cancelReason === 'other' && (
+                <div className="mt-4">
+                  <textarea
+                    value={otherReason}
+                    onChange={(e) => setOtherReason(e.target.value)}
+                    placeholder="Please specify your reason..."
+                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    rows={3}
+                  />
+                </div>
+              )}
+
+              <div className="mt-6 flex gap-3">
+                <CustomButton
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowCancelModal(false)}
+                >
+                  Keep Order
+                </CustomButton>
+                <CustomButton
+                  className="w-full"
+                  onClick={handleCancelOrder}
+                  disabled={!cancelReason || (cancelReason === 'other' && !otherReason)}
+                >
+                  Cancel Order
+                </CustomButton>
               </div>
             </div>
           </div>

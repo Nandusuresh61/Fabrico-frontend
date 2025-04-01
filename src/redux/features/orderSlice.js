@@ -6,7 +6,8 @@ import {
   updateOrderStatusApi, 
   cancelOrderApi,
   verifyReturnRequestApi,
-  getUserOrdersApi
+  getUserOrdersApi,
+  cancelOrderForUserApi
 } from '../../api/orderApi';
 
 // Create Order
@@ -80,6 +81,19 @@ export const getUserOrders = createAsyncThunk(
   async (params, { rejectWithValue }) => {
     try {
       const response = await getUserOrdersApi(params);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Cancel Order for User
+export const cancelOrderForUser = createAsyncThunk(
+  'order/cancelOrderForUser',
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await cancelOrderForUserApi(id, data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -232,6 +246,27 @@ const orderSlice = createSlice({
       .addCase(getUserOrders.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to fetch your orders';
+      })
+      // Cancel Order for User
+      .addCase(cancelOrderForUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(cancelOrderForUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Update order in the list if it exists
+        const index = state.orders.findIndex(order => order._id === action.payload._id);
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+        if (state.currentOrder?._id === action.payload._id) {
+          state.currentOrder = action.payload;
+        }
+      })
+      .addCase(cancelOrderForUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to cancel order';
       });
   },
 });
