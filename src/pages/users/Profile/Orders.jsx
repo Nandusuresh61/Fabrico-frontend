@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ShoppingBag, Eye, XCircle, AlertTriangle, Package, Truck, CheckCircle, CreditCard, Receipt } from 'lucide-react';
+import { ShoppingBag, Eye, XCircle, AlertTriangle, Package, Truck, CheckCircle, CreditCard, Receipt, Download } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
 import { getUserOrders, cancelOrderForUser } from '../../../redux/features/orderSlice';
+import { downloadInvoiceApi } from '../../../api/invoiceApi';
 import Loader from '../../../components/layout/Loader';
 
 const Orders = () => {
@@ -88,6 +89,34 @@ const Orders = () => {
     'Payment issues',
     'Other'
   ];
+
+  const handleDownloadInvoice = async (order) => {
+    try {
+      const response = await downloadInvoiceApi(order._id);
+      
+      // Create a blob from the response data
+      const blob = new Blob([response.data], { type: 'application/pdf' });
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `invoice-${order.orderId}.pdf`;
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading invoice:', error);
+      // You might want to show an error message to the user here
+    }
+  };
 
   if (loading) {
     return (
@@ -352,6 +381,14 @@ const Orders = () => {
                     Cancel Order
                   </CustomButton>
                 )}
+                <CustomButton
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => handleDownloadInvoice(selectedOrder)}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download Invoice
+                </CustomButton>
               </div>
             </div>
           </div>
