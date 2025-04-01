@@ -179,6 +179,16 @@ const Orders = () => {
                                   <p className="mt-1 text-sm text-gray-600">Variant: {item.variant.name}</p>
                                 )}
                                 <p className="mt-1 text-sm text-gray-600">Qty: {item.quantity}</p>
+                                {selectedOrder.status === 'delivered' && (
+                                  <button
+                                    onClick={() => {
+                                      // Handle return product
+                                    }}
+                                    className="mt-2 inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                                  >
+                                    Return Item
+                                  </button>
+                                )}
                               </div>
                               <div className="text-right">
                                 <p className="text-base font-medium text-gray-900">{formatCurrency(item.price)}</p>
@@ -301,7 +311,7 @@ const Orders = () => {
                 >
                   Close
                 </CustomButton>
-                {selectedOrder.status !== 'cancelled' && selectedOrder.status !== 'delivered' && (
+                {selectedOrder.status === 'pending' && (
                   <CustomButton
                     variant="outline"
                     className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"

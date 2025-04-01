@@ -324,6 +324,7 @@ console.log(orders)
                             <DialogContent className="max-w-[80vw] max-h-[90vh] overflow-y-auto">
                               {selectedOrder && (
                                 <>
+                                  {console.log('Selected Order Details:', selectedOrder)}
                                   <DialogHeader>
                                     <DialogTitle className="flex justify-between">
                                       <span>Order Details - {selectedOrder.orderId}</span>
@@ -373,14 +374,18 @@ console.log(orders)
                                                 <div className="h-10 w-10 flex-shrink-0">
                                                   <img 
                                                     className="h-10 w-10 rounded-md object-cover" 
-                                                    src={item.variant.mainImage || '/placeholder-image.jpg'} 
-                                                    alt={item.product.name} 
+                                                    src={item.variant?.mainImage || '/placeholder-image.jpg'} 
+                                                    alt={item.product?.name} 
                                                   />
                                                 </div>
                                                 <div className="ml-4">
-                                                  <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
-                                                  <div className="text-sm text-gray-500">
-                                                    {item.variant.name} (SKU: {item.variant.sku})
+                                                  <div className="text-sm font-medium text-gray-900">{item.product?.name}</div>
+                                                  <div className="text-sm text-gray-500 space-y-0.5">
+                                                    {item.product?.brand?.name && <div>Brand: {item.product.brand.name}</div>}
+                                                    {item.product?.category?.name && <div>Category: {item.product.category.name}</div>}
+                                                    {item.variant?.name && <div>Variant: {item.variant.name}</div>}
+                                                    {item.variant?.color && <div>Color: {item.variant.color}</div>}
+                                                    {item.variant?.size && <div>Size: {item.variant.size}</div>}
                                                   </div>
                                                 </div>
                                               </div>
