@@ -74,8 +74,8 @@ const Cart = () => {
     return sum + (price * item.quantity);
   }, 0);
 
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const deliveryCharge = subtotal > 500 ? 0 : 50;
+  const total = subtotal + deliveryCharge;
 
   // Add this click handler function
   const handleProductClick = (productId) => {
@@ -117,7 +117,7 @@ const Cart = () => {
           cartItems: items,
           orderSummary: {
             subtotal,
-            tax,
+            deliveryCharge,
             total
           }
         } 
@@ -263,9 +263,18 @@ const Cart = () => {
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Tax (8%)</span>
-                    <span>₹{tax.toFixed(2)}</span>
+                    <span className="text-gray-600">Delivery Charge</span>
+                    {subtotal > 500 ? (
+                      <span className="text-green-600">Free</span>
+                    ) : (
+                      <span>₹{deliveryCharge.toFixed(2)}</span>
+                    )}
                   </div>
+                  {subtotal > 0 && subtotal <= 500 && (
+                    <div className="text-sm text-gray-600">
+                      Add items worth ₹{(500 - subtotal).toFixed(2)} more for free delivery
+                    </div>
+                  )}
                   <div className="border-t pt-3 mt-3">
                     <div className="flex justify-between font-medium text-lg">
                       <span>Total Amount</span>

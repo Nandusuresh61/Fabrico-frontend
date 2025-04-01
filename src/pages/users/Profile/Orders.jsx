@@ -274,11 +274,15 @@ const Orders = () => {
                       <div className="space-y-3">
                         <div className="flex justify-between text-gray-600">
                           <span>Subtotal</span>
-                          <span>{formatCurrency(selectedOrder.totalAmount - (selectedOrder.shippingCost || 0))}</span>
+                          <span>{formatCurrency(selectedOrder.totalAmount - (selectedOrder.shippingCost || 0) - (selectedOrder.tax || 0))}</span>
                         </div>
                         <div className="flex justify-between text-gray-600">
                           <span>Shipping</span>
                           <span>{formatCurrency(selectedOrder.shippingCost || 0)}</span>
+                        </div>
+                        <div className="flex justify-between text-gray-600">
+                          <span>Tax</span>
+                          <span>{formatCurrency(selectedOrder.tax || 0)}</span>
                         </div>
                         {selectedOrder.discount > 0 && (
                           <div className="flex justify-between text-green-600">
@@ -288,11 +292,14 @@ const Orders = () => {
                         )}
                         <div className="border-t border-gray-200 pt-3">
                           <div className="flex justify-between">
-                            <span className="text-base font-medium text-gray-900">Total</span>
+                            <span className="text-base font-medium text-gray-900">Total (Inc. Tax)</span>
                             <span className="text-base font-medium text-gray-900">
                               {formatCurrency(selectedOrder.totalAmount)}
                             </span>
                           </div>
+                          <p className="mt-1 text-xs text-gray-500">
+                            *Tax rate may vary based on your location and applicable laws
+                          </p>
                         </div>
                       </div>
                     </div>

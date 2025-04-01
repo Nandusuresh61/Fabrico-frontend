@@ -397,13 +397,18 @@ const Checkout = () => {
                   <span>₹{orderSummary.subtotal?.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Shipping</span>
-                  <span>${shipping.toFixed(2)}</span>
+                  <span className="text-gray-600">Delivery Charge</span>
+                  {orderSummary.subtotal > 500 ? (
+                    <span className="text-green-600">Free</span>
+                  ) : (
+                    <span>₹{orderSummary.deliveryCharge?.toFixed(2)}</span>
+                  )}
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Tax (8%)</span>
-                  <span>₹{orderSummary.tax?.toFixed(2)}</span>
-                </div>
+                {orderSummary.subtotal > 0 && orderSummary.subtotal <= 500 && (
+                  <div className="text-sm text-gray-600">
+                    Add items worth ₹{(500 - orderSummary.subtotal).toFixed(2)} more for free delivery
+                  </div>
+                )}
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium">
                     <span>Total</span>
