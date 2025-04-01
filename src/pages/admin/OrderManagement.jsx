@@ -335,6 +335,13 @@ console.log(orders)
                                     </DialogDescription>
                                   </DialogHeader>
                                   
+                                  {selectedOrder.status === 'cancelled' && selectedOrder.cancellationReason && (
+                                    <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
+                                      <h3 className="font-semibold text-red-800 mb-2">Cancellation Reason</h3>
+                                      <p className="text-red-700">{selectedOrder.cancellationReason}</p>
+                                    </div>
+                                  )}
+                                  
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
                                     <div>
                                       <h3 className="font-semibold mb-2">Customer Information</h3>
@@ -363,7 +370,9 @@ console.log(orders)
                                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
                                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return Status</th>
+                                          {selectedOrder.status !== 'cancelled' && (
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return Status</th>
+                                          )}
                                           <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                         </tr>
                                       </thead>
@@ -393,19 +402,21 @@ console.log(orders)
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.quantity}</td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">₹{item.price.toFixed(2)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                              {item.returnRequest && item.returnRequest.status !== 'none' ? (
-                                                <div className="flex flex-col gap-1">
-                                                  <Badge variant="outline">Return Requested</Badge>
-                                                  {renderReturnStatusBadge(item.returnRequest.status)}
-                                                  {item.returnRequest.reason && (
-                                                    <span className="text-xs text-gray-500">Reason: {item.returnRequest.reason}</span>
-                                                  )}
-                                                </div>
-                                              ) : 'No request'}
-                                            </td>
+                                            {selectedOrder.status !== 'cancelled' && (
+                                              <td className="px-6 py-4 whitespace-nowrap">
+                                                {item.returnRequest && item.returnRequest.status !== 'none' ? (
+                                                  <div className="flex flex-col gap-1">
+                                                    <Badge variant="outline">Return Requested</Badge>
+                                                    {renderReturnStatusBadge(item.returnRequest.status)}
+                                                    {item.returnRequest.reason && (
+                                                      <span className="text-xs text-gray-500">Reason: {item.returnRequest.reason}</span>
+                                                    )}
+                                                  </div>
+                                                ) : 'No request'}
+                                              </td>
+                                            )}
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                              {item.returnRequest && item.returnRequest.status === 'requested' && (
+                                              {selectedOrder.status !== 'cancelled' && item.returnRequest && item.returnRequest.status === 'requested' && (
                                                 <Button
                                                   variant="outline"
                                                   size="sm"
@@ -435,6 +446,7 @@ console.log(orders)
                                       <Select 
                                         value={selectedOrder.status} 
                                         onValueChange={(value) => handleOrderStatusChange(selectedOrder._id, value)}
+                                        disabled={selectedOrder.status === 'cancelled'}
                                       >
                                         <SelectTrigger>
                                           <SelectValue placeholder="Select status" />
@@ -444,7 +456,6 @@ console.log(orders)
                                           <SelectItem value="shipped">Shipped</SelectItem>
                                           <SelectItem value="out for delivery">Out for Delivery</SelectItem>
                                           <SelectItem value="delivered">Delivered</SelectItem>
-                                          <SelectItem value="cancelled">Cancelled</SelectItem>
                                         </SelectContent>
                                       </Select>
                                     </div>
@@ -458,6 +469,7 @@ console.log(orders)
                           <Select 
                             value={order.status} 
                             onValueChange={(value) => handleOrderStatusChange(order._id, value)}
+                            disabled={order.status === 'cancelled'}
                           >
                             <SelectTrigger className="w-[140px]">
                               <SelectValue placeholder="Update Status" />
@@ -467,7 +479,6 @@ console.log(orders)
                               <SelectItem value="shipped">Shipped</SelectItem>
                               <SelectItem value="out for delivery">Out for Delivery</SelectItem>
                               <SelectItem value="delivered">Delivered</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
