@@ -115,19 +115,14 @@ const OrderManagement = () => {
         });
         
         // Refresh the orders list to show updated status
-        dispatch(getOrders({
-          page: currentPage,
-          limit: 10,
-          search: searchTerm,
-          status: statusFilter,
-          sortBy,
-          sortOrder
-        }));
+        window.location.reload();
+      } else {
+        throw new Error("Failed to process return request");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to process return request",
+        description: error.message || "Failed to process return request",
         variant: "destructive",
       });
     }
@@ -310,6 +305,11 @@ console.log(orders)
                         <div className="flex flex-col">
                           <span className="font-medium">{order.user.username}</span>
                           <span className="text-sm text-gray-500">{order.user.email}</span>
+                          {order.items.some(item => item.returnRequest?.status === 'requested') && (
+                            <span className="text-xs text-yellow-600 mt-1">
+                              Return Request Obtained
+                            </span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>{formatDate(order.createdAt)}</TableCell>
