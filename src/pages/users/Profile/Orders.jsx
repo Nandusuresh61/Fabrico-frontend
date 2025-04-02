@@ -257,6 +257,16 @@ const Orders = () => {
                                         <ArrowLeftRight className="h-4 w-4" />
                                         Return Requested
                                       </div>
+                                    ) : item.returnRequest?.status === 'approved' ? (
+                                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+                                        <ArrowLeftRight className="h-4 w-4" />
+                                        Return Approved
+                                      </div>
+                                    ) : item.returnRequest?.status === 'rejected' ? (
+                                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-sm font-medium text-red-800">
+                                        <ArrowLeftRight className="h-4 w-4" />
+                                        Return Rejected
+                                      </div>
                                     ) : (
                                       <button
                                         onClick={() => {

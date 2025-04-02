@@ -103,32 +103,34 @@ const OrderManagement = () => {
     }
   };
 
-  const handleReturnVerify = (orderId, itemId) => {
-    setReturnToVerify({ orderId, itemId });
-    setReturnDialogOpen(true);
-  };
-
-  const processReturn = async (status) => {
-    if (!returnToVerify) return;
-    
-    const success = await updateReturnStatus(returnToVerify.orderId, returnToVerify.itemId, status);
-    if (success) {
-      toast({
-        title: "Return Request Processed",
-        description: status === 'approved' 
-          ? "Return approved and refund issued to customer's wallet" 
-          : "Return request has been rejected",
-      });
-    } else {
+  const handleReturnVerify = async (orderId, itemId, status) => {
+    try {
+      const success = await updateReturnStatus(orderId, itemId, status);
+      if (success) {
+        toast({
+          title: "Return Request Processed",
+          description: status === 'approved' 
+            ? "Return approved and refund issued to customer's wallet" 
+            : "Return request has been rejected",
+        });
+        
+        // Refresh the orders list to show updated status
+        dispatch(getOrders({
+          page: currentPage,
+          limit: 10,
+          search: searchTerm,
+          status: statusFilter,
+          sortBy,
+          sortOrder
+        }));
+      }
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to process return request",
         variant: "destructive",
       });
     }
-    
-    setReturnDialogOpen(false);
-    setReturnToVerify(null);
   };
   
   const formatDate = (dateString) => {
@@ -410,6 +412,26 @@ console.log(orders)
                                                     {renderReturnStatusBadge(item.returnRequest.status)}
                                                     {item.returnRequest.reason && (
                                                       <span className="text-xs text-gray-500">Reason: {item.returnRequest.reason}</span>
+                                                    )}
+                                                    {item.returnRequest.status === 'requested' && (
+                                                      <div className="flex gap-2 mt-2">
+                                                        <Button
+                                                          variant="outline"
+                                                          size="sm"
+                                                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                                          onClick={() => handleReturnVerify(selectedOrder._id, item._id, 'rejected')}
+                                                        >
+                                                          Reject Return
+                                                        </Button>
+                                                        <Button
+                                                          variant="outline"
+                                                          size="sm"
+                                                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                                          onClick={() => handleReturnVerify(selectedOrder._id, item._id, 'approved')}
+                                                        >
+                                                          Approve Return
+                                                        </Button>
+                                                      </div>
                                                     )}
                                                   </div>
                                                 ) : 'No request'}
