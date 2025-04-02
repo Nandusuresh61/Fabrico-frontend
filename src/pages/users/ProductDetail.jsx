@@ -123,6 +123,16 @@ const ProductDetail = () => {
       return;
     }
 
+    // Check if quantity exceeds stock
+    if (quantity > selectedVariant.stock) {
+      toast({
+        title: "Error",
+        description: `Only ${selectedVariant.stock} items available in stock`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       await dispatch(addToCart({
         productId: product._id,

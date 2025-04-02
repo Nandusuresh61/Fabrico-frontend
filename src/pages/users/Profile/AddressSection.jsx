@@ -17,6 +17,7 @@ const AddressSection = () => {
   const [editingId, setEditingId] = useState(null);
   const [addressToDelete, setAddressToDelete] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
   
   const dispatch = useDispatch();
   const {toast} = useToast();
@@ -49,9 +50,46 @@ const AddressSection = () => {
     setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
+  const validateForm = () => {
+    const errors = {};
+    
+    // Name validation (at least 4 letters)
+    if (!formData.name || formData.name.length < 4) {
+      errors.name = 'Name must be at least 4 characters long';
+    }
+
+    // Pincode validation (6 numbers)
+    if (!formData.zipCode || !/^\d{6}$/.test(formData.zipCode)) {
+      errors.zipCode = 'Pincode must be 6 digits';
+    }
+
+    // Phone validation (10 numbers)
+    if (!formData.phone || !/^\d{10}$/.test(formData.phone)) {
+      errors.phone = 'Phone number must be 10 digits';
+    }
+
+    // Required fields validation
+    if (!formData.street) {
+      errors.street = 'Street address is required';
+    }
+    if (!formData.city) {
+      errors.city = 'City is required';
+    }
+    if (!formData.state) {
+      errors.state = 'State is required';
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleAddAddress = (e) => {
     e.preventDefault();
     
+    if (!validateForm()) {
+      return;
+    }
+
     const addressData = {
       type: formData.type,
       name: formData.name,
@@ -64,7 +102,6 @@ const AddressSection = () => {
     };
 
     dispatch(addNewAddress(addressData));
-    console.log(addressData)
     resetForm();
     setIsModalOpen(false);
   };
@@ -73,6 +110,10 @@ const AddressSection = () => {
     e.preventDefault();
     if (!editingId) return;
     
+    if (!validateForm()) {
+      return;
+    }
+
     const addressData = {
       type: formData.type,
       name: formData.name,
@@ -242,6 +283,7 @@ const AddressSection = () => {
         onClose={() => {
           setIsModalOpen(false);
           resetForm();
+          setFormErrors({});
         }}
         title={editingId ? "Edit Address" : "Add New Address"}
       >
@@ -270,8 +312,13 @@ const AddressSection = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.name ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.name && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>
+              )}
             </div>
           </div>
 
@@ -284,8 +331,13 @@ const AddressSection = () => {
               name="street"
               value={formData.street}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`mt-1 block w-full rounded-md border ${
+                formErrors.street ? 'border-red-500' : 'border-gray-300'
+              } px-3 py-2 focus:border-blue-500 focus:outline-none`}
             />
+            {formErrors.street && (
+              <p className="mt-1 text-sm text-red-500">{formErrors.street}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -298,8 +350,13 @@ const AddressSection = () => {
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.city ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.city && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.city}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -310,8 +367,13 @@ const AddressSection = () => {
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.state ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.state && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.state}</p>
+              )}
             </div>
           </div>
 
@@ -325,8 +387,13 @@ const AddressSection = () => {
                 name="zipCode"
                 value={formData.zipCode}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.zipCode ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.zipCode && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.zipCode}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -337,9 +404,14 @@ const AddressSection = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="+1 (555) 000-0000"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                placeholder="Enter 10 digit number"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.phone ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.phone && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.phone}</p>
+              )}
             </div>
           </div>
 

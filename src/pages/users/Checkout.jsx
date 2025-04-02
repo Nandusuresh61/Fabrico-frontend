@@ -55,6 +55,36 @@ const Checkout = () => {
     isDefault: false,
   });
   const [editingId, setEditingId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
+
+  // Validation patterns
+  const validationPatterns = {
+    name: /^[a-zA-Z\s]{4,}$/,
+    phone: /^[0-9]{10}$/,
+    zipCode: /^[0-9]{6}$/,
+  };
+
+  // Validation messages
+  const validationMessages = {
+    name: "Name must be at least 4 characters long",
+    phone: "Phone number must be exactly 10 digits",
+    zipCode: "Pincode must be exactly 6 digits",
+    street: "Street address is required",
+    city: "City is required",
+    state: "State is required",
+  };
+
+  const validateField = (name, value) => {
+    if (!value) {
+      return validationMessages[name];
+    }
+    
+    if (validationPatterns[name] && !validationPatterns[name].test(value)) {
+      return validationMessages[name];
+    }
+    
+    return "";
+  };
 
   // Redirect if no cart items
   useEffect(() => {
@@ -146,6 +176,13 @@ const Checkout = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Validate field on change
+    const error = validateField(name, value);
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: error
+    }));
   };
 
   const handleCheckboxChange = (e) => {
@@ -155,6 +192,26 @@ const Checkout = () => {
 
   const handleAddAddress = async (e) => {
     e.preventDefault();
+    
+    // Validate all fields
+    const errors = {};
+    Object.keys(formData).forEach(key => {
+      if (key !== 'isDefault') {
+        errors[key] = validateField(key, formData[key]);
+      }
+    });
+    
+    setFormErrors(errors);
+    
+    // Check if there are any errors
+    if (Object.values(errors).some(error => error)) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form",
+        variant: "destructive"
+      });
+      return;
+    }
     
     const addressData = {
       type: formData.type,
@@ -487,8 +544,13 @@ const Checkout = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.name ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.name && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>
+              )}
             </div>
           </div>
 
@@ -501,8 +563,13 @@ const Checkout = () => {
               name="street"
               value={formData.street}
               onChange={handleChange}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+              className={`mt-1 block w-full rounded-md border ${
+                formErrors.street ? 'border-red-500' : 'border-gray-300'
+              } px-3 py-2 focus:border-blue-500 focus:outline-none`}
             />
+            {formErrors.street && (
+              <p className="mt-1 text-sm text-red-500">{formErrors.street}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -515,8 +582,13 @@ const Checkout = () => {
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.city ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.city && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.city}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -527,8 +599,13 @@ const Checkout = () => {
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.state ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.state && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.state}</p>
+              )}
             </div>
           </div>
 
@@ -542,8 +619,13 @@ const Checkout = () => {
                 name="zipCode"
                 value={formData.zipCode}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.zipCode ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.zipCode && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.zipCode}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
@@ -554,8 +636,13 @@ const Checkout = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                className={`mt-1 block w-full rounded-md border ${
+                  formErrors.phone ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
+              {formErrors.phone && (
+                <p className="mt-1 text-sm text-red-500">{formErrors.phone}</p>
+              )}
             </div>
           </div>
 
