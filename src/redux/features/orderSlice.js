@@ -7,7 +7,8 @@ import {
   cancelOrderApi,
   verifyReturnRequestApi,
   getUserOrdersApi,
-  cancelOrderForUserApi
+  cancelOrderForUserApi,
+  submitReturnRequestApi
 } from '../../api/orderApi';
 
 // Create Order
@@ -94,6 +95,19 @@ export const cancelOrderForUser = createAsyncThunk(
   async ({ id, data }, { rejectWithValue }) => {
     try {
       const response = await cancelOrderForUserApi(id, data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+// Submit Return Request
+export const submitReturnRequest = createAsyncThunk(
+  'order/submitReturnRequest',
+  async ({ orderId, itemId, data }, { rejectWithValue }) => {
+    try {
+      const response = await submitReturnRequestApi(orderId, itemId, data);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -267,6 +281,27 @@ const orderSlice = createSlice({
       .addCase(cancelOrderForUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload?.message || 'Failed to cancel order';
+      })
+      // Submit Return Request
+      .addCase(submitReturnRequest.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(submitReturnRequest.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        // Update order in the list if it exists
+        const index = state.orders.findIndex(order => order._id === action.payload._id);
+        if (index !== -1) {
+          state.orders[index] = action.payload;
+        }
+        if (state.currentOrder?._id === action.payload._id) {
+          state.currentOrder = action.payload;
+        }
+      })
+      .addCase(submitReturnRequest.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload?.message || 'Failed to submit return request';
       });
   },
 });

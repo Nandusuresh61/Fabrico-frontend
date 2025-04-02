@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ShoppingBag, Eye, XCircle, AlertTriangle, Package, Truck, CheckCircle, CreditCard, Receipt, Download } from 'lucide-react';
+import { ShoppingBag, Eye, XCircle, AlertTriangle, Package, Truck, CheckCircle, CreditCard, Receipt, Download, ArrowLeftRight } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
-import { getUserOrders, cancelOrderForUser } from '../../../redux/features/orderSlice';
+import { getUserOrders, cancelOrderForUser, submitReturnRequest } from '../../../redux/features/orderSlice';
 import { downloadInvoiceApi } from '../../../api/invoiceApi';
 import Loader from '../../../components/layout/Loader';
 
@@ -12,6 +12,9 @@ const Orders = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [otherReason, setOtherReason] = useState('');
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [returnReason, setReturnReason] = useState('');
   const { orders, loading, error, pagination } = useSelector((state) => state.order);
 
   useEffect(() => {
@@ -116,6 +119,20 @@ const Orders = () => {
       console.error('Error downloading invoice:', error);
       // You might want to show an error message to the user here
     }
+  };
+
+  const handleReturnRequest = async () => {
+    if (!returnReason) return;
+    
+    await dispatch(submitReturnRequest({ 
+      orderId: selectedOrder._id, 
+      itemId: selectedItem._id,
+      data: { reason: returnReason }
+    }));
+    
+    setShowReturnModal(false);
+    setReturnReason('');
+    setSelectedItem(null);
   };
 
   if (loading) {
@@ -234,14 +251,25 @@ const Orders = () => {
                                 )}
                                 <p className="mt-1 text-sm text-gray-600">Qty: {item.quantity}</p>
                                 {selectedOrder.status === 'delivered' && (
-                                  <button
-                                    onClick={() => {
-                                      // Handle return product
-                                    }}
-                                    className="mt-2 inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
-                                  >
-                                    Return Item
-                                  </button>
+                                  <>
+                                    {item.returnRequest?.status === 'requested' ? (
+                                      <div className="mt-2 inline-flex items-center gap-1 rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">
+                                        <ArrowLeftRight className="h-4 w-4" />
+                                        Return Requested
+                                      </div>
+                                    ) : (
+                                      <button
+                                        onClick={() => {
+                                          setSelectedItem(item);
+                                          setShowReturnModal(true);
+                                        }}
+                                        className="mt-2 inline-flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+                                      >
+                                        <ArrowLeftRight className="h-4 w-4" />
+                                        Return Item
+                                      </button>
+                                    )}
+                                  </>
                                 )}
                               </div>
                               <div className="text-right">
@@ -453,6 +481,55 @@ const Orders = () => {
                   disabled={!cancelReason || (cancelReason === 'other' && !otherReason)}
                 >
                   Cancel Order
+                </CustomButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return Request Modal */}
+      {showReturnModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-6 backdrop-blur-sm">
+          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200">
+            {/* Close button */}
+            <button
+              onClick={() => setShowReturnModal(false)}
+              className="absolute -right-2 -top-2 z-10 rounded-full bg-white p-1 shadow-lg ring-1 ring-gray-200 transition-transform hover:scale-110"
+            >
+              <XCircle className="h-6 w-6 text-gray-400" />
+            </button>
+
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-900">Submit Return Request</h3>
+              <p className="mt-2 text-sm text-gray-600">
+                Please provide a reason for returning this item
+              </p>
+
+              <div className="mt-4">
+                <textarea
+                  value={returnReason}
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  placeholder="Enter your return reason..."
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  rows={4}
+                />
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <CustomButton
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setShowReturnModal(false)}
+                >
+                  Cancel
+                </CustomButton>
+                <CustomButton
+                  className="w-full"
+                  onClick={handleReturnRequest}
+                  disabled={!returnReason}
+                >
+                  Submit Request
                 </CustomButton>
               </div>
             </div>

@@ -14,3 +14,4 @@ export const updateOrderStatusApi = (id, data) => API.put(`/orders/${id}/status`
 export const cancelOrderApi = (id) => API.put(`/orders/${id}/cancel`)
 export const verifyReturnRequestApi = (orderId, itemId, status) => API.put(`/orders/${orderId}/return/${itemId}`, { status })
 export const cancelOrderForUserApi = (id, data) => API.put(`/orders/${id}/cancel-user`, data)
+export const submitReturnRequestApi = (orderId, itemId, data) => API.post(`/orders/${orderId}/return/${itemId}`, data)
