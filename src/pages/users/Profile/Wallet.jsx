@@ -1,46 +1,17 @@
 import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, HelpCircle } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getWallet, getWalletTransactions } from '../../../redux/features/walletSlice';
 
 const Wallet = () => {
-  const balance = 345.75;
+  const dispatch = useDispatch();
+  const { wallet, transactions, loading, error } = useSelector((state) => state.wallet);
   
-  const transactions = [
-    {
-      id: 'TRX-1001',
-      date: '2023-07-15',
-      type: 'credit',
-      amount: 75.00,
-      description: 'Refund for Order #ORD-12344',
-    },
-    {
-      id: 'TRX-1002',
-      date: '2023-07-12',
-      type: 'debit',
-      amount: 125.50,
-      description: 'Purchase - Order #ORD-12345',
-    },
-    {
-      id: 'TRX-1003',
-      date: '2023-07-05',
-      type: 'credit',
-      amount: 100.00,
-      description: 'Wallet recharge',
-    },
-    {
-      id: 'TRX-1004',
-      date: '2023-06-28',
-      type: 'debit',
-      amount: 65.75,
-      description: 'Purchase - Order #ORD-12341',
-    },
-    {
-      id: 'TRX-1005',
-      date: '2023-06-20',
-      type: 'credit',
-      amount: 50.00,
-      description: 'Referral bonus',
-    },
-  ];
+  useEffect(() => {
+    dispatch(getWallet());
+    dispatch(getWalletTransactions());
+  }, [dispatch]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -52,11 +23,27 @@ const Wallet = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(amount);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center text-red-600 p-4">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
@@ -71,7 +58,7 @@ const Wallet = () => {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm font-medium text-white/80">Current Balance</p>
-            <h3 className="mt-1 text-3xl font-bold">{formatCurrency(balance)}</h3>
+            <h3 className="mt-1 text-3xl font-bold">{formatCurrency(wallet?.balance || 0)}</h3>
           </div>
           <WalletIcon className="h-10 w-10 text-white/90" />
         </div>
@@ -91,7 +78,7 @@ const Wallet = () => {
           <h3 className="font-medium">Recent Transactions</h3>
         </div>
         
-        {transactions.length > 0 ? (
+        {transactions?.length > 0 ? (
           <div className="space-y-3">
             {transactions.map((transaction) => (
               <div
