@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
 import UserProfileSidebar from './Profile/UserProfileSideBar';
 import PersonalInformation from './Profile/PersonalInformation';
@@ -12,8 +12,16 @@ import Orders from './Profile/Orders';
 import Wallet from './Profile/Wallet';
 
 const UserProfile = () => {
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState(() => {
+    // Initialize from localStorage if available, otherwise default to 'personal'
+    return localStorage.getItem('userProfileActiveTab') || 'personal';
+  });
   const isMobile = useMediaQuery('(max-width: 768px)');
+
+  // Update localStorage when activeTab changes
+  useEffect(() => {
+    localStorage.setItem('userProfileActiveTab', activeTab);
+  }, [activeTab]);
   
   const renderContent = () => {
     switch (activeTab) {

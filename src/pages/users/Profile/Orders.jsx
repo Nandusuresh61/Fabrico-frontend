@@ -75,13 +75,26 @@ const Orders = () => {
     if (!cancelReason) return;
     
     const reason = cancelReason === 'other' ? otherReason : cancelReason;
-    await dispatch(cancelOrderForUser({ 
+    const result = await dispatch(cancelOrderForUser({ 
       id: selectedOrder._id, 
       data: { reason } 
     }));
-    setShowCancelModal(false);
-    setCancelReason('');
-    setOtherReason('');
+    
+    if (!result.error) {
+      // Update the order status in the local state
+      const updatedOrders = orders.map(order => 
+        order._id === selectedOrder._id 
+          ? { ...order, status: 'cancelled' }
+          : order
+      );
+      
+      // Update the selected order status
+      setSelectedOrder(prev => ({ ...prev, status: 'cancelled' }));
+      
+      setShowCancelModal(false);
+      setCancelReason('');
+      setOtherReason('');
+    }
   };
 
   const cancelReasons = [
@@ -124,15 +137,30 @@ const Orders = () => {
   const handleReturnRequest = async () => {
     if (!returnReason) return;
     
-    await dispatch(submitReturnRequest({ 
+    const result = await dispatch(submitReturnRequest({ 
       orderId: selectedOrder._id, 
       itemId: selectedItem._id,
       data: { reason: returnReason }
     }));
     
-    setShowReturnModal(false);
-    setReturnReason('');
-    setSelectedItem(null);
+    if (!result.error) {
+      // Update the item's return request status in the selected order
+      const updatedItems = selectedOrder.items.map(item => 
+        item._id === selectedItem._id 
+          ? { ...item, returnRequest: { status: 'requested', reason: returnReason } }
+          : item
+      );
+      
+      // Update the selected order with the new items
+      setSelectedOrder(prev => ({
+        ...prev,
+        items: updatedItems
+      }));
+      
+      setShowReturnModal(false);
+      setReturnReason('');
+      setSelectedItem(null);
+    }
   };
 
   if (loading) {
