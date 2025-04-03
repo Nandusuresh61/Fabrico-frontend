@@ -114,6 +114,15 @@ const ProductDetail = () => {
       return;
     }
 
+    if(!isProductAvailable()){
+      toast({
+        title: "Error",
+        description: "Product is currently unavailable",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!selectedVariant) {
       toast({
         title: "Error",
@@ -167,6 +176,26 @@ const ProductDetail = () => {
 
   const allImages = selectedVariant ? [selectedVariant.mainImage, ...selectedVariant.subImages] : [];
 
+
+
+  // availability checking function 
+
+  const isProductAvailable = () => {
+    if(!product || !selectedVariant) return false;
+
+    //for product status checking
+    if(product.status !== 'active') return false;
+    
+    //for category status checking
+    if(!product.category || product.category.status === 'blocked') return false;
+
+    //for variant status checking
+    if(selectedVariant.isBlocked) return false;
+
+    //for stock checking
+    if(selectedVariant.stock <= 0) return false;
+    return true;
+  };
 
   return (
     <Layout>
@@ -334,12 +363,13 @@ const ProductDetail = () => {
             </div>
             
             <div className="flex flex-wrap gap-4">
-              <CustomButton 
-                icon={<ShoppingCart className="h-4 w-4" />}
-                disabled={!selectedVariant || selectedVariant.stock === 0}
+              <CustomButton
                 onClick={handleAddToCart}
+                disabled={!isProductAvailable()}
+                className={!isProductAvailable() ? 'opacity-50 cursor-not-allowed' : ''}
               >
-                Add to Cart
+                <ShoppingCart className="mr-2 h-4 w-4" />
+            {!isProductAvailable() ? 'Currently Unavailable' : 'Add to Cart'}
               </CustomButton>
               <CustomButton 
                 variant="outline" 

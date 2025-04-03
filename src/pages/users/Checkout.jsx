@@ -18,29 +18,22 @@ import { Home, Briefcase } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import { createOrder } from '../../redux/features/orderSlice';
 
-// Mock data for cart items in checkout
-const cartItems = [
-  {
-    id: '1',
-    name: 'Premium Fitted Cap',
-    imageUrl: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80',
-    price: 29.99,
-    quantity: 1,
-  },
-  {
-    id: '2',
-    name: 'Vintage Snapback',
-    imageUrl: 'https://images.unsplash.com/photo-1556306535-0f09a537f0a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=256&q=80',
-    price: 24.99,
-    quantity: 2,
-  }
-];
 
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { cartItems, orderSummary } = location.state || { cartItems: [], orderSummary: {} };
+  const { items: cartItems, subtotal: cartSubtotal, deliveryCharge, total: cartTotal } = location.state || {
+    items: [],
+    subtotal: 0,
+    deliveryCharge: 0,
+    total: 0
+  };
+  const orderSummary = {
+    subtotal: cartSubtotal,
+    deliveryCharge: deliveryCharge,
+    total: cartTotal
+  };
   const { addresses } = useSelector(state => state.address);
   const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -78,11 +71,11 @@ const Checkout = () => {
     if (!value) {
       return validationMessages[name];
     }
-    
+
     if (validationPatterns[name] && !validationPatterns[name].test(value)) {
       return validationMessages[name];
     }
-    
+
     return "";
   };
 
@@ -99,18 +92,30 @@ const Checkout = () => {
 
   const [selectedAddress, setSelectedAddress] = useState(addresses.find(addr => addr.isDefault)?._id || '');
   const [paymentMethod, setPaymentMethod] = useState('cod');
-  
+
   // Calculate order totals
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = 5.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const subtotal = cartItems.reduce((acc, item) => {
+    const price = item.variant.discountPrice || item.variant.price;
+    return acc + price * item.quantity;
+  }, 0);
+  const shipping = subtotal > 500 ? 0 : 50;
+  // const tax = subtotal * 0.18;
+  const total = subtotal + shipping;
 
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       toast({
         title: "Error",
         description: "Please select a shipping address",
+        variant: "destructive"
+      });
+      return;
+    }
+    const { isValid, errorMessage } = validateCartItems();
+    if (!isValid) {
+      toast({
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
       return;
@@ -146,21 +151,21 @@ const Checkout = () => {
         })),
         shippingAddress: selectedAddress,
         paymentMethod,
-        totalAmount: orderSummary.total
+        totalAmount: total
       };
 
       const result = await dispatch(createOrder(orderData)).unwrap();
-      
+
       // Clear the cart
       await dispatch(clearCart()).unwrap();
-      
+
       toast({
         title: "Success",
         description: "Your order has been placed successfully!"
       });
 
       // Navigate to success page with order ID
-      navigate('/order-success', { 
+      navigate('/order-success', {
         state: { orderId: result.orderId },
         replace: true
       });
@@ -176,7 +181,7 @@ const Checkout = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     // Validate field on change
     const error = validateField(name, value);
     setFormErrors(prev => ({
@@ -192,7 +197,7 @@ const Checkout = () => {
 
   const handleAddAddress = async (e) => {
     e.preventDefault();
-    
+
     // Validate all fields
     const errors = {};
     Object.keys(formData).forEach(key => {
@@ -200,9 +205,9 @@ const Checkout = () => {
         errors[key] = validateField(key, formData[key]);
       }
     });
-    
+
     setFormErrors(errors);
-    
+
     // Check if there are any errors
     if (Object.values(errors).some(error => error)) {
       toast({
@@ -212,7 +217,7 @@ const Checkout = () => {
       });
       return;
     }
-    
+
     const addressData = {
       type: formData.type,
       name: formData.name,
@@ -274,7 +279,7 @@ const Checkout = () => {
   const handleEditAddress = async (e) => {
     e.preventDefault();
     if (!editingId) return;
-    
+
     const addressData = {
       type: formData.type,
       name: formData.name,
@@ -304,11 +309,51 @@ const Checkout = () => {
     }
   };
 
+
+  //validation part
+  const validateCartItems = () => {
+    let isValid = true;
+    let errorMessage = '';
+
+    for (const item of cartItems) {
+      // Check product status
+      if (item.product.status !== 'active') {
+        isValid = false;
+        errorMessage = `${item.product.name} is currently unavailable`;
+        break;
+      }
+
+      // Check category status
+      if (item.product.category.status === 'blocked') {
+        isValid = false;
+        errorMessage = `${item.product.name} is not available in this category`;
+        break;
+      }
+
+      // Check variant status
+      if (item.variant.isBlocked) {
+        isValid = false;
+        errorMessage = `${item.product.name} (${item.variant.color}) is currently unavailable`;
+        break;
+      }
+
+      // Check stock
+      if (item.variant.stock < item.quantity) {
+        isValid = false;
+        errorMessage = `${item.product.name} (${item.variant.color}) has insufficient stock. Available: ${item.variant.stock}`;
+        break;
+      }
+    }
+
+    return { isValid, errorMessage };
+  };
+
+  
   return (
     <Layout>
       <div className="container max-w-7xl px-4 py-8 mx-auto">
         <h1 className="text-2xl font-bold mb-6">Checkout</h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main checkout content - Left side */}
           <div className="lg:col-span-2 space-y-8">
@@ -323,9 +368,9 @@ const Checkout = () => {
                   {cartItems.map((item) => (
                     <div key={item._id} className="flex gap-4">
                       <div className="w-16 h-16 rounded-md overflow-hidden">
-                        <img 
-                          src={item.variant.mainImage} 
-                          alt={item.product.name} 
+                        <img
+                          src={item.variant.mainImage}
+                          alt={item.product.name}
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -346,7 +391,7 @@ const Checkout = () => {
                 </div>
               </CardContent>
             </Card>
-            
+
             {/* Shipping Address Section */}
             <Card>
               <CardHeader className="flex flex-row items-center gap-2">
@@ -357,8 +402,8 @@ const Checkout = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <RadioGroup 
-                  value={selectedAddress} 
+                <RadioGroup
+                  value={selectedAddress}
                   onValueChange={setSelectedAddress}
                   className="grid gap-4 grid-cols-1 md:grid-cols-2"
                 >
@@ -376,13 +421,13 @@ const Checkout = () => {
                       >
                         <Pencil className="h-4 w-4 text-gray-600 hover:text-primary" />
                       </button>
-                      
-                      <RadioGroupItem 
-                        value={address._id} 
-                        id={`address-${address._id}`} 
+
+                      <RadioGroupItem
+                        value={address._id}
+                        id={`address-${address._id}`}
                         className="peer sr-only"
                       />
-                      <Label 
+                      <Label
                         htmlFor={`address-${address._id}`}
                         className="flex flex-col p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50"
                       >
@@ -408,10 +453,10 @@ const Checkout = () => {
                       </Label>
                     </div>
                   ))}
-                  
+
                   {/* Add new address option */}
-                  <div 
-                    onClick={() => setIsModalOpen(true)} 
+                  <div
+                    onClick={() => setIsModalOpen(true)}
                     className="flex items-center justify-center p-4 border rounded-lg border-dashed hover:bg-gray-50 cursor-pointer"
                   >
                     <div className="text-center">
@@ -421,7 +466,7 @@ const Checkout = () => {
                 </RadioGroup>
               </CardContent>
             </Card>
-            
+
             {/* Payment Method Section */}
             <Card>
               <CardHeader className="flex flex-row items-center gap-2">
@@ -432,22 +477,22 @@ const Checkout = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <RadioGroup 
-                  value={paymentMethod} 
+                <RadioGroup
+                  value={paymentMethod}
                   onValueChange={setPaymentMethod}
                   className="grid gap-4"
                 >
                   <div className="relative">
                     <RadioGroupItem value="cod" id="cod" className="peer sr-only" />
-                    <Label 
+                    <Label
                       htmlFor="cod"
                       className="flex gap-3 p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50"
                     >
                       <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
                         <svg className="h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="2" y="6" width="20" height="12" rx="2"/>
-                          <circle cx="12" cy="12" r="2"/>
-                          <path d="M6 12h.01M18 12h.01"/>
+                          <rect x="2" y="6" width="20" height="12" rx="2" />
+                          <circle cx="12" cy="12" r="2" />
+                          <path d="M6 12h.01M18 12h.01" />
                         </svg>
                       </div>
                       <div>
@@ -463,23 +508,24 @@ const Checkout = () => {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Order Summary - Right side */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-20">
               <h2 className="text-lg font-medium mb-4">Order Summary</h2>
-              
+
+              {/* Replace the Order Summary section with */}
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span>₹{orderSummary.subtotal?.toFixed(2)}</span>
+                  <span>₹{orderSummary.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Charge</span>
                   {orderSummary.subtotal > 500 ? (
                     <span className="text-green-600">Free</span>
                   ) : (
-                    <span>₹{orderSummary.deliveryCharge?.toFixed(2)}</span>
+                    <span>₹{orderSummary.deliveryCharge.toFixed(2)}</span>
                   )}
                 </div>
                 {orderSummary.subtotal > 0 && orderSummary.subtotal <= 500 && (
@@ -490,19 +536,19 @@ const Checkout = () => {
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium">
                     <span>Total</span>
-                    <span>₹{orderSummary.total?.toFixed(2)}</span>
+                    <span>₹{orderSummary.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
-              
-              <Button 
-                className="w-full" 
+
+              <Button
+                className="w-full"
                 size="lg"
                 onClick={handlePlaceOrder}
               >
                 Place Order
               </Button>
-              
+
               <p className="text-xs text-gray-500 text-center mt-4">
                 By placing your order, you agree to our Terms of Service and Privacy Policy.
               </p>
@@ -544,9 +590,8 @@ const Checkout = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border ${
-                  formErrors.name ? 'border-red-500' : 'border-gray-300'
-                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                className={`mt-1 block w-full rounded-md border ${formErrors.name ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
               {formErrors.name && (
                 <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>
@@ -563,9 +608,8 @@ const Checkout = () => {
               name="street"
               value={formData.street}
               onChange={handleChange}
-              className={`mt-1 block w-full rounded-md border ${
-                formErrors.street ? 'border-red-500' : 'border-gray-300'
-              } px-3 py-2 focus:border-blue-500 focus:outline-none`}
+              className={`mt-1 block w-full rounded-md border ${formErrors.street ? 'border-red-500' : 'border-gray-300'
+                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
             />
             {formErrors.street && (
               <p className="mt-1 text-sm text-red-500">{formErrors.street}</p>
@@ -582,9 +626,8 @@ const Checkout = () => {
                 name="city"
                 value={formData.city}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border ${
-                  formErrors.city ? 'border-red-500' : 'border-gray-300'
-                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                className={`mt-1 block w-full rounded-md border ${formErrors.city ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
               {formErrors.city && (
                 <p className="mt-1 text-sm text-red-500">{formErrors.city}</p>
@@ -599,9 +642,8 @@ const Checkout = () => {
                 name="state"
                 value={formData.state}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border ${
-                  formErrors.state ? 'border-red-500' : 'border-gray-300'
-                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                className={`mt-1 block w-full rounded-md border ${formErrors.state ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
               {formErrors.state && (
                 <p className="mt-1 text-sm text-red-500">{formErrors.state}</p>
@@ -619,9 +661,8 @@ const Checkout = () => {
                 name="zipCode"
                 value={formData.zipCode}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border ${
-                  formErrors.zipCode ? 'border-red-500' : 'border-gray-300'
-                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                className={`mt-1 block w-full rounded-md border ${formErrors.zipCode ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
               {formErrors.zipCode && (
                 <p className="mt-1 text-sm text-red-500">{formErrors.zipCode}</p>
@@ -636,9 +677,8 @@ const Checkout = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                className={`mt-1 block w-full rounded-md border ${
-                  formErrors.phone ? 'border-red-500' : 'border-gray-300'
-                } px-3 py-2 focus:border-blue-500 focus:outline-none`}
+                className={`mt-1 block w-full rounded-md border ${formErrors.phone ? 'border-red-500' : 'border-gray-300'
+                  } px-3 py-2 focus:border-blue-500 focus:outline-none`}
               />
               {formErrors.phone && (
                 <p className="mt-1 text-sm text-red-500">{formErrors.phone}</p>

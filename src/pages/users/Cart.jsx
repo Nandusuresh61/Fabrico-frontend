@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Minus, Plus, X, ShoppingBag } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -15,7 +15,9 @@ const Cart = () => {
   const { toast } = useToast();
   const { items, loading, totalAmount } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
+  const [cartItems, setCartItems] = useState([]);
 
+  // Initial cart load
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -23,6 +25,29 @@ const Cart = () => {
     }
     dispatch(getCart());
   }, [dispatch, navigate, user]);
+
+  // Update local cart items when Redux cart changes
+  useEffect(() => {
+    setCartItems(items);
+  }, [items]);
+
+  // Periodically refresh cart data
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshCart = async () => {
+      try {
+        await dispatch(getCart()).unwrap();
+      } catch (error) {
+        console.error('Error refreshing cart:', error);
+      }
+    };
+
+    // Refresh every 30 seconds
+    const interval = setInterval(refreshCart, 30000);
+
+    return () => clearInterval(interval);
+  }, [dispatch, user]);
 
   const handleRemoveItem = async (itemId) => {
     try {
@@ -87,40 +112,108 @@ const Cart = () => {
     let message = '';
 
     for (const item of items) {
+      // check product status
+      if(item.product.status !== 'active'){
+        isAvailable = false;
+        message = `${item.product.name} (${item.variant.color}) is not available`;
+        break;
+      }
+
+
       if (item.variant.stock < item.quantity) {
         isAvailable = false;
         message = `${item.product.name} (${item.variant.color}) has insufficient stock. Available: ${item.variant.stock}`;
         break;
       }
-      if (item.variant.stock === 0) {
+      
+      // check category status
+      if(item.product.category.status === 'blocked'){
         isAvailable = false;
-        message = `${item.product.name} (${item.variant.color}) is out of stock`;
+        message = `${item.product.name} (${item.variant.color}) is not available in this category`;
         break;
       }
+      // check varient status
+      if(item.variant.status == 'isBlocked'){
+        isAvailable = false;
+        message = `${item.product.name} (${item.variant.color}) is currently unavailable`;
+        break;
+      }
+      // check stock
+      if(item.variant.stock < item.quantity){
+        isAvailable = false;
+        message = `${item.product.name} (${item.variant.color}) has insufficient stock. Available: ${item.variant.stock}`;
+        break;
+      } 
     }
-
-    if (!isAvailable) {
-      toast({
-        title: "Stock Issue",
-        description: message,
-        variant: "destructive",
-      });
-      return false;
-    }
-    return true;
+    return { isAvailable, message};
   };
 
-  const handleProceedToCheckout = () => {
-    if (checkAvailability()) {
-      navigate('/checkout', { 
-        state: { 
-          cartItems: items,
-          orderSummary: {
-            subtotal,
-            deliveryCharge,
-            total
-          }
-        } 
+  const handleProceedToCheckout = async () => {
+    try {
+      // Refresh cart data before proceeding
+      const result = await dispatch(getCart()).unwrap();
+      
+      // Check for blocked products using the refreshed data
+      const blockedProducts = result.items.filter(item => 
+        item.product.status !== 'active' || 
+        item.product.category.status === 'blocked' ||
+        item.variant.status === 'isBlocked'
+      );
+
+      if (blockedProducts.length > 0) {
+        const blockedProduct = blockedProducts[0];
+        let message = '';
+        
+        if (blockedProduct.product.status !== 'active') {
+          message = `${blockedProduct.product.name} is not available`;
+        } else if (blockedProduct.product.category.status === 'blocked') {
+          message = `${blockedProduct.product.name} is not available in this category`;
+        } else if (blockedProduct.variant.status === 'isBlocked') {
+          message = `${blockedProduct.product.name} (${blockedProduct.variant.color}) is currently unavailable`;
+        }
+
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check stock availability
+      const outOfStockItems = result.items.filter(item => item.variant.stock < item.quantity);
+      if (outOfStockItems.length > 0) {
+        const item = outOfStockItems[0];
+        toast({
+          title: "Error",
+          description: `${item.product.name} (${item.variant.color}) has insufficient stock. Available: ${item.variant.stock}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Calculate fresh totals
+      const freshSubtotal = result.items.reduce((sum, item) => {
+        const price = item.variant.discountPrice || item.variant.price;
+        return sum + (price * item.quantity);
+      }, 0);
+
+      const freshDeliveryCharge = freshSubtotal > 500 ? 0 : 50;
+      const freshTotal = freshSubtotal + freshDeliveryCharge;
+
+      navigate('/checkout', {
+        state: {
+          items: result.items,
+          subtotal: freshSubtotal,
+          deliveryCharge: freshDeliveryCharge,
+          total: freshTotal,
+        }
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to refresh cart data",
+        variant: "destructive",
       });
     }
   };
