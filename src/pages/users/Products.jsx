@@ -79,12 +79,12 @@ const Products = () => {
 
   // Handle search
   const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  }
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
-    const searchValue = e.target.value;
-    setSearchTerm(searchValue);
-    
     // If search is empty, clear filters
-    if (!searchValue.trim()) {
+    if (!searchTerm.trim()) {
       setActiveCategory('all');
       setActiveBrand('all');
       updateFilters({ 
@@ -98,12 +98,12 @@ const Products = () => {
 
     // Check if the search term matches any category
     const matchedCategory = categories.find(
-      category => category.name.toLowerCase().includes(searchValue.toLowerCase())
+      category => category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     // Check if the search term matches any brand
     const matchedBrand = brands.find(
-      brand => brand.name.toLowerCase().includes(searchValue.toLowerCase())
+      brand => brand.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (matchedCategory) {
@@ -129,7 +129,7 @@ const Products = () => {
       setActiveCategory('all');
       setActiveBrand('all');
       updateFilters({ 
-        search: searchValue,
+        search: searchTerm,
         category: 'all',
         brand: 'all',
         page: 1 
@@ -162,7 +162,7 @@ const Products = () => {
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
         {/* Search Bar - Updated to remove form and button */}
-        <div className="mb-6">
+        <form onSubmit={handleSearchSubmit} className="mb-6">
           <input
             type="text"
             value={searchTerm}
@@ -170,7 +170,7 @@ const Products = () => {
             placeholder="Search products, categories, or brands..."
             className="w-full rounded-lg border p-2"
           />
-        </div>
+        </form>
 
         <div className="grid gap-8 md:grid-cols-4">
           {/* Filters Sidebar */}
