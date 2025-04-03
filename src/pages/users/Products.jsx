@@ -162,15 +162,17 @@ const Products = () => {
     <Layout>
       <div className="container px-4 py-8 md:px-6 md:py-12">
         {/* Search Bar - Updated to remove form and button */}
-        <form onSubmit={handleSearchSubmit} className="mb-6">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearch}
-            placeholder="Search products, categories, or brands..."
-            className="w-full rounded-lg border p-2"
-          />
-        </form>
+        <div className="flex justify-center mb-6">
+          <form onSubmit={handleSearchSubmit} className="w-full max-w-md">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearch}
+              placeholder="Search products, categories, or brands..."
+              className="w-full rounded-lg border p-2"
+            />
+          </form>
+        </div>
 
         <div className="grid gap-8 md:grid-cols-4">
           {/* Filters Sidebar */}
