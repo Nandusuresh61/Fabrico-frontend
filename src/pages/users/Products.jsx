@@ -97,12 +97,12 @@ const Products = () => {
     }
 
     // Check if the search term matches any category
-    const matchedCategory = categories.find(
+    const matchedCategory = categories.filter(category => category.status == "Activated").find(
       category => category.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
     
     // Check if the search term matches any brand
-    const matchedBrand = brands.find(
+    const matchedBrand = brands.filter(brand => brand.status == 'Activated').find(
       brand => brand.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -189,7 +189,7 @@ const Products = () => {
                 >
                   All Categories
                 </button>
-                {categories.map((category) => (
+                {categories.filter(category => category.status == 'Activated').map((category) => (
                   <button
                     key={category._id}
                     onClick={() => setActiveCategory(category.name.toLowerCase())}
@@ -215,7 +215,7 @@ const Products = () => {
                 >
                   All Brands
                 </button>
-                {brands.map((brand) => (
+                {brands.filter(brand => brand.status == 'Activated').map((brand) => (
                   <button
                     key={brand._id}
                     onClick={() => setActiveBrand(brand._id)}
@@ -287,7 +287,7 @@ const Products = () => {
                 <div className="col-span-full flex items-center justify-center min-h-[400px]">
                   <Loader />
                 </div>
-              ) : (
+              ) :  products.length > 0 ? ( 
                 products.map((product) => (
                   <ProductCard
                     key={product._id}
@@ -303,7 +303,14 @@ const Products = () => {
                     link={`/products/${product._id}`}
                     rating={4.5}
                   />
-                ))
+                ))  
+              ) : (
+                <div className="col-span-full flex flex-col items-center justify-center min-h-[400px]">
+                <p className="text-xl text-gray-600 mb-2">No products found</p>
+                <p className="text-sm text-gray-500">
+                  {searchTerm ? `No results found for "${searchTerm}"` : 'Try adjusting your filters'}
+                </p>
+              </div>
               )}
             </div>
 
