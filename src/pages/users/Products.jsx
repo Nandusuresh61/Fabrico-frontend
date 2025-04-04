@@ -148,7 +148,7 @@ const Products = () => {
       search: searchFromUrl,
       page: pageFromUrl,
       status: 'active',
-      limit: 12
+      limit: 6
     }));
   }, [dispatch, searchParams]);
 
