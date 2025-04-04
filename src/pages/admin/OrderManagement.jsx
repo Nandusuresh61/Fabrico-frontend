@@ -437,7 +437,7 @@ console.log(orders)
                                                 ) : 'No request'}
                                               </td>
                                             )}
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            {/* <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                               {selectedOrder.status !== 'cancelled' && item.returnRequest && item.returnRequest.status === 'requested' && (
                                                 <Button
                                                   variant="outline"
@@ -447,7 +447,7 @@ console.log(orders)
                                                   Verify Return
                                                 </Button>
                                               )}
-                                            </td>
+                                            </td> */}
                                           </tr>
                                         ))}
                                       </tbody>
