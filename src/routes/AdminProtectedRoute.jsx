@@ -1,12 +1,21 @@
-// src/routes/AdminProtectedRoute.jsx
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const AdminProtectedRoute = () => {
-  const { admin } = useSelector((state) => state.admin); // Adjust based on your Redux store structure
+  const { admin } = useSelector((state) => state.admin);
+  const { user } = useSelector((state) => state.user); 
+
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
   
-  return admin ? <Outlet /> : <Navigate to="/admin/login" replace />;
+  if (!admin) {
+    return <Navigate to="/admin/login" replace />;
+  }
+
+  return <Outlet />;
 };
 
 export default AdminProtectedRoute;
