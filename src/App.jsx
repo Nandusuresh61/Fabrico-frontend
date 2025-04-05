@@ -8,13 +8,21 @@ import { Toaster as Sonner } from "sonner"
 import AddProductForm from "./pages/admin/Product/AddProductForm";
 
 
+
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { googleConfig } from "./configuration";
 import ScrollToTop from "../src/pages/admin/Product/ScrollTop";
 
+import { setupCsrfToken } from "./utils/csrf";
+import { useEffect } from "react";
+
 const queryClient = new QueryClient();
 
 function App() {
+
+  useEffect(() => {
+    setupCsrfToken();
+  }, []);
 
   return (
     <>
