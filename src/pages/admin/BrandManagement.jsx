@@ -24,6 +24,7 @@ const BrandManagement = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [newBrandName, setNewBrandName] = useState('');
+  const [formError, setFormError] = useState('');
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '');
@@ -84,35 +85,62 @@ const BrandManagement = () => {
     updateUrlAndFetch({ status, page: 1 });
   };
 
+  const validateBrandName = (name) => {
+    if (!name.trim()) {
+      return 'Brand name is required';
+    }
+    if (name.trim().length < 3) {
+      return 'Brand name must be at least 3 characters long';
+    }
+    if (name.trim().length > 50) {
+      return 'Brand name cannot exceed 50 characters';
+    }
+    if (!/^[a-zA-Z0-9\s-&]+$/.test(name)) {
+      return 'Brand name can only contain letters, numbers, spaces, hyphens, and ampersands';
+    }
+    return '';
+  };
+
   const handleAddBrand = async () => {
-    if (!newBrandName) {
+    const validationError = validateBrandName(newBrandName);
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
 
-    await dispatch(createBrand({
-      name: newBrandName
-    }));
-
-    setIsAddModalOpen(false);
-    setNewBrandName('');
+    try {
+      await dispatch(createBrand({ name: newBrandName.trim() })).unwrap();
+      setIsAddModalOpen(false);
+      setNewBrandName('');
+      setFormError('');
+      toast.success('Brand added successfully');
+    } catch (err) {
+      setFormError(err);
+    }
   };
 
   const handleEditBrand = async () => {
-    if (!newBrandName) {
+    const validationError = validateBrandName(newBrandName);
+    if (validationError) {
+      setFormError(validationError);
       return;
     }
 
-    await dispatch(updateBrand({
-      id: selectedBrand._id,
-      brandData: {
-        name: newBrandName
-      }
-    }));
-
-    setIsEditModalOpen(false);
-    setSelectedBrand(null);
-    setNewBrandName('');
+    try {
+      await dispatch(updateBrand({
+        id: selectedBrand._id,
+        brandData: { name: newBrandName.trim() }
+      })).unwrap();
+      setIsEditModalOpen(false);
+      setSelectedBrand(null);
+      setNewBrandName('');
+      setFormError('');
+      toast.success('Brand updated successfully');
+    } catch (err) {
+      setFormError(err);
+    }
   };
+
 
   const handleToggleStatus = async (brandId) => {
     const brand = brands.find(b => b._id === brandId);
@@ -307,56 +335,74 @@ const BrandManagement = () => {
       
       {/* Add Brand Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-xl font-bold">Add New Brand</h2>
-            <div className="mb-4">
-              <label className="mb-1 block text-sm font-medium">Brand Name</label>
-              <input
-                type="text"
-                value={newBrandName}
-                onChange={(e) => setNewBrandName(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                placeholder="Enter brand name"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <CustomButton variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                Cancel
-              </CustomButton>
-              <CustomButton onClick={handleAddBrand}>
-                Add Brand
-              </CustomButton>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+        <h2 className="mb-4 text-xl font-bold">Add New Brand</h2>
+        <div className="mb-4">
+          <label className="mb-1 block text-sm font-medium">Brand Name</label>
+          <input
+            type="text"
+            value={newBrandName}
+            onChange={(e) => setNewBrandName(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            placeholder="Enter brand name"
+          />
+          {formError && (
+            <p className="mt-1 text-sm text-red-600">{formError}</p>
+          )}
         </div>
-      )}
+        <div className="flex justify-end gap-2">
+          <CustomButton 
+            variant="outline" 
+            onClick={() => {
+              setIsAddModalOpen(false);
+              setFormError('');
+            }}
+          >
+            Cancel
+          </CustomButton>
+          <CustomButton onClick={handleAddBrand}>
+            Add Brand
+          </CustomButton>
+        </div>
+      </div>
+    </div>
+  )}
       
       {/* Edit Brand Modal */}
       {isEditModalOpen && selectedBrand && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="mb-4 text-xl font-bold">Edit Brand</h2>
-            <div className="mb-4">
-              <label className="mb-1 block text-sm font-medium">Brand Name</label>
-              <input
-                type="text"
-                value={newBrandName}
-                onChange={(e) => setNewBrandName(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <CustomButton variant="outline" onClick={() => setIsEditModalOpen(false)}>
-                Cancel
-              </CustomButton>
-              <CustomButton onClick={handleEditBrand}>
-                Save Changes
-              </CustomButton>
-            </div>
-          </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+        <h2 className="mb-4 text-xl font-bold">Edit Brand</h2>
+        <div className="mb-4">
+          <label className="mb-1 block text-sm font-medium">Brand Name</label>
+          <input
+            type="text"
+            value={newBrandName}
+            onChange={(e) => setNewBrandName(e.target.value)}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+          />
+          {formError && (
+            <p className="mt-1 text-sm text-red-600">{formError}</p>
+          )}
         </div>
-      )}
+        <div className="flex justify-end gap-2">
+          <CustomButton 
+            variant="outline" 
+            onClick={() => {
+              setIsEditModalOpen(false);
+              setFormError('');
+            }}
+          >
+            Cancel
+          </CustomButton>
+          <CustomButton onClick={handleEditBrand}>
+            Save Changes
+          </CustomButton>
+        </div>
+      </div>
+    </div>
+  )}
 
       <ConfirmationModal
         isOpen={confirmModal.isOpen}

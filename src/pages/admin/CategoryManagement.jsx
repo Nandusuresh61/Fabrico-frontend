@@ -110,29 +110,58 @@ const CategoryManagement = () => {
     }
   };
 
+
+  const validateCategoryName = (name) => {
+    if (!name.trim()) {
+      return 'Category name is required';
+    }
+    if (name.trim().length < 3) {
+      return 'Category name must be at least 3 characters long';
+    }
+    if (name.trim().length > 50) {
+      return 'Category name cannot exceed 50 characters';
+    }
+    if (!/^[a-zA-Z0-9\s-&]+$/.test(name)) {
+      return 'Category name can only contain letters, numbers, spaces, hyphens, and ampersands';
+    }
+    return '';
+  };
+
   const handleAddCategory = async () => {
-    if (newCategoryName.trim()) {
-      try {
-        await dispatch(addCategory({ name: newCategoryName })).unwrap();
-        setIsAddModalOpen(false);
-        setNewCategoryName('');
-        setFormError('');
-      } catch (err) {
-        setFormError(err);
-      }
+    const validationError = validateCategoryName(newCategoryName);
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
+    try {
+      await dispatch(addCategory({ name: newCategoryName.trim() })).unwrap();
+      setIsAddModalOpen(false);
+      setNewCategoryName('');
+      setFormError('');
+      toast.success('Category added successfully');
+    } catch (err) {
+      setFormError(err);
     }
   };
 
   const handleEditCategory = async () => {
-    if (newCategoryName.trim() && selectedCategory) {
+    const validationError = validateCategoryName(newCategoryName);
+    if (validationError) {
+      setFormError(validationError);
+      return;
+    }
+
+    if (selectedCategory) {
       try {
         await dispatch(editCategory({ 
           categoryId: selectedCategory._id, 
-          data: { name: newCategoryName } 
+          data: { name: newCategoryName.trim() } 
         })).unwrap();
         setIsEditModalOpen(false);
         setSelectedCategory(null);
         setFormError('');
+        toast.success('Category updated successfully');
       } catch (err) {
         setFormError(err);
       }
