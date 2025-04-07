@@ -266,10 +266,10 @@ console.log(orders)
             <CardTitle className="text-xl">Orders</CardTitle>
             <CardDescription>
               {loading ? (
-                <div className="flex items-center gap-2">
+                <span className="flex items-center gap-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Loading orders...
-                </div>
+                </span>
               ) : (
                 `Showing ${orders.length} of ${totalOrders} orders`
               )}

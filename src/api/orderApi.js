@@ -6,8 +6,16 @@ export const getOrdersApi = (params) => {
     return API.get(`/orders?page=${page}&limit=${limit}&search=${search}&status=${status}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
 }
 export const getUserOrdersApi = (params) => {
-    const { page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = params;
-    return API.get(`/orders/my-orders?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
+    const { 
+        page = 1, 
+        limit = 10, 
+        search = '', 
+        status = '', 
+        sortBy = 'createdAt', 
+        sortOrder = 'desc' 
+    } = params;
+    
+    return API.get(`/orders/my-orders?page=${page}&limit=${limit}&search=${search}&status=${status}&sortBy=${sortBy}&sortOrder=${sortOrder}`);
 }
 export const getOrderByIdApi = (id) => API.get(`/orders/${id}`)
 export const updateOrderStatusApi = (id, data) => API.put(`/orders/${id}/status`, data)

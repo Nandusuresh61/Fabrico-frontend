@@ -5,6 +5,9 @@ import CustomButton from '../../../components/ui/CustomButton';
 import { getUserOrders, cancelOrderForUser, submitReturnRequest } from '../../../redux/features/orderSlice';
 import { downloadInvoiceApi } from '../../../api/invoiceApi';
 import Loader from '../../../components/layout/Loader';
+import { useSearchParams } from 'react-router-dom';
+import { Search } from 'lucide-react';
+import { current } from '@reduxjs/toolkit';
 
 const Orders = () => {
   const dispatch = useDispatch();
@@ -17,9 +20,78 @@ const Orders = () => {
   const [returnReason, setReturnReason] = useState('');
   const { orders, loading, error, pagination } = useSelector((state) => state.order);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  
+  const currentPage = parseInt(searchParams.get('page')) || 1;
+  const currentStatus = searchParams.get('status') || '';
+  const currentSort = searchParams.get('sort') || 'createdAt';
+  const currentOrder = searchParams.get('direction') || 'desc';
+
   useEffect(() => {
-    dispatch(getUserOrders({ page: 1, limit: 10 }));
-  }, [dispatch]);
+    dispatch(getUserOrders({
+      page: currentPage,
+      limit: 10,
+      search: searchParams.get('search') || '',
+      status: currentStatus,
+      sort: currentSort,
+      sortOder: currentOrder
+    }));
+  }, [dispatch, searchParams]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if(searchTerm.trim()){
+      setSearchParams(prev => {
+        prev.set('search', searchTerm);
+        prev.set('page', 1);
+        return prev;
+      });
+    } else {
+      setSearchParams(prev => {
+        prev.delete('search');
+        prev.delete('page');
+        return prev;
+      });
+    }
+  };
+
+  const handleStatusFilter = (status) => {
+    setSearchParams(prev => {
+      if (status) {
+        prev.set('status', status);
+      } else {
+        prev.delete('status');
+      }
+      prev.set('page', '1');
+      return prev;
+    });
+  };
+
+  const handleSort = (sortField) => {
+    setSearchParams(prev => {
+      const currentSort = prev.get('sort');
+      const currentOrder = prev.get('order');
+      
+      if (currentSort === sortField) {
+        prev.set('order', currentOrder === 'asc' ? 'desc' : 'asc');
+      } else {
+        prev.set('sort', sortField);
+        prev.set('order', 'desc');
+      }
+      return prev;
+    });
+  };
+  
+
+  const handlePageChange = (page) => {
+    setSearchParams(prev => {
+      prev.set('page', page.toString());
+      return prev;
+    });
+  };
+
+
 
   const handleOrderSelect = (order) => {
     console.log('Selected Order:', order);
@@ -176,21 +248,70 @@ const Orders = () => {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">My Orders</h2>
+    <div className="mb-6 space-y-4">
+  <div className="flex items-center justify-between">
+    <h2 className="text-xl font-semibold">My Orders</h2>
+    <form onSubmit={handleSearch} className="flex items-center gap-2">
+      <div className="relative">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search orders..."
+          className="w-64 rounded-lg border border-gray-300 pl-10 pr-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+        />
+        <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
       </div>
+      <CustomButton type="submit">Search</CustomButton>
+    </form>
+  </div>
+  <div className="flex items-center gap-4">
+    <select
+      value={currentStatus}
+      onChange={(e) => handleStatusFilter(e.target.value)}
+      className="rounded-lg border border-gray-300 px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+    >
+      <option value="">All Status</option>
+      <option value="pending">Pending</option>
+      <option value="processing">Processing</option>
+      <option value="shipped">Shipped</option>
+      <option value="delivered">Delivered</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+  </div>
 
       {orders.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-gray-200">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                {['Order ID', 'Date', 'Status', 'Total', 'Items', 'Actions'].map((header) => (
-                  <th key={header} className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">{header}</th>
-                ))}
-              </tr>
-            </thead>
+          <thead className="bg-gray-50">
+  <tr>
+    {[
+      { label: 'Order ID', field: 'orderId' },
+      { label: 'Date', field: 'createdAt' },
+      { label: 'Status', field: 'status' },
+      { label: 'Total', field: 'totalAmount' },
+      { label: 'Items', field: null },
+      { label: 'Actions', field: null }
+    ].map((header) => (
+      <th
+        key={header.label}
+        className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 ${
+          header.field ? 'cursor-pointer hover:text-gray-700' : ''
+        }`}
+        onClick={() => header.field && handleSort(header.field)}
+      >
+        <div className="flex items-center gap-1">
+          {header.label}
+          {header.field && currentSort === header.field && (
+            <span className="text-primary">
+              {currentOrder === 'asc' ? '↑' : '↓'}
+            </span>
+          )}
+        </div>
+      </th>
+    ))}
+  </tr>
+</thead>
             <tbody className="divide-y divide-gray-200 bg-white">
               {orders.map((order) => (
                 <tr key={order.orderId} className="transition-colors hover:bg-gray-50">
@@ -212,6 +333,53 @@ const Orders = () => {
               ))}
             </tbody>
           </table>
+          {pagination.totalPages > 1 && (
+  <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
+    <div className="flex flex-1 justify-between sm:hidden">
+      <CustomButton
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        variant="outline"
+      >
+        Previous
+      </CustomButton>
+      <CustomButton
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === pagination.totalPages}
+        variant="outline"
+      >
+        Next
+      </CustomButton>
+    </div>
+    <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+      <div>
+        <p className="text-sm text-gray-700">
+          Showing page <span className="font-medium">{currentPage}</span> of{' '}
+          <span className="font-medium">{pagination.totalPages}</span>
+        </p>
+      </div>
+      <div>
+        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm">
+          {[...Array(pagination.totalPages)].map((_, idx) => (
+            <button
+              key={idx + 1}
+              onClick={() => handlePageChange(idx + 1)}
+              className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                currentPage === idx + 1
+                  ? 'bg-primary text-white focus-visible:outline-offset-0'
+                  : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0'
+              } ${idx === 0 ? 'rounded-l-md' : ''} ${
+                idx === pagination.totalPages - 1 ? 'rounded-r-md' : ''
+              }`}
+            >
+              {idx + 1}
+            </button>
+          ))}
+        </nav>
+      </div>
+    </div>
+  </div>
+)}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 py-12">
