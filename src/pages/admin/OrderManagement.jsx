@@ -1,6 +1,4 @@
-import React, { useState } from 'react';
-import AdminLayout from '../../components/layout/AdminLayout';
-import { useOrders } from '../../hooks/useOrders';
+import React, { useState,useEffect } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
@@ -51,50 +49,85 @@ import {
 import { Badge } from '../../components/ui/badge';
 import { useToast } from '../../hooks/use-toast';
 
+import { useSearchParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { getOrders, updateOrderStatus, verifyReturnRequest } from '../../redux/features/orderSlice';
+
 const OrderManagement = () => {
   const { toast } = useToast();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
-  const [returnToVerify, setReturnToVerify] = useState(null);
 
-  const {
-    orders,
-    totalOrders,
-    loading,
-    error,
-    updateOrderStatus,
-    updateReturnStatus,
-    searchTerm,
-    setSearchTerm,
-    statusFilter,
-    setStatusFilter,
-    sortBy,
-    setSortBy,
-    sortOrder,
-    setSortOrder,
-    currentPage,
-    setCurrentPage,
-    totalPages,
-    clearFilters,
-  } = useOrders();
+
+  const dispatch = useDispatch();
+  const { orders, loading, error, pagination: { totalOrders, totalPages}} = useSelector((state) => state.order);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+
+
+
+  const currentPage = parseInt(searchParams.get('page')) || 1;
+  const searchTerm = searchParams.get('search') || '';
+  const statusFilter = searchParams.get('status') || 'all';
+  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const sortOrder = searchParams.get('sortOrder') || 'desc';
+
+  const updateParams = (newParams) => {
+    const current = Object.fromEntries([...searchParams]);
+    setSearchParams({ ...current, ...newParams });
+  };
+  useEffect(() => {
+    dispatch(getOrders({ 
+      page: currentPage, 
+      search: searchTerm, 
+      status: statusFilter, 
+      sortBy, 
+      sortOrder 
+    }));
+  }, [dispatch, currentPage, searchTerm, statusFilter, sortBy, sortOrder]);
+
+
+ 
 
   const handleSort = (field) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      updateParams({ sortOrder: sortOrder === 'asc' ? 'desc' : 'asc' });
     } else {
-      setSortBy(field);
-      setSortOrder('desc');
+      updateParams({ sortBy: field, sortOrder: 'desc' });
     }
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    updateParams({ search: searchInput, page: 1 });
+  };
+
+  const clearSearch = () => {
+    setSearchInput('');
+    updateParams({ search: '', page: 1 });
+  };
+
+  const handleStatusFilter = (value) => {
+    updateParams({ status: value, page: 1 });
+  };
+
+  const handlePageChange = (page) => {
+    updateParams({ page });
+  };
+
+  const clearFilters = () => {
+    setSearchParams({});
+  };
+
   const handleOrderStatusChange = async (orderId, newStatus) => {
-    const success = await updateOrderStatus(orderId, newStatus);
-    if (success) {
+    try {
+      await dispatch(updateOrderStatus({ id: orderId, status: newStatus })).unwrap();
       toast({
         title: "Order Status Updated",
         description: `Order status changed to ${newStatus}`,
       });
-    } else {
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update order status",
@@ -105,20 +138,13 @@ const OrderManagement = () => {
 
   const handleReturnVerify = async (orderId, itemId, status) => {
     try {
-      const success = await updateReturnStatus(orderId, itemId, status);
-      if (success) {
-        toast({
-          title: "Return Request Processed",
-          description: status === 'approved' 
-            ? "Return approved and refund issued to customer's wallet" 
-            : "Return request has been rejected",
-        });
-        
-        // Refresh the orders list to show updated status
-        window.location.reload();
-      } else {
-        throw new Error("Failed to process return request");
-      }
+      await dispatch(verifyReturnRequest({ orderId, itemId, status })).unwrap();
+      toast({
+        title: "Return Request Processed",
+        description: status === 'approved' 
+          ? "Return approved and refund issued to customer's wallet" 
+          : "Return request has been rejected",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -127,6 +153,8 @@ const OrderManagement = () => {
       });
     }
   };
+        
+
   
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -195,28 +223,30 @@ console.log(orders)
 
         {/* Search and filters */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+          <form onSubmit={handleSearch} className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Search orders..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
               className="pl-10"
             />
-            {searchTerm && (
+            {searchInput && (
               <button
-                onClick={() => setSearchTerm('')}
+                type="button"
+                onClick={clearSearch}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
               >
                 <X className="h-4 w-4 text-gray-500" />
               </button>
             )}
-          </div>
+          </form>
+          
           
           <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             <Select 
               value={statusFilter} 
-              onValueChange={(value) => setStatusFilter(value)}
+              onValueChange={handleStatusFilter}
             >
               <SelectTrigger className="w-[180px]">
                 <div className="flex items-center gap-2">
@@ -524,10 +554,10 @@ console.log(orders)
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
-                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                  />
+                <PaginationPrevious 
+          onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
+          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+        />
                 </PaginationItem>
                 
                 {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -546,7 +576,7 @@ console.log(orders)
                       <PaginationItem>
                         <PaginationLink
                           isActive={page === currentPage}
-                          onClick={() => setCurrentPage(page)}
+                          onClick={() => handlePageChange(page)}
                         >
                           {page}
                         </PaginationLink>
@@ -555,10 +585,10 @@ console.log(orders)
                   ))}
                 
                 <PaginationItem>
-                  <PaginationNext 
-                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                  />
+                <PaginationNext 
+          onClick={() => handlePageChange(Math.min(currentPage + 1, pagination.totalPages))}
+          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+        />
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
