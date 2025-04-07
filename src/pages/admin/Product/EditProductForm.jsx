@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/button';
 import { X } from 'lucide-react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { toast } from 'react-hot-toast';
 
 const EditProductForm = ({ product, onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
@@ -126,6 +127,16 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
 
     // Append existing images that should be kept
     data.append('existingImages', JSON.stringify(existingImages));
+
+    // Validate that we have at least one image
+    if (existingImages.length === 0 && formData.images.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "At least one image is required",
+      });
+      return;
+    }
 
     onSubmit(data);
   };

@@ -157,6 +157,21 @@ const AddProductForm = ({ onClose }) => {
     setCompletedCrop(null);
   }, [currentVariantIndex, getCroppedImg, previewUrls, variants]);
 
+  const removeImage = (variantIndex, imageIndex) => {
+    const newPreviewUrls = [...previewUrls];
+    const newImages = [...variants[variantIndex].images];
+    
+    // Revoke the URL to prevent memory leaks
+    URL.revokeObjectURL(newPreviewUrls[variantIndex][imageIndex]);
+    
+    // Remove the image from both arrays
+    newPreviewUrls[variantIndex] = newPreviewUrls[variantIndex].filter((_, i) => i !== imageIndex);
+    newImages.splice(imageIndex, 1);
+    
+    setPreviewUrls(newPreviewUrls);
+    handleVariantChange(variantIndex, 'images', newImages);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     

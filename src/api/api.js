@@ -23,4 +23,19 @@ API.interceptors.response.use(
   }
 );
 
+// Add request interceptor to handle multipart form data
+API.interceptors.request.use(
+  (config) => {
+    // Check if the request data is FormData
+    if (config.data instanceof FormData) {
+      // Remove the Content-Type header to let the browser set it with the boundary
+      delete config.headers['Content-Type'];
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export default API;
