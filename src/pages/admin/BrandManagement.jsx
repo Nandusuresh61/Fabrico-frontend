@@ -4,12 +4,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import CustomButton from '../../components/ui/CustomButton';
 import Loader from '../../components/layout/Loader'
-import { 
-    fetchBrands, 
-    createBrand, 
-    updateBrand, 
-    toggleBrandStatus,
-    clearError 
+import {
+  fetchBrands,
+  createBrand,
+  updateBrand,
+  toggleBrandStatus,
+  clearError
 } from '../../redux/features/brandSlice';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { toast } from 'react-hot-toast';
@@ -19,7 +19,7 @@ const BrandManagement = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { brands, loading, error, page, totalPages, total } = useSelector((state) => state.brands);
-  
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedBrand, setSelectedBrand] = useState(null);
@@ -42,9 +42,9 @@ const BrandManagement = () => {
   const updateUrlAndFetch = (newParams) => {
     const currentParams = Object.fromEntries(searchParams.entries());
     const updatedParams = { ...currentParams, ...newParams };
-    
+
     // Remove empty params
-    Object.keys(updatedParams).forEach(key => 
+    Object.keys(updatedParams).forEach(key =>
       !updatedParams[key] && delete updatedParams[key]
     );
 
@@ -193,21 +193,21 @@ const BrandManagement = () => {
   if (error) {
     return <div className="text-red-500 text-center">{error}</div>;
   }
-    let count =1;
+  let count = 1;
   return (
     <>
       <div className="px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Brand Management</h1>
-          <CustomButton 
-            icon={<Plus className="h-4 w-4" />} 
+          <CustomButton
+            icon={<Plus className="h-4 w-4" />}
             iconPosition="left"
             onClick={() => setIsAddModalOpen(true)}
           >
             Add New Brand
           </CustomButton>
         </div>
-        
+
         {/* Search and Filter Section */}
         <div className="mb-6 flex gap-4">
           <form onSubmit={handleSearch} className="flex gap-2">
@@ -231,77 +231,86 @@ const BrandManagement = () => {
             <option value="Deactivated">Deactivated</option>
           </select>
         </div>
-        
+
         {/* Brands Table */}
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('_id')}>
-                  ID {sortField === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')}>
-                  Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('status')}>
-                  Status {sortField === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('createdAt')}>
-                  Created Date {sortField === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {brands.map((brand) => (
-                <tr key={brand._id} className="hover:bg-gray-50">
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    {count++}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    {brand.name}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      brand.status === 'Activated' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {brand.status}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                    {new Date(brand.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <button 
-                        className="text-gray-600 hover:text-primary"
-                        onClick={() => openEditModal(brand)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleToggleStatus(brand._id)}
-                        disabled={loadingBrands[brand._id]}
-                        className={`text-gray-500 ${
-                          brand.status === 'Activated' 
-                            ? 'hover:text-red-500' 
-                            : 'hover:text-green-500'
-                        } ${loadingBrands[brand._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {loadingBrands[brand._id] ? (
-                          <span className="inline-block animate-spin">⌛</span>
-                        ) : (
-                          brand.status === 'Activated' ? 'Deactivate' : 'Activate'
-                        )}
-                      </button>
-                    </div>
-                  </td>
+          {brands.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('_id')}>
+                    ID {sortField === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')}>
+                    Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('status')}>
+                    Status {sortField === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('createdAt')}>
+                    Created Date {sortField === 'createdAt' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {brands.map((brand) => (
+                  <tr key={brand._id} className="hover:bg-gray-50">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      {count++}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      {brand.name}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      <span className={`px-2 py-1 rounded-full text-xs ${brand.status === 'Activated'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                        }`}>
+                        {brand.status}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                      {new Date(brand.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="text-gray-600 hover:text-primary"
+                          onClick={() => openEditModal(brand)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(brand._id)}
+                          disabled={loadingBrands[brand._id]}
+                          className={`text-gray-500 ${brand.status === 'Activated'
+                              ? 'hover:text-red-500'
+                              : 'hover:text-green-500'
+                            } ${loadingBrands[brand._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {loadingBrands[brand._id] ? (
+                            <span className="inline-block animate-spin">⌛</span>
+                          ) : (
+                            brand.status === 'Activated' ? 'Deactivate' : 'Activate'
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <p className="text-lg font-medium text-gray-600">No brands found</p>
+              <p className="mt-1 text-sm text-gray-500">
+                {searchTerm
+                  ? `No results found for "${searchTerm}"`
+                  : "No brands available"}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Pagination */}
@@ -332,77 +341,77 @@ const BrandManagement = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Add Brand Modal */}
       {isAddModalOpen && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-xl font-bold">Add New Brand</h2>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium">Brand Name</label>
-          <input
-            type="text"
-            value={newBrandName}
-            onChange={(e) => setNewBrandName(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-            placeholder="Enter brand name"
-          />
-          {formError && (
-            <p className="mt-1 text-sm text-red-600">{formError}</p>
-          )}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-xl font-bold">Add New Brand</h2>
+            <div className="mb-4">
+              <label className="mb-1 block text-sm font-medium">Brand Name</label>
+              <input
+                type="text"
+                value={newBrandName}
+                onChange={(e) => setNewBrandName(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Enter brand name"
+              />
+              {formError && (
+                <p className="mt-1 text-sm text-red-600">{formError}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <CustomButton
+                variant="outline"
+                onClick={() => {
+                  setIsAddModalOpen(false);
+                  setFormError('');
+                }}
+              >
+                Cancel
+              </CustomButton>
+              <CustomButton onClick={handleAddBrand}>
+                Add Brand
+              </CustomButton>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-end gap-2">
-          <CustomButton 
-            variant="outline" 
-            onClick={() => {
-              setIsAddModalOpen(false);
-              setFormError('');
-            }}
-          >
-            Cancel
-          </CustomButton>
-          <CustomButton onClick={handleAddBrand}>
-            Add Brand
-          </CustomButton>
-        </div>
-      </div>
-    </div>
-  )}
-      
+      )}
+
       {/* Edit Brand Modal */}
       {isEditModalOpen && selectedBrand && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="mb-4 text-xl font-bold">Edit Brand</h2>
-        <div className="mb-4">
-          <label className="mb-1 block text-sm font-medium">Brand Name</label>
-          <input
-            type="text"
-            value={newBrandName}
-            onChange={(e) => setNewBrandName(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-          />
-          {formError && (
-            <p className="mt-1 text-sm text-red-600">{formError}</p>
-          )}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+            <h2 className="mb-4 text-xl font-bold">Edit Brand</h2>
+            <div className="mb-4">
+              <label className="mb-1 block text-sm font-medium">Brand Name</label>
+              <input
+                type="text"
+                value={newBrandName}
+                onChange={(e) => setNewBrandName(e.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              {formError && (
+                <p className="mt-1 text-sm text-red-600">{formError}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2">
+              <CustomButton
+                variant="outline"
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  setFormError('');
+                }}
+              >
+                Cancel
+              </CustomButton>
+              <CustomButton onClick={handleEditBrand}>
+                Save Changes
+              </CustomButton>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-end gap-2">
-          <CustomButton 
-            variant="outline" 
-            onClick={() => {
-              setIsEditModalOpen(false);
-              setFormError('');
-            }}
-          >
-            Cancel
-          </CustomButton>
-          <CustomButton onClick={handleEditBrand}>
-            Save Changes
-          </CustomButton>
-        </div>
-      </div>
-    </div>
-  )}
+      )}
 
       <ConfirmationModal
         isOpen={confirmModal.isOpen}
@@ -415,11 +424,10 @@ const BrandManagement = () => {
         title="Confirm Status Change"
         message={
           confirmModal.brand
-            ? `Are you sure you want to ${confirmModal.brand.status === 'Activated' ? 'deactivate' : 'activate'} brand "${confirmModal.brand.name}"? ${
-                confirmModal.brand.status === 'Activated' 
-                  ? 'This brand will no longer be available in the system.'
-                  : 'This brand will be available again in the system.'
-              }`
+            ? `Are you sure you want to ${confirmModal.brand.status === 'Activated' ? 'deactivate' : 'activate'} brand "${confirmModal.brand.name}"? ${confirmModal.brand.status === 'Activated'
+              ? 'This brand will no longer be available in the system.'
+              : 'This brand will be available again in the system.'
+            }`
             : ''
         }
       />

@@ -13,7 +13,7 @@ const CategoryManagement = () => {
   let count = 1;
   const [searchParams, setSearchParams] = useSearchParams();
   const { categories, loading, error: apiError, page, totalPages, total } = useSelector((state) => state.category);
-  
+
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -37,8 +37,8 @@ const CategoryManagement = () => {
   const updateUrlAndFetch = (newParams) => {
     const currentParams = Object.fromEntries(searchParams.entries());
     const updatedParams = { ...currentParams, ...newParams };
-    
-    Object.keys(updatedParams).forEach(key => 
+
+    Object.keys(updatedParams).forEach(key =>
       !updatedParams[key] && delete updatedParams[key]
     );
 
@@ -154,9 +154,9 @@ const CategoryManagement = () => {
 
     if (selectedCategory) {
       try {
-        await dispatch(editCategory({ 
-          categoryId: selectedCategory._id, 
-          data: { name: newCategoryName.trim() } 
+        await dispatch(editCategory({
+          categoryId: selectedCategory._id,
+          data: { name: newCategoryName.trim() }
         })).unwrap();
         setIsEditModalOpen(false);
         setSelectedCategory(null);
@@ -192,8 +192,8 @@ const CategoryManagement = () => {
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Category Management</h1>
-          <CustomButton 
-            icon={<Plus className="h-4 w-4" />} 
+          <CustomButton
+            icon={<Plus className="h-4 w-4" />}
             iconPosition="left"
             onClick={() => setIsAddModalOpen(true)}
           >
@@ -227,67 +227,71 @@ const CategoryManagement = () => {
 
         {/* Categories Table */}
         <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('_id')}>
-                  ID {sortField === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')}>
-                  Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('status')}>
-                  Status {sortField === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {categories.map((category) => (
-                <tr key={category._id} className="hover:bg-gray-50">
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    {count++}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
-                    {category.name}
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
-                    <span 
-                      className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${
-                        category.status === 'Activated' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
-                      {category.status}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <button 
-                        className="text-gray-600 hover:text-primary"
-                        onClick={() => openEditModal(category)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteCategory(category._id)}
-                        disabled={loadingCategories[category._id]}
-                        className={`${
-                          category.status === 'Activated' 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-green-100 text-green-800'
-                        } ${loadingCategories[category._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        {loadingCategories[category._id] ? (
-                          <span className="inline-block animate-spin">⌛</span>
-                        ) : (
-                          category.status === "Activated" ? "Deactivate" : 'Activate'
-                        )}
-                      </button>
-                    </div>
-                  </td>
+          {categories.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              <p>No categories found. {searchTerm && `No results for "${searchTerm}"`}</p>
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b bg-gray-50 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('_id')}>
+                    ID {sortField === '_id' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('name')}>
+                    Name {sortField === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3 cursor-pointer" onClick={() => handleSort('status')}>
+                    Status {sortField === 'status' && (sortOrder === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th className="px-6 py-3">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {categories.map((category) => (
+                  <tr key={category._id} className="hover:bg-gray-50">
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      {count++}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      {category.name}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                      <span
+                        className={`inline-block rounded-full px-2 py-1 text-xs font-medium ${category.status === 'Activated' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                          }`}>
+                        {category.status}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <button
+                          className="text-gray-600 hover:text-primary"
+                          onClick={() => openEditModal(category)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(category._id)}
+                          disabled={loadingCategories[category._id]}
+                          className={`${category.status === 'Activated'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-green-100 text-green-800'
+                            } ${loadingCategories[category._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          {loadingCategories[category._id] ? (
+                            <span className="inline-block animate-spin">⌛</span>
+                          ) : (
+                            category.status === "Activated" ? "Deactivate" : 'Activate'
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
         {/* Pagination */}
@@ -337,7 +341,7 @@ const CategoryManagement = () => {
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <CustomButton 
+              <CustomButton
                 onClick={() => {
                   setIsAddModalOpen(false);
                   setFormError('');
@@ -371,7 +375,7 @@ const CategoryManagement = () => {
               )}
             </div>
             <div className="flex justify-end gap-2">
-              <CustomButton 
+              <CustomButton
                 onClick={() => {
                   setIsEditModalOpen(false);
                   setFormError('');
@@ -399,11 +403,10 @@ const CategoryManagement = () => {
         title="Confirm Status Change"
         message={
           confirmModal.category
-            ? `Are you sure you want to ${confirmModal.category.status === 'Activated' ? 'deactivate' : 'activate'} category "${confirmModal.category.name}"? ${
-                confirmModal.category.status === 'Activated' 
-                  ? 'This category will no longer be available in the system.'
-                  : 'This category will be available again in the system.'
-              }`
+            ? `Are you sure you want to ${confirmModal.category.status === 'Activated' ? 'deactivate' : 'activate'} category "${confirmModal.category.name}"? ${confirmModal.category.status === 'Activated'
+              ? 'This category will no longer be available in the system.'
+              : 'This category will be available again in the system.'
+            }`
             : ''
         }
       />
