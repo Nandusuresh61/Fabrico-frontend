@@ -14,25 +14,25 @@ const categories = [
   {
     id: '1',
     name: 'Shop',
-    image: 'https://images.unsplash.com/photo-1534215754734-18e55d13e346?q=80&w=1548&auto=format&fit=crop',
+    image: '/products.jpg',
     path: '/products',
   },
   {
     id: '2',
     name: 'Men',
-    image: 'https://cdn.shopify.com/s/files/1/0275/2099/1332/files/23_GC_MMH_TJA_9658.jpg?v=1694489521',
+    image: '/men.png',
     path: '/products?category=Men',
   },
   {
     id: '3',
     name: 'Women',
-    image: 'https://assets.myntassets.com/h_1440,q_100,w_1080/v1/assets/images/21460928/2023/1/8/e31e5534-5036-48a1-a1a7-bb1ac707a5891673145016494Cottoncap1.jpg',
+    image: '/women.png',
     path: '/products?category=women',
   },
   {
     id: '4',
     name: 'Kids',
-    image: 'https://images-cdn.ubuy.co.in/63513a6f3632d005812b1453-julerwoo-kids-girls-unicorn-baseball-cap.jpg',
+    image: '/kids.png',
     path: '/products?category=kids',
   },
 ];
@@ -85,7 +85,7 @@ const Index = () => {
               </div>
               <div className="relative animate-fade-in">
                 <img
-                  src="https://capsapparel.com/cdn/shop/files/JOURNEY-Black-Front.jpg?v=1736757822&width=1200"
+                  src="/banner.png"
                   alt="Featured cap"
                   className="mx-auto max-h-[400px] rounded-xl shadow-lg md:ml-auto"
                 />
