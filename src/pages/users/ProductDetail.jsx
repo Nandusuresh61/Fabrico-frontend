@@ -82,7 +82,7 @@ const ProductDetail = () => {
 
     if (!selectedVariant) {
       toast({
-        title: "Error",
+        //title: "Error",
         description: "Please select a variant first",
         variant: "destructive",
       });
@@ -101,7 +101,7 @@ const ProductDetail = () => {
       });
     } catch (error) {
       toast({
-        title: "Error",
+       // title: "Error",
         description: error,
         variant: "destructive",
       });
@@ -116,7 +116,7 @@ const ProductDetail = () => {
 
     if(!isProductAvailable()){
       toast({
-        title: "Error",
+       // title: "Error",
         description: "Product is currently unavailable",
         variant: "destructive",
       });
@@ -125,7 +125,7 @@ const ProductDetail = () => {
 
     if (!selectedVariant) {
       toast({
-        title: "Error",
+        //title: "Error",
         description: "Please select a variant first",
         variant: "destructive",
       });
@@ -135,7 +135,7 @@ const ProductDetail = () => {
     // Check if quantity exceeds stock
     if (quantity > selectedVariant.stock) {
       toast({
-        title: "Error",
+        //title: "Error",
         description: `Only ${selectedVariant.stock} items available in stock`,
         variant: "destructive",
       });
@@ -155,9 +155,9 @@ const ProductDetail = () => {
       });
     } catch (error) {
       toast({
-        title: "Error",
+        // title: "Error",
         description: error,
-        variant: "destructive",
+         variant: "destructive",
       });
     }
   };
