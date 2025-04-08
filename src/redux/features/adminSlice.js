@@ -31,6 +31,9 @@ export const loginAdmin = createAsyncThunk(
     async (adminData, { rejectWithValue }) => {
         try {
             const response = await adminLoginApi(adminData);
+            if (!response.data.isAdmin) {
+                return rejectWithValue('Access denied. Not an admin user.');
+            }
             localStorage.setItem("admin", JSON.stringify(response.data));
             return response.data;
         } catch (error) {
