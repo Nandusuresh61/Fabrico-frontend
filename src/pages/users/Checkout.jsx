@@ -135,7 +135,7 @@ const Checkout = () => {
         await Promise.all(stockUpdatePromises);
       } catch (error) {
         toast({
-          title: "Error",
+          //title: "Error",
           description: "Some items are out of stock",
           variant: "destructive"
         });
@@ -171,7 +171,7 @@ const Checkout = () => {
       });
     } catch (error) {
       toast({
-        title: "Error",
+       // title: "Error",
         description: error.message || "Failed to place order. Please try again.",
         variant: "destructive"
       });
@@ -240,7 +240,7 @@ const Checkout = () => {
       dispatch(fetchAddresses());
     } catch (error) {
       toast({
-        title: "Error",
+        //title: "Error",
         description: error.message || "Failed to add address",
         variant: "destructive",
       });

@@ -58,7 +58,7 @@ const Cart = () => {
       });
     } catch (error) {
       toast({
-        title: "Error",
+        //title: "Error",
         description: error,
         variant: "destructive",
       });
@@ -71,7 +71,7 @@ const Cart = () => {
     // Add stock validation
     if (newQuantity > stock) {
       toast({
-        title: "Error",
+      //  title: "Error",
         description: "Requested quantity exceeds available stock",
         variant: "destructive",
       });
@@ -86,7 +86,7 @@ const Cart = () => {
       });
     } catch (error) {
       toast({
-        title: "Error",
+       // title: "Error",
         description: error,
         variant: "destructive",
       });
@@ -173,7 +173,7 @@ const Cart = () => {
         }
 
         toast({
-          title: "Error",
+         // title: "Error",
           description: message,
           variant: "destructive",
         });
@@ -185,7 +185,7 @@ const Cart = () => {
       if (outOfStockItems.length > 0) {
         const item = outOfStockItems[0];
         toast({
-          title: "Error",
+      //    title: "Error",
           description: `${item.product.name} (${item.variant.color}) has insufficient stock. Available: ${item.variant.stock}`,
           variant: "destructive",
         });
@@ -211,7 +211,7 @@ const Cart = () => {
       });
     } catch (error) {
       toast({
-        title: "Error",
+     //   title: "Error",
         description: "Failed to refresh cart data",
         variant: "destructive",
       });
