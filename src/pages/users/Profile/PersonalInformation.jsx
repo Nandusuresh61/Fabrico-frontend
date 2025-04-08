@@ -66,13 +66,15 @@ const PersonalInformation = () => {
 
         // Create a preview
         const previewUrl = URL.createObjectURL(file);
-        setFormData(prev => ({ ...prev, profileImage: previewUrl }));
-
+        
         // Upload to cloudinary
         const imageUrl = await uploadToCloudinary(file);
         
         // Update form data with actual URL
         setFormData(prev => ({ ...prev, profileImage: imageUrl }));
+        
+        // Revoke the blob URL after we're done with it
+        URL.revokeObjectURL(previewUrl);
         
         toast({
           title: "Success",
