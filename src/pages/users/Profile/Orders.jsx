@@ -31,7 +31,7 @@ const Orders = () => {
   useEffect(() => {
     dispatch(getUserOrders({
       page: currentPage,
-      limit: 10,
+      limit: 6,
       search: searchParams.get('search') || '',
       status: currentStatus,
       sort: currentSort,

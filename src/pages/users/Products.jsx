@@ -229,21 +229,35 @@ const Products = () => {
               </div>
             </div>
             
-            {/* Price Range Filter */}
-            <div className="rounded-lg border border-gray-200 p-4">
+                        {/* Price Range Filter */}
+                        <div className="rounded-lg border border-gray-200 p-4">
               <h3 className="mb-3 font-medium">Price Range</h3>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">₹{priceRange[0]}</span>
-                <span className="text-sm">₹{priceRange[1]}</span>
+              <div className="space-y-4">
+                {/* Min price range */}
+                <div>
+                  <label className="text-sm text-gray-600">Min Price: ₹{priceRange[0]}</label>
+                  <input
+                    type="range"
+                    min="0"
+                    max={priceRange[1]}
+                    value={priceRange[0]}
+                    onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
+                    className="mt-2 w-full cursor-pointer"
+                  />
+                </div>
+                {/* Max price range */}
+                <div>
+                  <label className="text-sm text-gray-600">Max Price: ₹{priceRange[1]}</label>
+                  <input
+                    type="range"
+                    min={priceRange[0]}
+                    max="1000"
+                    value={priceRange[1]}
+                    onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                    className="mt-2 w-full cursor-pointer"
+                  />
+                </div>
               </div>
-              <input
-                type="range"
-                min="0"
-                max="1000"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                className="mt-2 w-full cursor-pointer"
-              />
             </div>
 
             {/* Add Apply/Clear buttons */}

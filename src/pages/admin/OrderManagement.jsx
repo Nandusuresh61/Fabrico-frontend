@@ -301,7 +301,7 @@ console.log(orders)
                   Loading orders...
                 </span>
               ) : (
-                `Showing ${orders.length} of ${totalOrders} orders`
+                ""
               )}
             </CardDescription>
           </CardHeader>
