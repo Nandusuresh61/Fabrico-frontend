@@ -20,6 +20,7 @@ import Checkout from '../pages/users/Checkout'
 import OrderSuccess from '../pages/users/OrderSuccess'
 import Orders from '../pages/users/Profile/Orders'
 import Wallet from '../pages/users/Profile/Wallet'
+import OrderDetailsPage from '../pages/users/Profile/orderDetailsPage'
 
 function UserRoutes() {
   return (
@@ -48,6 +49,8 @@ function UserRoutes() {
           <Route path="/order-success" element={<OrderSuccess />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/wallet" element={<Wallet />} />
+          <Route path="/Orders-details" element={<OrderDetailsPage />} />
+
         </Route>
       </Routes>
     </>

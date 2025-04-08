@@ -42,7 +42,7 @@ const OrderSuccess = () => {
             <Button
               variant="outline"
               className="flex-1 max-w-[200px]"
-              onClick={() => navigate('/orders')}
+              onClick={() => navigate('/orders-details')}
             >
               View Order Details
             </Button>

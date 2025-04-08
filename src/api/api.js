@@ -9,26 +9,26 @@ const API = axios.create({
   }
 });
 
-// Add request interceptor to handle CSRF token expiry
+
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 403 && error.response?.data?.csrf === false) {
-      // CSRF token expired or invalid
+      
       await setupCsrfToken();
-      // Retry the original request
+     
       return API(error.config);
     }
     return Promise.reject(error);
   }
 );
 
-// Add request interceptor to handle multipart form data
+
 API.interceptors.request.use(
   (config) => {
-    // Check if the request data is FormData
+    
     if (config.data instanceof FormData) {
-      // Remove the Content-Type header to let the browser set it with the boundary
+      
       delete config.headers['Content-Type'];
     }
     return config;
