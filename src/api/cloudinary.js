@@ -9,6 +9,10 @@ export const uploadToCloudinary = async (file) => {
     throw new Error('Cloudinary configuration is missing');
   }
 
+  if (!file) {
+    throw new Error('No file provided');
+  }
+
   const formData = new FormData();
   formData.append('file', file);
   formData.append('upload_preset', uploadPreset);
@@ -21,11 +25,26 @@ export const uploadToCloudinary = async (file) => {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          console.log(`Upload progress: ${percentCompleted}%`);
+        },
       }
     );
-    return response.data.secure_url; // Returns the uploaded image URL
+
+    if (!response.data || !response.data.secure_url) {
+      throw new Error('Invalid response from Cloudinary');
+    }
+
+    return response.data.secure_url;
   } catch (error) {
     console.error('Cloudinary upload failed:', error);
-    throw new Error(`Upload failed: ${error.response?.data?.error?.message || error.message || 'Unknown error'}`);
+    if (error.response?.data?.error?.message) {
+      throw new Error(`Upload failed: ${error.response.data.error.message}`);
+    } else if (error.message) {
+      throw new Error(`Upload failed: ${error.message}`);
+    } else {
+      throw new Error('Failed to upload image to Cloudinary');
+    }
   }
 };

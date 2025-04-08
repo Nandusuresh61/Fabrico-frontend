@@ -44,6 +44,26 @@ const PersonalInformation = () => {
     const file = e.target.files[0];
     if (file) {
       try {
+        // Validate file size (max 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Image size should be less than 5MB"
+          });
+          return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Please upload an image file"
+          });
+          return;
+        }
+
         // Create a preview
         const previewUrl = URL.createObjectURL(file);
         setFormData(prev => ({ ...prev, profileImage: previewUrl }));
@@ -59,10 +79,11 @@ const PersonalInformation = () => {
           description: "Profile picture uploaded successfully"
         });
       } catch (error) {
+        console.error('Image upload error:', error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to upload profile picture"
+          description: error.message || "Failed to upload profile picture"
         });
         // Revert to original image if upload fails
         setFormData(prev => ({ ...prev, profileImage: user.profileImage }));
