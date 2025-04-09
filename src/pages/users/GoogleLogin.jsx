@@ -29,7 +29,7 @@ function GoogleLogin() {
                 console.error("Google Auth Error: ", error);
                 toast({
                   title: "Google Auth Error!",
-                  description: error,
+                  description: typeof error === 'string' ? error : "Authentication failed",
                   variant: "destructive",
                 });
               });
@@ -47,9 +47,17 @@ function GoogleLogin() {
     
       const googleLogin = useGoogleLogin({
         onSuccess : responseGoogle,
-        onError : responseGoogle,
+        onError : (error) => {
+          console.error("Google Login Error:", error);
+          toast({
+            title: "Google Login Error!",
+            description: "Failed to connect to Google. Please try again.",
+            variant: "destructive",
+          });
+        },
         flow : 'auth-code',
       })
+    
     return (
         <>
             <div className="mt-6 grid grid-cols gap-3">

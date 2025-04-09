@@ -19,7 +19,7 @@ export const resetPasswordApi = (data) => API.post("/users/reset-password", data
 
 
 
-export const googleAuthApi = (code) => API.post(`/users/google?code=${code}`, code)
+export const googleAuthApi = (code) => API.post(`/users/google?code=${code}`)
 
 export const updateProfileApi = (data) => API.post("/users/update-profile", data)
 export const sendEmailUpdateOtpApi = (data) => API.post("/users/send-email-update-otp", data)
