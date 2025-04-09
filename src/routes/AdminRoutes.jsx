@@ -18,7 +18,7 @@ function AdminRoutes() {
       {/* Protected Admin Routes */}
       <Route element={<AdminProtectedRoute />}>
         <Route path='/' element={<Layout />}>
-          <Route index element={<Dashboard />} /> {/* This will be the default route when visiting /admin/ */}
+          <Route index element={<Dashboard />} /> 
           <Route path='dashboard' element={<Dashboard />} />
           <Route path='products' element={<ProductManagement />} />
           <Route path='users' element={<UserManagement />} />
@@ -28,7 +28,7 @@ function AdminRoutes() {
         </Route>
       </Route>
       
-      {/* Add a catch-all route for admin section */}
+      
       <Route path='*' element={<Navigate to="/admin/login" replace />} />
     </Routes>
   );

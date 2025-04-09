@@ -302,7 +302,7 @@ const Checkout = () => {
       dispatch(fetchAddresses());
     } catch (error) {
       toast({
-        title: "Error",
+       // title: "Error",
         description: error.message || "Failed to update address",
         variant: "destructive",
       });

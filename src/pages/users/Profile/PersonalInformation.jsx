@@ -54,7 +54,7 @@ const PersonalInformation = () => {
           return;
         }
 
-        // Validate file type
+        
         if (!file.type.startsWith('image/')) {
           toast({
             variant: "destructive",
@@ -64,16 +64,16 @@ const PersonalInformation = () => {
           return;
         }
 
-        // Create a preview
+        
         const previewUrl = URL.createObjectURL(file);
         
-        // Upload to cloudinary
+        
         const imageUrl = await uploadToCloudinary(file);
         
-        // Update form data with actual URL
+        
         setFormData(prev => ({ ...prev, profileImage: imageUrl }));
         
-        // Revoke the blob URL after we're done with it
+        
         URL.revokeObjectURL(previewUrl);
         
         toast({

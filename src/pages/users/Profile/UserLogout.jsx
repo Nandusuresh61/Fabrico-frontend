@@ -15,7 +15,6 @@ const UserLogout = () => {
     
     dispatch(logoutUser());
     setTimeout(() => {
-      // Redirect to home page after logout
       navigate('/');
     }, 1500);
   };

@@ -17,7 +17,7 @@ const Cart = () => {
   const { user } = useSelector((state) => state.user);
   const [cartItems, setCartItems] = useState([]);
 
-  // Initial cart load
+  
   useEffect(() => {
     if (!user) {
       navigate('/login');
@@ -26,12 +26,12 @@ const Cart = () => {
     dispatch(getCart());
   }, [dispatch, navigate, user]);
 
-  // Update local cart items when Redux cart changes
+  
   useEffect(() => {
     setCartItems(items);
   }, [items]);
 
-  // Periodically refresh cart data
+  
   useEffect(() => {
     if (!user) return;
 
@@ -43,7 +43,7 @@ const Cart = () => {
       }
     };
 
-    // Refresh every 30 seconds
+    
     const interval = setInterval(refreshCart, 30000);
 
     return () => clearInterval(interval);
@@ -68,7 +68,7 @@ const Cart = () => {
   const handleUpdateQuantity = async (itemId, newQuantity, stock) => {
     if (newQuantity < 1) return;
     
-    // Add stock validation
+   
     if (newQuantity > stock) {
       toast({
       //  title: "Error",
@@ -102,7 +102,7 @@ const Cart = () => {
   const deliveryCharge = subtotal > 500 ? 0 : 50;
   const total = subtotal + deliveryCharge;
 
-  // Add this click handler function
+ 
   const handleProductClick = (productId) => {
     navigate(`/products/${productId}`);
   };
@@ -254,7 +254,7 @@ const Cart = () => {
                     key={item._id}
                     className="flex flex-col sm:flex-row items-start sm:items-center p-4 border-b last:border-b-0 gap-4"
                   >
-                    {/* Make the image and product name clickable */}
+                   
                     <div 
                       onClick={() => handleProductClick(item.product._id)}
                       className="cursor-pointer group"
