@@ -245,14 +245,13 @@ const userSlice = createSlice({
                 state.error = null;
                 state.verificationSuccess = false;
             })
-            .addCase(verifyOtp.fulfilled, (state) => {
+            .addCase(verifyOtp.fulfilled, (state, action) => {
                 state.loading = false;
                 state.verificationSuccess = true;
-                // Update the user's verified status in localStorage
-                const user = JSON.parse(localStorage.getItem("user"));
-                if (user) {
-                    user.isVerified = true;
-                    localStorage.setItem("user", JSON.stringify(user));
+                // Store user data in state and localStorage
+                if (action.payload._id) {
+                    state.user = action.payload;
+                    localStorage.setItem("user", JSON.stringify(action.payload));
                 }
             })
             .addCase(verifyOtp.rejected, (state, action) => {
