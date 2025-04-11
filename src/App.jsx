@@ -16,6 +16,7 @@ import ScrollToTop from "../src/pages/admin/Product/ScrollTop";
 import { setupCsrfToken } from "./utils/csrf";
 import { useEffect } from "react";
 
+
 const queryClient = new QueryClient();
 
 function App() {
@@ -34,7 +35,6 @@ function App() {
             <BrowserRouter>
             <ScrollToTop />
               <Routes>
-                
                 <Route path="/*" element={<UserRoutes />} />
                 <Route path="/admin/*" element={<AdminRoutes />} />
               </Routes>

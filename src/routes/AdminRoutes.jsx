@@ -9,6 +9,7 @@ import CategoryManagement from '../pages/admin/CategoryManagement';
 import BrandManagement from '../pages/admin/BrandManagement';
 import AdminProtectedRoute from './AdminProtectedRoute';
 import OrderManagement from '../pages/admin/OrderManagement';
+import OfferManagement from '../pages/admin/OfferManagement';
 
 function AdminRoutes() {
   return (
@@ -25,6 +26,7 @@ function AdminRoutes() {
           <Route path='categories' element={<CategoryManagement />} />
           <Route path='brands' element={<BrandManagement />} />
           <Route path='orders' element={<OrderManagement />} />
+          <Route path='offers' element={<OfferManagement />} />
         </Route>
       </Route>
       
