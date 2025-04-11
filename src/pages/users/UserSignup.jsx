@@ -18,7 +18,8 @@ const { loading, error} = useSelector((state)=>state.user);
     phone: '',
     password: '',
     confirmPassword: '',
-    profileImage: null
+    profileImage: null,
+    referralCode: ''
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -124,7 +125,8 @@ const { loading, error} = useSelector((state)=>state.user);
             email: formData.email,
             phone: formData.phone,
             password: formData.password,
-            profileImage: profileImageUrl
+            profileImage: profileImageUrl,
+            referralCode: formData.referralCode.trim() || undefined
         })).unwrap();
 
         // Store user data in localStorage
@@ -309,6 +311,22 @@ const { loading, error} = useSelector((state)=>state.user);
                 </button>
               </div>
               {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
+            </div>
+            
+            <div className="space-y-1">
+              <label htmlFor="referralCode" className="text-sm font-medium text-gray-700">
+                Referral Code (Optional)
+              </label>
+              <input
+                id="referralCode"
+                name="referralCode"
+                type="text"
+                value={formData.referralCode}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-800 outline-none transition-colors focus:border-primary focus:ring-1 focus:ring-primary"
+                placeholder="Enter referral code if you have one"
+              />
+              <p className="text-xs text-gray-500">Get ₹200 in your wallet when you use a referral code</p>
             </div>
             
             <div className="flex items-center">

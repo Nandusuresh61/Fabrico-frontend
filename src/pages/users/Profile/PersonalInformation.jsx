@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Mail, Phone, Save, X, Upload } from 'lucide-react';
+import { User, Mail, Phone, Save, X, Upload, Copy, Share2 } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateProfile, sendEmailUpdateOtp, verifyEmailUpdate } from '../../../redux/features/userSlice';
@@ -189,6 +189,27 @@ const PersonalInformation = () => {
     }
   };
 
+  const copyReferralCode = () => {
+    navigator.clipboard.writeText(user.referralCode);
+    toast({
+      title: "Copied!",
+      description: "Referral code copied to clipboard"
+    });
+  };
+
+  const shareReferralCode = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Join FABRICO with my referral code',
+        text: `Use my referral code ${user.referralCode} to get ₹200 in your wallet when you sign up!`,
+        url: window.location.origin
+      }).catch(err => console.error('Error sharing:', err));
+    } else {
+      // Fallback for browsers that don't support Web Share API
+      copyReferralCode();
+    }
+  };
+
   return (
     <>
       <div className="animate-fade-in">
@@ -235,6 +256,37 @@ const PersonalInformation = () => {
                     <span className="text-sm font-medium text-gray-500">Mobile Number</span>
                     <p className="mt-1 font-medium">{formData.phone}</p>
                   </div>
+                </div>
+
+                {/* Referral Code Section */}
+                <div className="rounded-lg border border-gray-200 p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Your Referral Code</span>
+                      <div className="mt-1 flex items-center">
+                        <p className="font-medium text-lg">{user.referralCode}</p>
+                        <div className="ml-2 flex space-x-2">
+                          <button 
+                            onClick={copyReferralCode}
+                            className="p-1 rounded-full hover:bg-gray-100"
+                            title="Copy code"
+                          >
+                            <Copy className="h-4 w-4 text-gray-500" />
+                          </button>
+                          <button 
+                            onClick={shareReferralCode}
+                            className="p-1 rounded-full hover:bg-gray-100"
+                            title="Share code"
+                          >
+                            <Share2 className="h-4 w-4 text-gray-500" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Share this code with friends and get ₹200 in your wallet when they sign up!
+                  </p>
                 </div>
               </div>
             ) : (
