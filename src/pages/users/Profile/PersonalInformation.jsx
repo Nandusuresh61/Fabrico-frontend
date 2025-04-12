@@ -20,7 +20,8 @@ const PersonalInformation = () => {
     username: user.username,
     email: user.email,
     phone: user.phone || '',
-    profileImage: user.profileImage
+    profileImage: user.profileImage,
+    referralCode: user.referralCode || ''
   });
 
   const [originalEmail] = useState(user.email);
@@ -190,7 +191,7 @@ const PersonalInformation = () => {
   };
 
   const copyReferralCode = () => {
-    navigator.clipboard.writeText(user.referralCode);
+    navigator.clipboard.writeText(formData.referralCode);
     toast({
       title: "Copied!",
       description: "Referral code copied to clipboard"
@@ -201,11 +202,10 @@ const PersonalInformation = () => {
     if (navigator.share) {
       navigator.share({
         title: 'Join FABRICO with my referral code',
-        text: `Use my referral code ${user.referralCode} to get ₹200 in your wallet when you sign up!`,
+        text: `Use my referral code ${formData.referralCode} to get ₹200 in your wallet when you sign up!`,
         url: window.location.origin
       }).catch(err => console.error('Error sharing:', err));
     } else {
-      // Fallback for browsers that don't support Web Share API
       copyReferralCode();
     }
   };
@@ -264,7 +264,7 @@ const PersonalInformation = () => {
                     <div>
                       <span className="text-sm font-medium text-gray-500">Your Referral Code</span>
                       <div className="mt-1 flex items-center">
-                        <p className="font-medium text-lg">{user.referralCode}</p>
+                        <p className="font-medium text-lg">{formData.referralCode}</p>
                         <div className="ml-2 flex space-x-2">
                           <button 
                             onClick={copyReferralCode}
