@@ -385,8 +385,9 @@ const OfferManagement = () => {
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-center mt-4">
+      {pagination.totalPages >= 1 && (
+        <div className="flex justify-end mt-4">
+          
           <div className="flex items-center space-x-2">
             <button
               onClick={() => updateUrlAndFetch({ page: pagination.page - 1 })}

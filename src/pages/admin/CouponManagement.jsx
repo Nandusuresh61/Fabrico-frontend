@@ -60,6 +60,7 @@ const CouponManagement = () => {
         search: searchTerm,
         status: selectedStatus,
         limit: 10,
+        searchFields: ['couponCode', 'discountType']
       };
 
       const response = await getAllCoupons(params);
@@ -82,16 +83,15 @@ const CouponManagement = () => {
 
   useEffect(() => {
     fetchCoupons();
-  }, [pagination.page, searchTerm, selectedStatus]);
+  }, [pagination.page, searchParams.get('search'), selectedStatus]);
 
   // Update search params when filters change
   useEffect(() => {
-    const params = new URLSearchParams();
-    if (searchTerm) params.set("search", searchTerm);
+    const params = new URLSearchParams(searchParams);
     if (selectedStatus) params.set("status", selectedStatus);
     if (pagination.page > 1) params.set("page", pagination.page);
     setSearchParams(params);
-  }, [searchTerm, selectedStatus, pagination.page]);
+  }, [ selectedStatus, pagination.page]);
 
   // Generate random coupon code
   const generateCouponCode = () => {
@@ -242,6 +242,18 @@ const CouponManagement = () => {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams);
+    if (searchTerm) {
+      params.set('search', searchTerm);
+    } else {
+      params.delete('search');
+    }
+    params.set('page', 1);
+    setSearchParams(params);
+  };
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -258,16 +270,19 @@ const CouponManagement = () => {
 
       {/* Search and Filter */}
       <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search coupons..."
-            className="w-full pl-10 pr-4 py-2 border rounded-md"
-          />
-        </div>
+        <form onSubmit={handleSearch} className="flex-1 flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search coupons..."
+              className="w-full pl-10 pr-4 py-2 border rounded-md"
+            />
+          </div>
+          <CustomButton type="submit">Search</CustomButton>
+        </form>
         <select
           value={selectedStatus}
           onChange={(e) => setSelectedStatus(e.target.value)}
@@ -402,8 +417,8 @@ const CouponManagement = () => {
           </div>
 
           {/* Pagination */}
-          {pagination.totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4">
+          {pagination.totalPages >= 1 && (
+            <div className="flex justify-end items-center mt-4">
               <div className="text-sm text-gray-500">
                 Showing page {pagination.page} of {pagination.totalPages}
               </div>
@@ -415,6 +430,7 @@ const CouponManagement = () => {
                   disabled={pagination.page === 1}
                   icon={<ChevronLeft className="h-4 w-4" />}
                 />
+                { pagination.page }
                 <CustomButton
                   variant="outline"
                   size="sm"
