@@ -44,6 +44,7 @@ const CouponManagement = () => {
   // Form data state
   const [formData, setFormData] = useState({
     code: "",
+    description: "",
     discountType: "percentage",
     discountValue: "",
     minimumAmount: "",
@@ -60,7 +61,7 @@ const CouponManagement = () => {
         search: searchTerm,
         status: selectedStatus,
         limit: 10,
-        searchFields: ['couponCode', 'discountType']
+        searchFields: ["couponCode", "discountType"],
       };
 
       const response = await getAllCoupons(params);
@@ -83,7 +84,7 @@ const CouponManagement = () => {
 
   useEffect(() => {
     fetchCoupons();
-  }, [pagination.page, searchParams.get('search'), selectedStatus]);
+  }, [pagination.page, searchParams.get("search"), selectedStatus]);
 
   // Update search params when filters change
   useEffect(() => {
@@ -91,7 +92,7 @@ const CouponManagement = () => {
     if (selectedStatus) params.set("status", selectedStatus);
     if (pagination.page > 1) params.set("page", pagination.page);
     setSearchParams(params);
-  }, [ selectedStatus, pagination.page]);
+  }, [selectedStatus, pagination.page]);
 
   // Generate random coupon code
   const generateCouponCode = () => {
@@ -119,6 +120,7 @@ const CouponManagement = () => {
       // Validate form data
       if (
         !formData.code ||
+        !formData.description ||
         !formData.discountType ||
         !formData.discountValue ||
         !formData.startDate ||
@@ -148,6 +150,7 @@ const CouponManagement = () => {
 
       const couponData = {
         code: formData.code,
+        description: formData.description,
         discountType: formData.discountType,
         discountValue: Number(formData.discountValue),
         minimumAmount: Number(formData.minimumAmount),
@@ -183,6 +186,7 @@ const CouponManagement = () => {
     setEditingCoupon(coupon);
     setFormData({
       code: coupon.couponCode,
+      description: coupon.description,
       discountType: coupon.discountType,
       discountValue: coupon.discountValue,
       minimumAmount: coupon.minOrderAmount,
@@ -223,6 +227,7 @@ const CouponManagement = () => {
     setEditingCoupon(null);
     setFormData({
       code: "",
+      description: "",
       discountType: "percentage",
       discountValue: "",
       minimumAmount: "",
@@ -246,11 +251,11 @@ const CouponManagement = () => {
     e.preventDefault();
     const params = new URLSearchParams(searchParams);
     if (searchTerm) {
-      params.set('search', searchTerm);
+      params.set("search", searchTerm);
     } else {
-      params.delete('search');
+      params.delete("search");
     }
-    params.set('page', 1);
+    params.set("page", 1);
     setSearchParams(params);
   };
 
@@ -430,7 +435,7 @@ const CouponManagement = () => {
                   disabled={pagination.page === 1}
                   icon={<ChevronLeft className="h-4 w-4" />}
                 />
-                { pagination.page }
+                {pagination.page}
                 <CustomButton
                   variant="outline"
                   size="sm"
@@ -513,6 +518,17 @@ const CouponManagement = () => {
                     className="w-full border p-2 rounded"
                     min="0"
                     required
+                  />
+                </div>
+                <div>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    placeholder="Coupon Description"
+                    className="w-full border p-2 rounded"
+                    required
+                    rows="3"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
