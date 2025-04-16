@@ -334,7 +334,13 @@ const CouponManagement = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {coupons.map((coupon) => (
+                {coupons.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
+                      No coupons found
+                    </td>
+                  </tr>
+                ) : (coupons.map((coupon) => (
                   <tr key={coupon._id}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {coupon.couponCode}
@@ -416,7 +422,7 @@ const CouponManagement = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>
