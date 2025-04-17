@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, CreditCard, MapPin, Pencil } from 'lucide-react';
+import { Check, CreditCard, MapPin, Pencil, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
@@ -17,6 +17,7 @@ import CustomButton from '../../components/ui/CustomButton';
 import { Home, Briefcase } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import { createOrder } from '../../redux/features/orderSlice';
+import { getAvailableCoupons, validateCoupon, markCouponAsUsed } from '../../api/couponApi';
 
 
 const Checkout = () => {
@@ -49,6 +50,12 @@ const Checkout = () => {
   });
   const [editingId, setEditingId] = useState(null);
   const [formErrors, setFormErrors] = useState({});
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [showCoupons, setShowCoupons] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [discountAmount, setDiscountAmount] = useState(0);
 
   // Validation patterns
   const validationPatterns = {
@@ -102,6 +109,61 @@ const Checkout = () => {
   // const tax = subtotal * 0.18;
   const total = subtotal + shipping;
 
+  // Add this function to fetch available coupons
+  const fetchAvailableCoupons = async () => {
+    try {
+      const response = await getAvailableCoupons();
+      setAvailableCoupons(response.data.coupons);
+      setShowCoupons(true);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to fetch coupons",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add this function to apply coupon
+  const handleApplyCoupon = async () => {
+    try {
+      const response = await validateCoupon({
+        code: couponCode,
+        totalAmount: orderSummary.subtotal
+      });
+
+      setAppliedCoupon(response.data.coupon);
+      setDiscountAmount(response.data.discountAmount);
+      setCouponError('');
+      
+      toast({
+        title: "Success",
+        description: response.data.message,
+      });
+    } catch (error) {
+      setCouponError(error.response?.data?.message || "Failed to apply coupon");
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to apply coupon",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add this function to select coupon from list
+  const handleSelectCoupon = (coupon) => {
+    setCouponCode(coupon.couponCode);
+    setShowCoupons(false);
+  };
+
+  // Add this function to handle coupon removal
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setDiscountAmount(0);
+    setCouponCode('');
+    setCouponError('');
+  };
+
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       toast({
@@ -122,6 +184,10 @@ const Checkout = () => {
     }
 
     try {
+      if (appliedCoupon) {
+        await markCouponAsUsed(appliedCoupon._id);
+      }
+
       // Update stock for each item in the cart
       const stockUpdatePromises = cartItems.map(item =>
         updateProductStockApi(
@@ -151,7 +217,7 @@ const Checkout = () => {
         })),
         shippingAddress: selectedAddress,
         paymentMethod,
-        totalAmount: total
+        totalAmount: total - discountAmount
       };
 
       const result = await dispatch(createOrder(orderData)).unwrap();
@@ -348,7 +414,9 @@ const Checkout = () => {
     return { isValid, errorMessage };
   };
 
-  
+  // Calculate final total with discount
+  const finalTotal = orderSummary.total - discountAmount;
+
   return (
     <Layout>
       <div className="container max-w-7xl px-4 py-8 mx-auto">
@@ -520,6 +588,114 @@ const Checkout = () => {
                   <span className="text-gray-600">Subtotal</span>
                   <span>₹{orderSummary.subtotal.toFixed(2)}</span>
                 </div>
+                
+                {/* Coupon Section */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code"
+                      className="flex-1 border p-2 rounded"
+                      disabled={appliedCoupon}
+                    />
+                    {!appliedCoupon ? (
+                      <button
+                        onClick={handleApplyCoupon}
+                        className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
+                      >
+                        Apply
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-1"
+                      >
+                        <X className="h-4 w-4" />
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  
+                  {/* Available Coupons Dropdown */}
+                  <div className="border rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => {
+                        if (!showCoupons) {
+                          fetchAvailableCoupons();
+                        } else {
+                          setShowCoupons(false);
+                        }
+                      }}
+                      className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100"
+                      disabled={appliedCoupon}
+                    >
+                      <span className="text-sm font-medium">Available Coupons</span>
+                      {showCoupons ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+                    
+                    {showCoupons && (
+                      <div className="max-h-60 overflow-y-auto">
+                        {availableCoupons.length === 0 ? (
+                          <div className="p-3 text-sm text-gray-500 text-center">
+                            No coupons available
+                          </div>
+                        ) : (
+                          availableCoupons.map((coupon) => (
+                            <div
+                              key={coupon._id}
+                              className="p-3 border-t hover:bg-gray-50 cursor-pointer"
+                              onClick={() => handleSelectCoupon(coupon)}
+                            >
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium">{coupon.couponCode}</span>
+                                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">
+                                      {coupon.discountType === 'percentage'
+                                        ? `${coupon.discountValue}% off`
+                                        : `₹${coupon.discountValue} off`}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600 mt-1">{coupon.description}</p>
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  Min. order: ₹{coupon.minOrderAmount}
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {couponError && (
+                    <p className="text-sm text-red-500">{couponError}</p>
+                  )}
+                  {appliedCoupon && (
+                    <div className="flex items-center justify-between p-2 bg-green-50 rounded">
+                      <div className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-green-600" />
+                        <span className="text-sm text-green-600">
+                          Coupon applied: {appliedCoupon.couponCode} (-₹{discountAmount.toFixed(2)})
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleRemoveCoupon}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Delivery Charge</span>
                   {orderSummary.subtotal > 500 ? (
@@ -533,10 +709,16 @@ const Checkout = () => {
                     Add items worth ₹{(500 - orderSummary.subtotal).toFixed(2)} more for free delivery
                   </div>
                 )}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Discount</span>
+                    <span className="text-green-600">-₹{discountAmount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between font-medium">
                     <span>Total</span>
-                    <span>₹{orderSummary.total.toFixed(2)}</span>
+                    <span>₹{finalTotal.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
