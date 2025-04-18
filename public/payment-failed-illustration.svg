@@ -1,0 +1,20 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="200" cy="150" r="120" fill="#FEE2E2" />
+  
+  <!-- Card Shape -->
+  <rect x="120" y="110" width="160" height="100" rx="10" fill="#FECACA" stroke="#EF4444" stroke-width="3"/>
+  
+  <!-- Card Details -->
+  <rect x="140" y="140" width="80" height="10" rx="2" fill="#EF4444"/>
+  <rect x="140" y="160" width="40" height="10" rx="2" fill="#EF4444"/>
+  
+  <!-- X Mark -->
+  <circle cx="250" cy="145" r="20" fill="#EF4444"/>
+  <path d="M242 137L258 153M258 137L242 153" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Error Lines -->
+  <path d="M280 90L290 80M290 90L280 80" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+  <path d="M110 200L120 190M120 200L110 190" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+  <path d="M300 180L310 170M310 180L300 170" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>
+</svg>

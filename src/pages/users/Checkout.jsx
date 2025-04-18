@@ -18,6 +18,7 @@ import { Home, Briefcase } from 'lucide-react';
 import { useToast } from '../../hooks/use-toast';
 import { createOrder } from '../../redux/features/orderSlice';
 import { getAvailableCoupons, validateCoupon, markCouponAsUsed } from '../../api/couponApi';
+import { processPayment, createRazorpayOrder } from '../../services/paymentService';
 
 
 const Checkout = () => {
@@ -164,6 +165,39 @@ const Checkout = () => {
     setCouponError('');
   };
 
+  const handlePayment = async (orderId) => {
+    try {
+      // Create Razorpay order
+      const orderDetails = await createRazorpayOrder(orderId);
+      
+      // Process payment
+      await processPayment(
+        orderDetails,
+        // Success callback
+        (orderId) => {
+          navigate('/order-success', { state: { orderId } });
+        },
+        // Failure callback
+        (orderId) => {
+          navigate('/payment-failure', {
+            state: {
+              orderId,
+              retryPayment: () => handlePayment(orderId)
+            }
+          });
+        }
+      );
+    } catch (error) {
+      console.error('Payment failed:', error);
+      navigate('/payment-failure', {
+        state: {
+          orderId,
+          retryPayment: () => handlePayment(orderId)
+        }
+      });
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       toast({
@@ -222,19 +256,23 @@ const Checkout = () => {
 
       const result = await dispatch(createOrder(orderData)).unwrap();
 
-      // Clear the cart
-      await dispatch(clearCart()).unwrap();
+      if (paymentMethod === 'online') {
+        // Handle online payment through Razorpay
+        await handlePayment(result.orderId);
+      } else {
+        // For COD, proceed with order completion
+        await dispatch(clearCart()).unwrap();
+        
+        toast({
+          title: "Success",
+          description: "Your order has been placed successfully!"
+        });
 
-      toast({
-        title: "Success",
-        description: "Your order has been placed successfully!"
-      });
-
-      // Navigate to success page with order ID
-      navigate('/order-success', {
-        state: { orderId: result.orderId },
-        replace: true
-      });
+        navigate('/order-success', {
+          state: { orderId: result.orderId },
+          replace: true
+        });
+      }
     } catch (error) {
       toast({
        // title: "Error",
@@ -566,6 +604,25 @@ const Checkout = () => {
                       <div>
                         <span className="font-medium">Cash on Delivery</span>
                         <p className="text-sm text-gray-500">Pay when you receive your order</p>
+                      </div>
+                      <div className="absolute right-4 top-4 text-primary opacity-0 peer-data-[state=checked]:opacity-100">
+                        <Check className="h-5 w-5" />
+                      </div>
+                    </Label>
+                  </div>
+
+                  <div className="relative">
+                    <RadioGroupItem value="online" id="online" className="peer sr-only" />
+                    <Label
+                      htmlFor="online"
+                      className="flex gap-3 p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50"
+                    >
+                      <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
+                        <CreditCard className="h-5 w-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <span className="font-medium">Online Payment</span>
+                        <p className="text-sm text-gray-500">Pay securely with Razorpay</p>
                       </div>
                       <div className="absolute right-4 top-4 text-primary opacity-0 peer-data-[state=checked]:opacity-100">
                         <Check className="h-5 w-5" />
