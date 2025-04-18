@@ -1,0 +1,21 @@
+{
+  "short_name": "Fabrico",
+  "name": "Fabrico E-commerce",
+  "icons": [
+    {
+      "src": "vite.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#ef4444",
+  "background_color": "#ffffff",
+  "serviceworker": {
+    "src": "/src/serviceWorker.js",
+    "scope": "/",
+    "type": "module",
+    "update_via_cache": "none"
+  }
+}
