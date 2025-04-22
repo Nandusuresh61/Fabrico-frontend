@@ -185,7 +185,8 @@ const Checkout = () => {
             state: {
               orderId,
               retryPayment: () => handlePayment(orderId)
-            }
+            },
+            replace: true
           });
         }
       );
@@ -195,7 +196,8 @@ const Checkout = () => {
         state: {
           orderId,
           retryPayment: () => handlePayment(orderId)
-        }
+        },
+        replace: true
       });
     }
   };

@@ -21,6 +21,7 @@ import OrderSuccess from '../pages/users/OrderSuccess'
 import Orders from '../pages/users/Profile/Orders'
 import Wallet from '../pages/users/Profile/Wallet'
 import OrderDetailsPage from '../pages/users/Profile/orderDetailsPage'
+import PaymentFailure from '../pages/users/PaymentFailure'
 
 function UserRoutes() {
   return (
@@ -47,6 +48,7 @@ function UserRoutes() {
           <Route path='/cart' element={<Cart />} />
           <Route path='/checkout' element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/payment-failure" element={<PaymentFailure />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/Orders-details" element={<OrderDetailsPage />} />
