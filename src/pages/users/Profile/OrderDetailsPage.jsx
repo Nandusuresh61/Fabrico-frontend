@@ -19,6 +19,7 @@ const OrderDetailsPage = () => {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [returnReason, setReturnReason] = useState('');
+  const [returnReasonError, setReturnReasonError] = useState('');
   const { orders, loading, error, pagination } = useSelector((state) => state.order);
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -208,7 +209,20 @@ const OrderDetailsPage = () => {
   };
 
   const handleReturnRequest = async () => {
-    if (!returnReason) return;
+    if (!returnReason.trim()) {
+      setReturnReasonError('Please provide a reason for return');
+      return;
+    }
+    
+    if (returnReason.trim().length < 10) {
+      setReturnReasonError('Return reason must be at least 10 characters long');
+      return;
+    }
+    
+    if (returnReason.trim().length > 500) {
+      setReturnReasonError('Return reason cannot exceed 500 characters');
+      return;
+    }
     
     const result = await dispatch(submitReturnRequest({ 
       orderId: selectedOrder._id, 
@@ -232,6 +246,7 @@ const OrderDetailsPage = () => {
       
       setShowReturnModal(false);
       setReturnReason('');
+      setReturnReasonError('');
       setSelectedItem(null);
     }
   };
@@ -713,53 +728,65 @@ const OrderDetailsPage = () => {
       )}
 
       {/* Return Request Modal */}
-      {showReturnModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-6 backdrop-blur-sm">
-          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200">
-            {/* Close button */}
-            <button
-              onClick={() => setShowReturnModal(false)}
-              className="absolute -right-2 -top-2 z-10 rounded-full bg-white p-1 shadow-lg ring-1 ring-gray-200 transition-transform hover:scale-110"
-            >
-              <XCircle className="h-6 w-6 text-gray-400" />
-            </button>
-
-            <div className="p-6">
-              <h3 className="text-xl font-semibold text-gray-900">Submit Return Request</h3>
-              <p className="mt-2 text-sm text-gray-600">
-                Please provide a reason for returning this item
-              </p>
-
-              <div className="mt-4">
-                <textarea
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
-                  placeholder="Enter your return reason..."
-                  className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  rows={4}
-                />
-              </div>
-
-              <div className="mt-6 flex gap-3">
-                <CustomButton
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setShowReturnModal(false)}
-                >
-                  Cancel
-                </CustomButton>
-                <CustomButton
-                  className="w-full"
-                  onClick={handleReturnRequest}
-                  disabled={!returnReason}
-                >
-                  Submit Request
-                </CustomButton>
-              </div>
-            </div>
-          </div>
+      {showReturnModal && selectedItem && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 px-4 py-6 backdrop-blur-sm">
+      <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+        <button
+          onClick={() => {
+            setShowReturnModal(false);
+            setReturnReason('');
+            setReturnReasonError('');
+          }}
+          className="absolute -right-2 -top-2 rounded-full bg-white p-1 shadow-lg"
+        >
+          <XCircle className="h-6 w-6 text-gray-400" />
+        </button>
+        
+        <h3 className="text-lg font-semibold">Return Request</h3>
+        <p className="mt-2 text-sm text-gray-600">Please provide a detailed reason for your return request.</p>
+        
+        <div className="mt-4">
+          <textarea
+            value={returnReason}
+            onChange={(e) => {
+              setReturnReason(e.target.value);
+              if (returnReasonError) setReturnReasonError('');
+            }}
+            placeholder="Enter your reason for return..."
+            className={`w-full rounded-lg border ${
+              returnReasonError ? 'border-red-500' : 'border-gray-300'
+            } p-3 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+            rows={4}
+          />
+          {returnReasonError && (
+            <p className="mt-1 text-sm text-red-500">{returnReasonError}</p>
+          )}
+          <p className="mt-1 text-sm text-gray-500">
+            {returnReason.length}/500 characters
+          </p>
         </div>
-      )}
+        
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => {
+              setShowReturnModal(false);
+              setReturnReason('');
+              setReturnReasonError('');
+            }}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleReturnRequest}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
+          >
+            Submit Return Request
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
     </div>
   );
 };
