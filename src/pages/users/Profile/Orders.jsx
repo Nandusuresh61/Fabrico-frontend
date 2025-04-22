@@ -543,7 +543,7 @@ const Orders = () => {
                               ? 'bg-green-100 text-green-800'
                               : 'bg-yellow-100 text-yellow-800'
                             }`}>
-                            {selectedOrder.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                            {selectedOrder.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
                           </span>
                         </div>
                       </div>
