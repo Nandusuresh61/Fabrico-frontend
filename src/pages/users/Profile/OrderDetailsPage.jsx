@@ -16,6 +16,7 @@ const OrderDetailsPage = () => {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [otherReason, setOtherReason] = useState('');
+  const [otherReasonError, setOtherReasonError] = useState('');
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [returnReason, setReturnReason] = useState('');
@@ -147,6 +148,20 @@ const OrderDetailsPage = () => {
 
   const handleCancelOrder = async () => {
     if (!cancelReason) return;
+    if (cancelReason === 'other') {
+      if (!otherReason.trim()) {
+        setOtherReasonError('Please provide a reason for cancellation');
+        return;
+      }
+      if (otherReason.trim().length < 10) {
+        setOtherReasonError('Reason must be at least 10 characters long');
+        return;
+      }
+      if (otherReason.trim().length > 200) {
+        setOtherReasonError('Reason cannot exceed 200 characters');
+        return;
+      }
+    }
     
     const reason = cancelReason === 'other' ? otherReason : cancelReason;
     const result = await dispatch(cancelOrderForUser({ 
@@ -168,6 +183,7 @@ const OrderDetailsPage = () => {
       setShowCancelModal(false);
       setCancelReason('');
       setOtherReason('');
+      setOtherReasonError('');
     }
   };
 
@@ -695,16 +711,21 @@ const OrderDetailsPage = () => {
               </div>
 
               {cancelReason === 'other' && (
-                <div className="mt-4">
-                  <textarea
-                    value={otherReason}
-                    onChange={(e) => setOtherReason(e.target.value)}
-                    placeholder="Please specify your reason..."
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    rows={3}
-                  />
-                </div>
-              )}
+  <div className="mt-4">
+    <textarea
+      value={otherReason}
+      onChange={(e) => setOtherReason(e.target.value)}
+      placeholder="Please specify your reason..."
+      className={`w-full rounded-lg border ${
+        otherReasonError ? 'border-red-500' : 'border-gray-300'
+      } px-4 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+      rows={3}
+    />
+    {otherReasonError && (
+      <p className="mt-1 text-sm text-red-500">{otherReasonError}</p>
+    )}
+  </div>
+)}
 
               <div className="mt-6 flex gap-3">
                 <CustomButton
