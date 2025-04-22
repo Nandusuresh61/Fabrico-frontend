@@ -6,5 +6,10 @@ export const generateSalesReportApi = (params) =>
 export const downloadReportApi = (format, params) => 
   API.get(`/reports/download/${format}`, { 
     params,
-    responseType: 'blob'
+    responseType: 'blob',
+    headers: {
+      'Accept': format === 'excel' 
+        ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        : 'application/pdf'
+    }
   });

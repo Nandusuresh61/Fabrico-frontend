@@ -128,14 +128,16 @@ const SalesReport = () => {
         });
         return;
       }
-
-      const { startDate, endDate } = getDateRange();
       setIsLoading(true);
+      const { startDate, endDate } = getDateRange();
+      
       
       const response = await downloadReportApi(format, {
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
+        endDate: endDate.toISOString(),
+        format
       });
+      
 
       if (!response.data) {
         throw new Error('No data received from server');
@@ -149,13 +151,16 @@ const SalesReport = () => {
       });
 
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `sales-report-${dateRange}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url); // Clean up the URL object
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sales-report-${format}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
 
     } catch (error) {
       toast({
@@ -163,6 +168,8 @@ const SalesReport = () => {
         description: error.response?.data?.message || "Failed to download report",
         variant: "destructive",
       });
+    }finally{
+      setIsLoading(false);
     }
   };
 
