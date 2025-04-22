@@ -4,7 +4,8 @@ import { useDispatch } from 'react-redux'
 import { 
   LayoutDashboard, Users, ShoppingBag, Tags, 
   BadgePercent, Settings, LogOut, Menu, X ,
-  ShoppingCart, Ticket, Award, BarChart3
+  ShoppingCart, Ticket, Award, BarChart3,
+  Receipt
 } from 'lucide-react';
 import { logoutAdmin } from '../../redux/features/adminSlice';
 
@@ -23,6 +24,7 @@ const AdminLayout = ({ children }) => {
     { icon: <BadgePercent className="h-5 w-5" />, name: 'Offers', path: '/admin/offers' },
     { icon: <Ticket className="h-5 w-5" />, name: 'Coupons', path: '/admin/coupons' },
     { icon: <BarChart3 className="h-5 w-5" />, name: 'Sales Report', path: '/admin/sales' },
+    { icon: <Receipt className="h-5 w-5" />, name: 'Transactions', path: '/admin/transactions' },
   ];
 
   const toggleSidebar = () => {

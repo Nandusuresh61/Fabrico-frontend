@@ -12,6 +12,7 @@ import OrderManagement from '../pages/admin/OrderManagement';
 import OfferManagement from '../pages/admin/OfferManagement';
 import CouponManagement from '../pages/admin/CouponManagement';
 import SalesReport from '../pages/admin/SalesReport';
+import TransactionManagement from '../pages/admin/TransactionManagement';
 
 function AdminRoutes() {
   return (
@@ -31,6 +32,7 @@ function AdminRoutes() {
           <Route path='offers' element={<OfferManagement />} />
           <Route path='coupons' element={<CouponManagement />} />
           <Route path='sales' element={<SalesReport />} />
+          <Route path='transactions' element={<TransactionManagement />} />
         </Route>
       </Route>
       
