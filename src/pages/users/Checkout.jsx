@@ -100,6 +100,7 @@ const Checkout = () => {
 
   const [selectedAddress, setSelectedAddress] = useState(addresses.find(addr => addr.isDefault)?._id || '');
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentError, setPaymentError] = useState('');
 
   // Calculate order totals
   const subtotal = cartItems.reduce((acc, item) => {
@@ -174,7 +175,8 @@ const Checkout = () => {
       await processPayment(
         orderDetails,
         // Success callback
-        (orderId) => {
+        async (orderId) => {
+          await dispatch(clearCart()).unwrap();
           navigate('/order-success', { state: { orderId } });
         },
         // Failure callback
@@ -207,6 +209,14 @@ const Checkout = () => {
       });
       return;
     }
+    if (!validatePaymentMethod()) {
+      toast({
+        description: paymentError,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { isValid, errorMessage } = validateCartItems();
     if (!isValid) {
       toast({
@@ -455,6 +465,17 @@ const Checkout = () => {
   // Calculate final total with discount
   const finalTotal = orderSummary.total - discountAmount;
 
+  // paymewnt validate function 
+
+  const validatePaymentMethod = () => {
+    if(paymentMethod === 'cod' && total > 1000){
+      setPaymentError('Cash on Delivery is not available for orders above ₹1,000. Please choose online payment.');
+      return false;
+    }
+    setPaymentError('');
+    return true;
+  };
+
   return (
     <Layout>
       <div className="container max-w-7xl px-4 py-8 mx-auto">
@@ -583,16 +604,26 @@ const Checkout = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <RadioGroup
+              <RadioGroup
                   value={paymentMethod}
-                  onValueChange={setPaymentMethod}
+                  onValueChange={(value) => {
+                    setPaymentMethod(value);
+                    setPaymentError('');
+                  }}
                   className="grid gap-4"
                 >
                   <div className="relative">
-                    <RadioGroupItem value="cod" id="cod" className="peer sr-only" />
+                    <RadioGroupItem 
+                      value="cod" 
+                      id="cod" 
+                      className="peer sr-only"
+                      disabled={finalTotal > 1000}
+                    />
                     <Label
                       htmlFor="cod"
-                      className="flex gap-3 p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50"
+                      className={`flex gap-3 p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50 ${
+                        finalTotal > 1000 ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
                       <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
                         <svg className="h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -603,7 +634,12 @@ const Checkout = () => {
                       </div>
                       <div>
                         <span className="font-medium">Cash on Delivery</span>
-                        <p className="text-sm text-gray-500">Pay when you receive your order</p>
+                        <p className="text-sm text-gray-500">
+                          {finalTotal > 1000 
+                            ? "Not available for orders above ₹1,000"
+                            : "Pay when you receive your order"
+                          }
+                        </p>
                       </div>
                       <div className="absolute right-4 top-4 text-primary opacity-0 peer-data-[state=checked]:opacity-100">
                         <Check className="h-5 w-5" />
@@ -630,6 +666,9 @@ const Checkout = () => {
                     </Label>
                   </div>
                 </RadioGroup>
+                {paymentError && (
+                  <p className="text-sm text-red-500 mt-2">{paymentError}</p>
+                )}
               </CardContent>
             </Card>
           </div>
