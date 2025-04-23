@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, CreditCard, MapPin, Pencil, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Check, CreditCard, MapPin, Pencil, ChevronDown, ChevronUp, X, Wallet } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { RadioGroup, RadioGroupItem } from '../../components/ui/radio-group';
 import { Label } from '../../components/ui/label';
@@ -19,12 +19,14 @@ import { useToast } from '../../hooks/use-toast';
 import { createOrder } from '../../redux/features/orderSlice';
 import { getAvailableCoupons, validateCoupon, markCouponAsUsed } from '../../api/couponApi';
 import { processPayment, createRazorpayOrder } from '../../services/paymentService';
-
+import { checkWalletBalanceApi, processWalletPaymentApi } from '../../api/walletApi';
+import { getWallet } from '../../redux/features/walletSlice';
 
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
   const { items: cartItems, subtotal: cartSubtotal, deliveryCharge, total: cartTotal } = location.state || {
     items: [],
     subtotal: 0,
@@ -57,6 +59,13 @@ const Checkout = () => {
   const [showCoupons, setShowCoupons] = useState(false);
   const [couponError, setCouponError] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
+
+  const [walletBalance, setWalletBalance] = useState(0);
+  const { wallet } = useSelector((state) => state.wallet);
+    
+    useEffect(() => {
+        dispatch(getWallet());
+    }, [dispatch]);
 
   // Validation patterns
   const validationPatterns = {
@@ -268,7 +277,30 @@ const Checkout = () => {
 
       const result = await dispatch(createOrder(orderData)).unwrap();
 
-      if (paymentMethod === 'online') {
+      if (paymentMethod === 'wallet') {
+        try {
+            const response = await processWalletPaymentApi(result.orderId);
+            if (response.data.success) {
+                await dispatch(clearCart()).unwrap();
+                await dispatch(getWallet()); // Refresh wallet balance
+                
+                toast({
+                    title: "Success",
+                    description: "Payment processed successfully!"
+                });
+
+                navigate('/order-success', {
+                    state: { orderId: result.orderId },
+                    replace: true
+                });
+            }
+        } catch (error) {
+            toast({
+                description: error.response?.data?.message || "Failed to process wallet payment",
+                variant: "destructive"
+            });
+        }
+    } else if (paymentMethod === 'online') {
         // Handle online payment through Razorpay
         await handlePayment(result.orderId);
       } else {
@@ -667,6 +699,28 @@ const Checkout = () => {
                       </div>
                     </Label>
                   </div>
+                  <div className="relative">
+        <RadioGroupItem 
+            value="wallet" 
+            id="wallet" 
+            className="peer sr-only"
+            disabled={!wallet || wallet.balance < finalTotal}
+        />
+        <Label
+            htmlFor="wallet"
+            className={`flex gap-3 p-4 border rounded-lg cursor-pointer transition-colors peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-gray-50 ${
+                (!wallet || wallet.balance < finalTotal) ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+        >
+            <div className="w-8 h-8 rounded bg-gray-100 flex items-center justify-center">
+                <Wallet className="h-5 w-5 text-gray-600" />
+            </div>
+            <div className="flex-1">
+                <p className="font-medium">Wallet Balance</p>
+                <p className="text-sm text-gray-500">Available balance: ₹{wallet?.balance || 0}</p>
+            </div>
+        </Label>
+    </div>
                 </RadioGroup>
                 {paymentError && (
                   <p className="text-sm text-red-500 mt-2">{paymentError}</p>
