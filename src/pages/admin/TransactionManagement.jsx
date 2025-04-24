@@ -304,7 +304,7 @@ const TransactionManagement = () => {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-500">Transaction ID</h4>
-                  <p>{selectedTransaction.transaction.id}</p>
+                  <p>{selectedTransaction.transaction.transactionId}</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-500">Date</h4>
