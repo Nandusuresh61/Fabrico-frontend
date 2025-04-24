@@ -189,22 +189,18 @@ const Checkout = () => {
           navigate('/order-success', { state: { orderId } });
         },
         // Failure callback
-        (orderId) => {
+        async (orderId) => {
           navigate('/payment-failure', {
             state: {
-              orderId,
-              retryPayment: () => handlePayment(orderId)
-            },
-            replace: true
+              orderId
+            }
           });
         }
       );
     } catch (error) {
-      console.error('Payment failed:', error);
       navigate('/payment-failure', {
         state: {
-          orderId,
-          retryPayment: () => handlePayment(orderId)
+          orderId
         },
         replace: true
       });

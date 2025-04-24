@@ -3,15 +3,55 @@ import Layout from '../../components/layout/Layout';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { XCircle } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { processPayment, createRazorpayOrder } from '../../services/paymentService';
+import { clearCart } from '../../redux/features/cartSlice';
+import { useToast } from '../../hooks/use-toast';
 
 const PaymentFailure = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orderId, retryPayment } = location.state || {};
+  const dispatch = useDispatch();
+  const { toast } = useToast();
+  const { orderId } = location.state || {};
 
-  const handleRetryPayment = () => {
-    if (retryPayment && typeof retryPayment === 'function') {
-      retryPayment();
+  const handleRetryPayment = async () => {
+    if (!orderId) {
+      toast({
+        description: "Order information not found",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Create new Razorpay order
+      const orderDetails = await createRazorpayOrder(orderId);
+      
+      // Process payment
+      await processPayment(
+        orderDetails,
+        // Success callback
+        async (orderId) => {
+          await dispatch(clearCart()).unwrap();
+          navigate('/order-success', { 
+            state: { orderId },
+            replace: true 
+          });
+        },
+        // Failure callback
+        async (orderId) => {
+          toast({
+            description: "Payment failed. Please try again.",
+            variant: "destructive"
+          });
+        }
+      );
+    } catch (error) {
+      toast({
+        description: error.message || "Failed to process payment",
+        variant: "destructive"
+      });
     }
   };
 
