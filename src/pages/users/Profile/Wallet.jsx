@@ -1,17 +1,21 @@
-import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, HelpCircle } from 'lucide-react';
+import { Wallet as WalletIcon, ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import CustomButton from '../../../components/ui/CustomButton';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getWallet, getWalletTransactions } from '../../../redux/features/walletSlice';
 
 const Wallet = () => {
   const dispatch = useDispatch();
-  const { wallet, transactions, loading, error } = useSelector((state) => state.wallet);
-  
+  const { wallet, transactions, loading, error, pagination } = useSelector((state) => state.wallet);
+  const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     dispatch(getWallet());
-    dispatch(getWalletTransactions());
-  }, [dispatch]);
+    dispatch(getWalletTransactions(currentPage));
+  }, [dispatch, currentPage]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -111,12 +115,31 @@ const Wallet = () => {
                 </div>
               </div>
             ))}
+            {pagination && pagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 pt-4">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                <span className="text-sm text-gray-600">
+                  Page {currentPage} of {pagination.totalPages}
+                </span>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === pagination.totalPages}
+                  className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </div>
+            )}
             
-            <div className="flex justify-center pt-4">
-              <CustomButton variant="outline" size="sm">
-                View All Transactions
-              </CustomButton>
-            </div>
+            
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-gray-300 py-12">

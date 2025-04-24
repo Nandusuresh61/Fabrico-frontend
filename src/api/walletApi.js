@@ -1,7 +1,7 @@
 import API from "./api"
 
 export const getWalletApi = () => API.get("/wallet")
-export const getWalletTransactionsApi = () => API.get("/wallet/transactions")
+export const getWalletTransactionsApi = (page = 1) => API.get(`/wallet/transactions?page=${page}`)
 
 // wallet payment
 export const processWalletPaymentApi = (orderId) => API.post("/wallet/process-payment", { orderId })

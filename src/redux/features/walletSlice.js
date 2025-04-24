@@ -17,9 +17,9 @@ export const getWallet = createAsyncThunk(
 // Get Wallet Transactions
 export const getWalletTransactions = createAsyncThunk(
   'wallet/getTransactions',
-  async (_, { rejectWithValue }) => {
+  async (page = 1, { rejectWithValue }) => {
     try {
-      const response = await getWalletTransactionsApi();
+      const response = await getWalletTransactionsApi(page);
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -32,6 +32,11 @@ const initialState = {
   transactions: [],
   loading: false,
   error: null,
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    totalTransactions: 0
+  }
 };
 
 const walletSlice = createSlice({
@@ -64,7 +69,8 @@ const walletSlice = createSlice({
       })
       .addCase(getWalletTransactions.fulfilled, (state, action) => {
         state.loading = false;
-        state.transactions = action.payload;
+        state.transactions = action.payload.transactions;
+        state.pagination = action.payload.pagination;
       })
       .addCase(getWalletTransactions.rejected, (state, action) => {
         state.loading = false;
