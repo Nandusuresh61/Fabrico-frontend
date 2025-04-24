@@ -41,6 +41,7 @@ const SalesReport = () => {
     totalSales: 0,
     totalDiscount: 0,
     couponDiscount: 0,
+    productDiscount: 0,
     totalUnits: 0,
     averageOrderValue: 0,
     paymentMethods: {
@@ -285,11 +286,11 @@ const SalesReport = () => {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">
-              {formatCurrency(summary.totalDiscount + summary.couponDiscount)}
+              {formatCurrency((summary?.productDiscount || 0) + (summary?.couponDiscount || 0))}
             </p>
             <div className="text-sm text-gray-500 mt-1">
-              <p>Product: {formatCurrency(summary.totalDiscount)}</p>
-              <p>Coupon: {formatCurrency(summary.couponDiscount)}</p>
+              <p>Product: {formatCurrency(summary?.productDiscount || 0)}</p>
+              <p>Coupon: {formatCurrency(summary?.couponDiscount || 0)}</p>
             </div>
           </CardContent>
         </Card>
@@ -333,8 +334,8 @@ const SalesReport = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Items</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Discount</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Coupon</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Offer Dis</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Coupon Dis</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -358,13 +359,14 @@ const SalesReport = () => {
                         {formatCurrency(order.totalAmount)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatCurrency(order.items.reduce((sum, item) => {
-                          return sum + (item.variant?.originalPrice - item.price) * item.quantity;
-                        }, 0))}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatCurrency(order.couponDiscount || 0)}
-                      </td>
+        {formatCurrency(order.productDiscount || order.items.reduce((sum, item) => {
+            return sum + ((item.originalPrice - item.price) * item.quantity);
+        }, 0))}
+    </td>
+    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+        {formatCurrency(order.couponDiscount || 0)}
+    </td>
+                      
                     </tr>
                   ))}
                 </tbody>

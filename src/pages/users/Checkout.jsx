@@ -268,7 +268,13 @@ const Checkout = () => {
         })),
         shippingAddress: selectedAddress,
         paymentMethod,
-        totalAmount: total - discountAmount
+        totalAmount: total - discountAmount,
+        couponDiscount: appliedCoupon ? discountAmount : 0,
+      productDiscount: cartItems.reduce((acc, item) => {
+        const originalPrice = item.variant.price;
+        const discountedPrice = item.variant.discountPrice || item.variant.price;
+        return acc + ((originalPrice - discountedPrice) * item.quantity);
+      }, 0)
       };
 
       const result = await dispatch(createOrder(orderData)).unwrap();
