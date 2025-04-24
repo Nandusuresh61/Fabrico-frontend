@@ -52,7 +52,7 @@ const TransactionManagement = () => {
   );
   const currentPage = parseInt(searchParams.get("page")) || 1;
   const searchTerm = searchParams.get("search") || "";
-  const typeFilter = searchParams.get("type") || "all";
+  const [typeFilter, setTypeFilter] = useState(searchParams.get("type") || "all");
   const sortField = searchParams.get("sortField") || "date";
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
