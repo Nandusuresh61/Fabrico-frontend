@@ -279,6 +279,17 @@ const OrderDetailsPage = () => {
     return <div className="flex items-center justify-center p-8 text-red-500">{error}</div>;
   }
 
+  const handleRetryPayment = (order) => {
+  // Navigate to the payment page with the order details
+  navigate(`/checkout/payment/${order._id}`, {
+    state: {
+      orderId: order._id,
+      amount: order.totalAmount,
+      isRetry: true
+    }
+  });
+};
+
   return (
     <div className="mb-6 space-y-4 rounded-lg p-4 bg-white shadow-lg">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -465,6 +476,23 @@ const OrderDetailsPage = () => {
                     {getStatusIcon(selectedOrder.status)} {getStatusText(selectedOrder.status)}
                   </span>
                 </div>
+                {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus === 'pending' && (
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">Payment Pending</h4>
+              <p className="text-xs text-yellow-600">Your payment was not completed</p>
+            </div>
+            <CustomButton 
+              onClick={() => handleRetryPayment(selectedOrder)}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Retry Payment
+            </CustomButton>
+          </div>
+        </div>
+      )}
               </div>
             </div>
 
@@ -595,6 +623,7 @@ const OrderDetailsPage = () => {
                             {selectedOrder.paymentStatus === 'completed' ? 'Paid' : 'Pending'}
                           </span>
                         </div>
+                        
                       </div>
                     </div>
                   </div>

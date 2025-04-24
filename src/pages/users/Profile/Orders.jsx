@@ -24,6 +24,7 @@ import Loader from "../../../components/layout/Loader";
 import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { current } from "@reduxjs/toolkit";
+import { useNavigate } from "react-router-dom";
 
 const Orders = () => {
   const dispatch = useDispatch();
@@ -39,7 +40,7 @@ const Orders = () => {
   const { orders, loading, error, pagination } = useSelector(
     (state) => state.order
   );
-
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState(
     searchParams.get("search") || ""
@@ -317,6 +318,16 @@ const Orders = () => {
       </div>
     );
   }
+  const handleRetryPayment = (order) => {
+    // Navigate to the payment page with the order details
+    navigate(`/checkout/payment/${order._id}`, {
+      state: {
+        orderId: order._id,
+        amount: order.totalAmount,
+        isRetry: true
+      }
+    });
+  };
 
   return (
     <div className="mb-6 space-y-4">
@@ -520,6 +531,23 @@ const Orders = () => {
                     {getStatusText(selectedOrder.status)}
                   </span>
                 </div>
+                {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus === 'pending' && (
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="text-sm font-medium text-yellow-800">Payment Pending</h4>
+              <p className="text-xs text-yellow-600">Your payment was not completed</p>
+            </div>
+            <CustomButton 
+              onClick={() => handleRetryPayment(selectedOrder)}
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Retry Payment
+            </CustomButton>
+          </div>
+        </div>
+      )}
               </div>
             </div>
 
