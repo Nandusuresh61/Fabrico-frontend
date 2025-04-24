@@ -554,23 +554,23 @@ const Orders = () => {
                     {getStatusText(selectedOrder.status)}
                   </span>
                 </div>
-                {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus === 'pending' && (
-        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-medium text-yellow-800">Payment Pending</h4>
-              <p className="text-xs text-yellow-600">Your payment was not completed</p>
-            </div>
-            <CustomButton 
-              onClick={() => handleRetryPayment(selectedOrder)}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white"
-            >
-              <CreditCard className="h-4 w-4 mr-2" />
-              Retry Payment
-            </CustomButton>
-          </div>
-        </div>
-      )}
+                {selectedOrder.paymentMethod === 'online' && selectedOrder.paymentStatus === 'pending' && selectedOrder.status !== 'cancelled' && (
+  <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+    <div className="flex items-center justify-between">
+      <div>
+        <h4 className="text-sm font-medium text-yellow-800">Payment Pending</h4>
+        <p className="text-xs text-yellow-600">Your payment was not completed</p>
+      </div>
+      <CustomButton 
+        onClick={() => handleRetryPayment(selectedOrder)}
+        className="bg-yellow-600 hover:bg-yellow-700 text-white"
+      >
+        <CreditCard className="h-4 w-4 mr-2" />
+        Retry Payment
+      </CustomButton>
+    </div>
+  </div>
+)}
               </div>
             </div>
 
