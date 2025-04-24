@@ -25,9 +25,12 @@ import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { current } from "@reduxjs/toolkit";
 import { useNavigate } from "react-router-dom";
+import { useToast} from '../../../hooks/use-toast'
+import { createRazorpayOrder, processPayment } from '../../../services/paymentService'
 
 const Orders = () => {
   const dispatch = useDispatch();
+  const { toast } = useToast()
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
@@ -318,15 +321,35 @@ const Orders = () => {
       </div>
     );
   }
-  const handleRetryPayment = (order) => {
-    // Navigate to the payment page with the order details
-    navigate(`/checkout/payment/${order._id}`, {
-      state: {
-        orderId: order._id,
-        amount: order.totalAmount,
-        isRetry: true
-      }
-    });
+  const handleRetryPayment = async (order) => {
+    try {
+      // Create new Razorpay order
+      const orderDetails = await createRazorpayOrder(order.orderId);
+      
+      // Process payment
+      await processPayment(
+        orderDetails,
+        // Success callback
+        async (orderId) => {
+          navigate('/order-success', { 
+            state: { orderId },
+            replace: true 
+          });
+        },
+        // Failure callback
+        async (orderId) => {
+          navigate('/payment-failure', {
+            state: { orderId }
+          });
+        }
+      );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process payment",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

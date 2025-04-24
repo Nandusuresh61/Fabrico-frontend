@@ -8,6 +8,7 @@ import Loader from '../../../components/layout/Loader';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { current } from '@reduxjs/toolkit';
+import { createRazorpayOrder, processPayment } from '../../../services/paymentService'
 
 const OrderDetailsPage = () => {
   const dispatch = useDispatch();
@@ -279,16 +280,36 @@ const OrderDetailsPage = () => {
     return <div className="flex items-center justify-center p-8 text-red-500">{error}</div>;
   }
 
-  const handleRetryPayment = (order) => {
-  // Navigate to the payment page with the order details
-  navigate(`/checkout/payment/${order._id}`, {
-    state: {
-      orderId: order._id,
-      amount: order.totalAmount,
-      isRetry: true
+  const handleRetryPayment = async (order) => {
+    try {
+      // Create new Razorpay order
+      const orderDetails = await createRazorpayOrder(order.orderId);
+      
+      // Process payment
+      await processPayment(
+        orderDetails,
+        // Success callback
+        async (orderId) => {
+          navigate('/order-success', { 
+            state: { orderId },
+            replace: true 
+          });
+        },
+        // Failure callback
+        async (orderId) => {
+          navigate('/payment-failure', {
+            state: { orderId }
+          });
+        }
+      );
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to process payment",
+        variant: "destructive"
+      });
     }
-  });
-};
+  };
 
   return (
     <div className="mb-6 space-y-4 rounded-lg p-4 bg-white shadow-lg">
