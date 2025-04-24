@@ -106,6 +106,7 @@ const TransactionManagement = () => {
     updateParams({ page: newPage });
   };
   const handleTypeFilter = (value) => {
+    setTypeFilter(value);
     updateParams({ type: value, page: 1 });
   };
 
@@ -153,9 +154,16 @@ const TransactionManagement = () => {
           </div>
         </form>
 
-        <Select value={typeFilter} onValueChange={handleTypeFilter}>
+        <Select 
+          value={typeFilter} 
+          onValueChange={handleTypeFilter}
+        >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by type" />
+            <SelectValue>
+              {typeFilter === 'all' ? 'All Types' : 
+               typeFilter === 'credit' ? 'Credit' : 
+               typeFilter === 'debit' ? 'Debit' : 'Filter by type'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
