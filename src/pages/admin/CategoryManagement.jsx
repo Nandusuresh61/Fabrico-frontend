@@ -141,7 +141,7 @@ const CategoryManagement = () => {
       setFormError('');
       toast.success('Category added successfully');
     } catch (err) {
-      setFormError(err);
+      setFormError(err || 'Failed to add category. Please try again.');
     }
   };
 
@@ -183,7 +183,7 @@ const CategoryManagement = () => {
   }
 
   if (apiError) {
-    return <div className="text-red-500 text-center">{error}</div>;
+    return <div className="text-red-500 text-center">{apiError}</div>;
   }
 
   return (
@@ -344,6 +344,7 @@ const CategoryManagement = () => {
               <CustomButton
                 onClick={() => {
                   setIsAddModalOpen(false);
+                  setNewCategoryName('');
                   setFormError('');
                 }}
               >

@@ -59,6 +59,7 @@ const Checkout = () => {
   const [showCoupons, setShowCoupons] = useState(false);
   const [couponError, setCouponError] = useState('');
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [walletBalance, setWalletBalance] = useState(0);
   const { wallet } = useSelector((state) => state.wallet);
@@ -233,7 +234,7 @@ const Checkout = () => {
       });
       return;
     }
-
+    setIsLoading(true);
     try {
       if (appliedCoupon) {
         await markCouponAsUsed(appliedCoupon._id);
@@ -325,6 +326,8 @@ const Checkout = () => {
         description: error.message || "Failed to place order. Please try again.",
         variant: "destructive"
       });
+    }finally{
+      setIsLoading(false);
     }
   };
 
@@ -878,12 +881,19 @@ const Checkout = () => {
               </div>
 
               <Button
-                className="w-full"
-                size="lg"
-                onClick={handlePlaceOrder}
-              >
-                Place Order
-              </Button>
+        onClick={handlePlaceOrder}
+        className="w-full"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            Processing...
+          </div>
+        ) : (
+          'Place Order'
+        )}
+      </Button>
 
               <p className="text-xs text-gray-500 text-center mt-4">
                 By placing your order, you agree to our Terms of Service and Privacy Policy.
