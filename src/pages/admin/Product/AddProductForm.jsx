@@ -174,13 +174,102 @@ const AddProductForm = ({ onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!productData.name.trim()) {
+      toast({
+        variant: "destructive",
+        description: "Product name is required",
+      });
+      return;
+    }
+  
+    if (productData.name.length < 3 || productData.name.length > 100) {
+      toast({
+        variant: "destructive",
+        description: "Product name must be between 3 and 100 characters",
+      });
+      return;
+    }
+  
+    if (!productData.description.trim()) {
+      toast({
+        variant: "destructive",
+        description: "Product description is required",
+      });
+      return;
+    }
+  
+    if (productData.description.length < 10 || productData.description.length > 1000) {
+      toast({
+        variant: "destructive",
+        description: "Description must be between 10 and 1000 characters",
+      });
+      return;
+    }
+  
+    if (!productData.brand) {
+      toast({
+        variant: "destructive",
+        description: "Please select a brand",
+      });
+      return;
+    }
+  
+    if (!productData.category) {
+      toast({
+        variant: "destructive",
+        description: "Please select a category",
+      });
+      return;
+    }
+  
+    // Validate variants
+    for (const [index, variant] of variants.entries()) {
+      if (!variant.color.trim()) {
+        toast({
+          variant: "destructive",
+          description: `Color is required for variant ${index + 1}`,
+        });
+        return;
+      }
+  
+      if (variant.quantity < 0) {
+        toast({
+          variant: "destructive",
+          description: `Invalid quantity for variant ${index + 1}`,
+        });
+        return;
+      }
+  
+      if (!variant.price || variant.price <= 0) {
+        toast({
+          variant: "destructive",
+          description: `Invalid price for variant ${index + 1}`,
+        });
+        return;
+      }
+  
+      if (variant.discountPrice && (variant.discountPrice >= variant.price || variant.discountPrice <= 0)) {
+        toast({
+          variant: "destructive",
+          description: `Invalid discount price for variant ${index + 1}. Must be less than regular price and greater than 0`,
+        });
+        return;
+      }
+  
+      if (variant.images.length < 3) {
+        toast({
+          variant: "destructive",
+          description: `Each variant must have exactly 3 images. Variant ${index + 1} has ${variant.images.length} images`,
+        });
+        return;
+      }
+    }
     
     // Validate all variants have required images
     const hasInvalidVariants = variants.some(variant => variant.images.length < 3);
     if (hasInvalidVariants) {
       toast({
         variant: "destructive",
-        title: "Error",
         description: "Each variant must have at least 3 images",
       });
       return;
@@ -247,7 +336,7 @@ const AddProductForm = ({ onClose }) => {
                 value={productData.name}
                 onChange={handleInputChange}
                 placeholder="Enter product name"
-                required
+                
               />
             </div>
 
@@ -307,7 +396,7 @@ const AddProductForm = ({ onClose }) => {
                 value={productData.description}
                 onChange={handleInputChange}
                 placeholder="Enter product description..."
-                required
+                
               />
             </div>
 
@@ -353,7 +442,7 @@ const AddProductForm = ({ onClose }) => {
                         value={variant.color}
                         onChange={(e) => handleVariantChange(variantIndex, 'color', e.target.value)}
                         placeholder="Enter color"
-                        required
+                        
                       />
                     </div>
                     <div>
@@ -365,7 +454,7 @@ const AddProductForm = ({ onClose }) => {
                         value={variant.price}
                         onChange={(e) => handleVariantChange(variantIndex, 'price', e.target.value)}
                         placeholder="Enter price"
-                        required
+                        
                       />
                     </div>
                     <div>
@@ -389,7 +478,7 @@ const AddProductForm = ({ onClose }) => {
                         value={variant.quantity}
                         onChange={(e) => handleVariantChange(variantIndex, 'quantity', e.target.value)}
                         placeholder="Enter quantity"
-                        required
+                        
                       />
                     </div>
                   </div>
