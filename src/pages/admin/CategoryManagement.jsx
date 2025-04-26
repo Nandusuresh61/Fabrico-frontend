@@ -144,8 +144,6 @@ const CategoryManagement = () => {
   
   return '';
 
-
-    return '';
 };
 
   const handleAddCategory = async () => {
