@@ -10,7 +10,7 @@ export const updateProductStockApi = (productId, variantId, quantity) =>
   API.put(`/products/${productId}/variants/${variantId}/update-stock`, { quantity });
 
 export const getAllProductsForUsersApi = (params) => 
-  API.get('/products', { 
+  API.get('/products/users', { 
     params: {
       ...params,
       minPrice: Number(params.minPrice),
