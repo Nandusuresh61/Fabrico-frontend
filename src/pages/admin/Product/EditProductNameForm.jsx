@@ -14,7 +14,7 @@ const EditProductNameForm = ({ product, onSubmit, onClose }) => {
     const underscoresOnly = /^[_]+$/.test(name.trim());
     
     if (specialCharsOnly || underscoresOnly) {
-      return 'Product name must contain at least one letter or number';
+      return 'Product name must contain at least one letter';
     }
     if (name.trim().length < 3) {
       return 'Product name must be at least 3 characters';
