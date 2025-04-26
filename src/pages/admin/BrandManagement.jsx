@@ -85,19 +85,36 @@ const BrandManagement = () => {
     updateUrlAndFetch({ status, page: 1 });
   };
 
-  const validateBrandName = (name) => {
-    if (!name.trim()) {
+  const validateBrandName = (name, isEdit = false) => {
+    if (!name || !name.trim()) {
       return 'Brand name is required';
     }
+  
+    if (/^[^a-zA-Z0-9]+$/.test(name.trim()) || /^[_]+$/.test(name.trim())) {
+      return 'Brand name must contain at least one letter or number';
+    }
+    
     if (name.trim().length < 3) {
       return 'Brand name must be at least 3 characters long';
     }
+    
     if (name.trim().length > 50) {
       return 'Brand name cannot exceed 50 characters';
     }
-    if (!/^[a-zA-Z0-9\s-&]+$/.test(name)) {
+  
+    if (!/^[a-zA-Z0-9\s-&]+$/.test(name.trim())) {
       return 'Brand name can only contain letters, numbers, spaces, hyphens, and ampersands';
     }
+  
+    const existingBrand = brands.find(
+      brand => brand.name.toLowerCase() === name.trim().toLowerCase() &&
+      (!isEdit || brand._id !== selectedBrand?._id)
+    );
+  
+    if (existingBrand) {
+      return 'Brand name already exists';
+    }
+  
     return '';
   };
 
@@ -115,17 +132,18 @@ const BrandManagement = () => {
       setFormError('');
       toast.success('Brand added successfully');
     } catch (err) {
-      setFormError(err);
+      const errorMessage = err?.response?.data?.message || err || 'Failed to add brand. Please try again.';
+    setFormError(errorMessage);
     }
   };
 
   const handleEditBrand = async () => {
-    const validationError = validateBrandName(newBrandName);
+    const validationError = validateBrandName(newBrandName, true);
     if (validationError) {
       setFormError(validationError);
       return;
     }
-
+  
     try {
       await dispatch(updateBrand({
         id: selectedBrand._id,
@@ -137,7 +155,8 @@ const BrandManagement = () => {
       setFormError('');
       toast.success('Brand updated successfully');
     } catch (err) {
-      setFormError(err);
+      const errorMessage = err?.response?.data?.message || err || 'Failed to update brand. Please try again.';
+      setFormError(errorMessage);
     }
   };
 
