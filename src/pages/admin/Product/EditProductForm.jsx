@@ -9,9 +9,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
 import { fetchBrands } from '../../../redux/features/brandSlice';
 import { getAllCategories } from '../../../redux/features/categorySlice';
+import { useToast} from '../../../hooks/use-toast'
 
 const EditProductForm = ({ product, onSubmit, onClose }) => {
   const dispatch = useDispatch();
+  const {toast} = useToast();
   const { brands } = useSelector((state) => state.brands);
   const { categories } = useSelector((state) => state.category);
   const [formData, setFormData] = useState({
@@ -133,6 +135,71 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.brand) {
+      toast({
+        variant: "destructive",
+        description: "Please select a brand",
+      });
+      return;
+    }
+
+    if (!formData.category) {
+      toast({
+        variant: "destructive",
+        description: "Please select a category",
+      });
+      return;
+    }
+
+    if (!formData.color.trim()) {
+      toast({
+        variant: "destructive",
+        description: "Color is required",
+      });
+      return;
+    }
+
+    if (!formData.price || formData.price <= 0) {
+      toast({
+        variant: "destructive",
+        description: "Price must be greater than 0",
+      });
+      return;
+    }
+
+    if (formData.discountPrice && (formData.discountPrice >= formData.price || formData.discountPrice <= 0)) {
+      toast({
+        variant: "destructive",
+        description: "Discount price must be less than regular price and greater than 0",
+      });
+      return;
+    }
+
+    if (!formData.stock || formData.stock < 0) {
+      toast({
+        variant: "destructive",
+        description: "Stock must be 0 or greater",
+      });
+      return;
+    }
+
+    
+    const totalImages = existingImages.length + formData.images.length;
+    if (totalImages === 0) {
+      toast({
+        variant: "destructive",
+        description: "At least one image is required",
+      });
+      return;
+    }
+
+    if (totalImages > 3) {
+      toast({
+        variant: "destructive",
+        description: "Maximum 3 images are allowed",
+      });
+      return;
+    }
 
     const data = new FormData();
     
@@ -244,7 +311,7 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
                 value={formData.color}
                 onChange={handleChange}
                 className="w-full"
-                required
+                
               />
             </div>
 
@@ -258,7 +325,7 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
                 value={formData.price}
                 onChange={handleChange}
                 className="w-full"
-                required
+                
               />
             </div>
 
@@ -286,7 +353,7 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
                 value={formData.stock}
                 onChange={handleChange}
                 className="w-full"
-                required
+                
               />
             </div>
 
