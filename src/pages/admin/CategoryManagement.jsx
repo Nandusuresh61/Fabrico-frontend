@@ -111,21 +111,42 @@ const CategoryManagement = () => {
   };
 
 
-  const validateCategoryName = (name) => {
-    if (!name.trim()) {
-      return 'Category name is required';
+  const validateCategoryName = (name,isEdit = false) => {
+    if (!name || !name.trim()) {
+        return 'Category name is required';
     }
+
+    if (/^[^a-zA-Z0-9]+$/.test(name.trim()) || /^[_]+$/.test(name.trim())) {
+        return 'Category name must contain at least one letter or number';
+    }
+    
     if (name.trim().length < 3) {
-      return 'Category name must be at least 3 characters long';
+        return 'Category name must be at least 3 characters long';
     }
+    
     if (name.trim().length > 50) {
-      return 'Category name cannot exceed 50 characters';
+        return 'Category name cannot exceed 50 characters';
     }
-    if (!/^[a-zA-Z0-9\s-&]+$/.test(name)) {
-      return 'Category name can only contain letters, numbers, spaces, hyphens, and ampersands';
+    
+
+    if (!/^[a-zA-Z0-9\s-&]+$/.test(name.trim())) {
+        return 'Category name can only contain letters, numbers, spaces, hyphens, and ampersands';
     }
+
+    const existingCategory = categories.find(
+      category => category.name.toLowerCase() === name.trim().toLowerCase() &&
+      (!isEdit || category._id !== selectedCategory?._id)
+  );
+  
+  if (existingCategory) {
+      return 'Category name already exists';
+  }
+  
+  return '';
+
+
     return '';
-  };
+};
 
   const handleAddCategory = async () => {
     const validationError = validateCategoryName(newCategoryName);
@@ -141,12 +162,13 @@ const CategoryManagement = () => {
       setFormError('');
       toast.success('Category added successfully');
     } catch (err) {
-      setFormError(err || 'Failed to add category. Please try again.');
+      const errorMessage = err?.response?.data?.message || err || 'Failed to update category. Please try again.';
+        setFormError(errorMessage); 
     }
   };
 
   const handleEditCategory = async () => {
-    const validationError = validateCategoryName(newCategoryName);
+    const validationError = validateCategoryName(newCategoryName, true);
     if (validationError) {
       setFormError(validationError);
       return;
@@ -163,7 +185,8 @@ const CategoryManagement = () => {
         setFormError('');
         toast.success('Category updated successfully');
       } catch (err) {
-        setFormError(err);
+        const errorMessage = err?.response?.data?.message || err || 'Failed to update category. Please try again.';
+        setFormError(errorMessage);
       }
     }
   };
