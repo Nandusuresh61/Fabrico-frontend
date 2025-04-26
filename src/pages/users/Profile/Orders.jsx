@@ -606,7 +606,7 @@ const Orders = () => {
                                 </h5>
                                 {item.variant && (
                                   <p className="mt-1 text-sm text-gray-600">
-                                    Variant: {item.variant.name}
+                                    Variant: {item.variant.color}
                                   </p>
                                 )}
                                 <p className="mt-1 text-sm text-gray-600">

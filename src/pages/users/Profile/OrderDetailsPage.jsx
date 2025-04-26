@@ -541,7 +541,7 @@ const OrderDetailsPage = () => {
                               <div>
                                 <h5 className="text-base font-medium text-gray-900">{item.product.name}</h5>
                                 {item.variant && (
-                                  <p className="mt-1 text-sm text-gray-600">Variant: {item.variant.name}</p>
+                                  <p className="mt-1 text-sm text-gray-600">Variant: {item.variant.color}</p>
                                 )}
                                 <p className="mt-1 text-sm text-gray-600">Qty: {item.quantity}</p>
                                 {selectedOrder.status === 'delivered' && (
