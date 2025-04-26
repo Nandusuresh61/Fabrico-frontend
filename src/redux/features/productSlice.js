@@ -159,17 +159,19 @@ const productSlice = createSlice({
       })
       .addCase(editProduct.fulfilled, (state, action) => {
         state.loading = false;
-        const { productId, variantId, variant } = action.payload;
-        state.products = state.products.map((product) => {
-          if (product._id === productId) {
+        const { productId, variantId, variant, product } = action.payload;
+        state.products = state.products.map((p) => {
+          if (p._id === productId) {
             return {
-              ...product,
-              variants: product.variants.map((v) =>
+              ...p,
+              brand: action.payload.product.brand,
+              category: action.payload.product.category,
+              variants: p.variants.map((v) =>
                 v._id === variantId ? variant : v
               ),
             };
           }
-          return product;
+          return p;
         });
       })
       .addCase(editProduct.rejected, (state, action) => {

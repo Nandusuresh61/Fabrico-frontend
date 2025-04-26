@@ -5,15 +5,38 @@ import { X } from 'lucide-react';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { toast } from 'react-hot-toast';
+import { useDispatch, useSelector } from 'react-redux';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../components/ui/select';
+import { fetchBrands } from '../../../redux/features/brandSlice';
+import { getAllCategories } from '../../../redux/features/categorySlice';
 
 const EditProductForm = ({ product, onSubmit, onClose }) => {
+  const dispatch = useDispatch();
+  const { brands } = useSelector((state) => state.brands);
+  const { categories } = useSelector((state) => state.category);
   const [formData, setFormData] = useState({
     color: product.variant.color || '',
     price: product.variant.price || '',
     discountPrice: product.variant.discountPrice || '',
     stock: product.variant.stock || '',
+    brand: product.brand._id || '',
+    category: product.category._id || '',
     images: []
   });
+
+  useEffect(() => {
+    dispatch(fetchBrands());
+    dispatch(getAllCategories());
+  }, [dispatch]);
+
+ 
+
+  const handleSelectChange = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const [previewImages, setPreviewImages] = useState([]);
   const [existingImages, setExistingImages] = useState([
@@ -113,14 +136,17 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
 
     const data = new FormData();
     
-    // Append basic form data
     Object.keys(formData).forEach(key => {
       if (key !== 'images') {
-        data.append(key, formData[key]);
+        if (key === 'discountPrice' && !formData[key]) {
+          data.append(key, '');
+        } else {
+          data.append(key, formData[key]);
+        }
       }
     });
 
-    // Append new images if any
+
     formData.images.forEach(file => {
       data.append('images', file);
     });
@@ -166,6 +192,48 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">
+                  Brand*
+                </label>
+                <Select 
+                  value={formData.brand} 
+                  onValueChange={(value) => handleSelectChange('brand', value)}
+                >
+                  <SelectTrigger id="brand">
+                    <SelectValue placeholder="Select brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map(brand => (
+                      <SelectItem key={brand._id} value={brand._id}>
+                        {brand.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  Category*
+                </label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(value) => handleSelectChange('category', value)}
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => (
+                      <SelectItem key={category._id} value={category._id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Color
