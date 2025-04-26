@@ -10,7 +10,18 @@ const PersonalInformation = () => {
   const dispatch = useDispatch();
   const { toast } = useToast();
   const { user, loading } = useSelector((state) => state.user);
-  
+  const [errors, setErrors] = useState({
+    username: '',
+    phone: '',
+    email: ''
+  });
+  const [originalData] = useState({
+    username: user.username,
+    email: user.email,
+    phone: user.phone || '',
+    profileImage: user.profileImage,
+    referralCode: user.referralCode || ''
+  });
   const [showModal, setShowModal] = useState(false);
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -38,8 +49,26 @@ const PersonalInformation = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'username') {
+      setErrors(prev => ({ ...prev, username: validateUsername(value) }));
+    }
+    
+    if (name === 'phone') {
+      if (value && !/^\d*$/.test(value)) {
+        return; 
+      }
+      if (value.length > 10) {
+        return; 
+      }
+      setErrors(prev => ({ ...prev, phone: validatePhone(value) }));
+    }
+
+    if (name === 'email') {
+      setErrors(prev => ({ ...prev, email: validateEmail(value) }));
+    }
+    
     setFormData(prev => ({ ...prev, [name]: value }));
-  };
+};
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -106,6 +135,20 @@ const PersonalInformation = () => {
   };
 
   const handleUpdate = async () => {
+    const usernameError = validateUsername(formData.username);
+    const phoneError = validatePhone(formData.phone);
+    const emailError = validateEmail(formData.email);
+    
+    const newErrors = {
+      username: usernameError,
+      phone: phoneError,
+      email: emailError
+  };
+  
+  setErrors(newErrors);
+  if (Object.values(newErrors).some(error => error !== '')) {
+    return;
+}
     if (formData.email !== originalEmail) {
       // Send OTP for email verification
       try {
@@ -120,7 +163,7 @@ const PersonalInformation = () => {
         });
       }
     } else {
-      // Update other fields directly
+      
       try {
         await dispatch(updateProfile(formData)).unwrap();
         setShowModal(false);
@@ -209,6 +252,60 @@ const PersonalInformation = () => {
       copyReferralCode();
     }
   };
+
+
+  const validateUsername = (value) => {
+    if (!value) {
+      return 'Username is required';
+  }
+    if (value.length < 3) {
+      return 'Username must be at least 3 characters long';
+    }
+    if (!/^[a-zA-Z\s]+$/.test(value)) {
+      return 'Username can only contain letters and spaces';
+    }
+    return '';
+  };
+
+  const validatePhone = (value) => {
+    if (!value) {
+      return 'phone number  is required';
+  }
+    if (!/^\d{10}$/.test(value)) {
+      return 'Phone number must be 10 digits';
+    }
+    if (/^0{10}$/.test(value)) {
+      return 'Invalid phone number';
+    }
+    return '';
+  };
+  const validateEmail = (value) => {
+    if (!value) {
+        return 'Email is required';
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return 'Please enter a valid email address';
+    }
+    return '';
+};
+
+const handleCloseModal = () => {
+
+  setFormData({
+    username: originalData.username,
+    email: originalData.email,
+    phone: originalData.phone,
+    profileImage: originalData.profileImage,
+    referralCode: originalData.referralCode
+  });
+
+  setErrors({
+    username: '',
+    phone: '',
+    email: ''
+  });
+  setShowModal(false);
+};
 
   return (
     <>
@@ -396,34 +493,49 @@ const PersonalInformation = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                />
+            type="text"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            className={`mt-1 block w-full rounded-md border ${
+                errors.username ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2`}
+        />
+        {errors.username && (
+            <p className="mt-1 text-sm text-red-500">{errors.username}</p>
+        )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Email</label>
                 <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                />
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={`mt-1 block w-full rounded-md border ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2`}
+        />
+        {errors.email && (
+            <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+        )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">Phone</label>
                 <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2"
-                />
+            type="tel"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            className={`mt-1 block w-full rounded-md border ${
+                errors.phone ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2`}
+        />
+        {errors.phone && (
+            <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+        )}
               </div>
             </div>
 
@@ -431,7 +543,7 @@ const PersonalInformation = () => {
             <div className="mt-6 flex justify-end space-x-3">
               <CustomButton
                 variant="outline"
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
                 disabled={loading}
               >
                 Cancel
