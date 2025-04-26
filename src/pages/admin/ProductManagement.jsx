@@ -342,8 +342,8 @@ const ProductManagement = () => {
                     </tr>
                     {expandedProducts[product._id] && (
                       <tr>
-                        <td colSpan="5" className="px-6 py-4">
-                          <div className="overflow-x-auto">
+                        <td colSpan="7" className="p-0">
+                          <div className="border-t">
                             <table className="w-full">
                               <thead>
                                 <tr className="bg-gray-100 text-xs font-medium uppercase text-gray-500">

@@ -329,7 +329,7 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
               />
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Discount Price
               </label>
@@ -341,7 +341,7 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
                 className="w-full"
                 placeholder="Enter discount price"
               />
-            </div>
+            </div> */}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

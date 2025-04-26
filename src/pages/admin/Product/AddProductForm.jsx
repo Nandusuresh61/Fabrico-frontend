@@ -457,7 +457,7 @@ const AddProductForm = ({ onClose }) => {
                         
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <label className="block text-sm text-gray-700 mb-1">
                         Discount Price
                       </label>
@@ -467,7 +467,7 @@ const AddProductForm = ({ onClose }) => {
                         onChange={(e) => handleVariantChange(variantIndex, 'discountPrice', e.target.value)}
                         placeholder="Enter discount price"
                       />
-                    </div>
+                    </div> */}
                     <div>
                       <label className="block text-sm text-gray-700 mb-1">
                         Quantity*
