@@ -4,10 +4,45 @@ import { X } from 'lucide-react';
 
 const EditProductNameForm = ({ product, onSubmit, onClose }) => {
   const [productName, setProductName] = useState(product.name);
+  const [error, setError] = useState('');
+
+  const validateName = (name) => {
+    if (!name || name.trim().length === 0) {
+      return 'Product name is required';
+    }
+    const specialCharsOnly = /^[^a-zA-Z0-9]+$/.test(name.trim());
+    const underscoresOnly = /^[_]+$/.test(name.trim());
+    
+    if (specialCharsOnly || underscoresOnly) {
+      return 'Product name must contain at least one letter or number';
+    }
+    if (name.trim().length < 3) {
+      return 'Product name must be at least 3 characters';
+    }
+    if (name.trim().length > 100) {
+      return 'Product name cannot exceed 100 characters';
+    }
+    return '';
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ name: productName });
+    const validationError = validateName(productName);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    onSubmit({ name: productName.trim() });
+  };
+
+  const handleNameChange = (e) => {
+    const newName = e.target.value;
+    setProductName(newName);
+    // Clear error when user starts typing
+    if (error) {
+      setError('');
+    }
   };
 
   return (
@@ -28,10 +63,15 @@ const EditProductNameForm = ({ product, onSubmit, onClose }) => {
             <input
               type="text"
               value={productName}
-              onChange={(e) => setProductName(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2"
-              required
+              onChange={handleNameChange}
+              className={`w-full rounded-md border ${
+                error ? 'border-red-500' : 'border-gray-300'
+              } px-3 py-2`}
+              placeholder="Enter product name"
             />
+            {error && (
+              <p className="mt-1 text-sm text-red-600">{error}</p>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">
@@ -42,7 +82,10 @@ const EditProductNameForm = ({ product, onSubmit, onClose }) => {
             >
               Cancel
             </CustomButton>
-            <CustomButton type="submit">
+            <CustomButton 
+              type="submit"
+              disabled={!!error}
+            >
               Save Changes
             </CustomButton>
           </div>
@@ -52,4 +95,4 @@ const EditProductNameForm = ({ product, onSubmit, onClose }) => {
   );
 };
 
-export default EditProductNameForm; 
+export default EditProductNameForm;
