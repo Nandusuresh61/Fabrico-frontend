@@ -294,8 +294,8 @@ const CouponManagement = () => {
 
     if (!formData.minimumAmount) {
       newErrors.minimumAmount = 'Minimum amount is required';
-    } else if (formData.minimumAmount < 0) {
-      newErrors.minimumAmount = 'Minimum amount cannot be negative';
+    } else if (formData.minimumAmount <= 0) {
+      newErrors.minimumAmount = 'Minimum amount cannot be negative or zero';
     } else if (formData.discountType === 'fixed' && 
                parseFloat(formData.discountValue) >= parseFloat(formData.minimumAmount)) {
       newErrors.discountValue = 'Fixed discount must be less than minimum amount';
