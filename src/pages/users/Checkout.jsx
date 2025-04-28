@@ -191,6 +191,7 @@ const Checkout = () => {
         },
         // Failure callback
         async (orderId) => {
+          await dispatch(clearCart()).unwrap();
           navigate('/payment-failure', {
             state: {
               orderId
