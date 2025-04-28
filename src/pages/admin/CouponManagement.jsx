@@ -155,8 +155,8 @@ const CouponManagement = () => {
         discountType: formData.discountType,
         discountValue: Number(formData.discountValue),
         minimumAmount: Number(formData.minimumAmount),
-        startDate: new Date(formData.startDate).toISOString(),
-        endDate: new Date(formData.endDate).toISOString(),
+        startDate: new Date(new Date(formData.startDate).getTime() + new Date().getTimezoneOffset() * 60000).toISOString(),
+      endDate: new Date(new Date(formData.endDate).getTime() + new Date().getTimezoneOffset() * 60000).toISOString(),
       };
 
       if (editingCoupon) {
@@ -191,9 +191,9 @@ const CouponManagement = () => {
       discountType: coupon.discountType,
       discountValue: coupon.discountValue,
       minimumAmount: coupon.minOrderAmount,
-      startDate: new Date(coupon.startDate).toISOString().split("T")[0],
-      endDate: new Date(coupon.endDate).toISOString().split("T")[0],
-    });
+      startDate: new Date(new Date(coupon.startDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0],
+    endDate: new Date(new Date(coupon.endDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0],
+  });
     setIsModalOpen(true);
   };
 
