@@ -27,6 +27,7 @@ const OfferManagement = () => {
     total: 0
   });
 
+  const [errors, setErrors] = useState({});
   // States for search, sort, and filter
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedStatus, setSelectedStatus] = useState(searchParams.get('status') || '');
@@ -126,6 +127,7 @@ const OfferManagement = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    setErrors({});
     setFormData(prev => ({
       ...prev,
       [name]: value,
@@ -134,6 +136,9 @@ const OfferManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     try {
       // Validate form data
       if (!formData.offerName || !formData.offerType || !formData.discountPercentage || 
@@ -259,6 +264,62 @@ const OfferManagement = () => {
     });
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.offerName) {
+      newErrors.offerName = 'Offer name is required';
+    } else if (formData.offerName.length < 3 || formData.offerName.length > 50) {
+      newErrors.offerName = 'Offer name must be between 3 and 50 characters';
+    }
+
+    if (!formData.offerType) {
+      newErrors.offerType = 'Offer type is required';
+    }
+
+    if (!formData.discountPercentage) {
+      newErrors.discountPercentage = 'Discount percentage is required';
+    } else {
+      const discount = Number(formData.discountPercentage);
+      if (isNaN(discount) || discount <= 0 || discount >= 100) {
+        newErrors.discountPercentage = 'Discount must be between 0 and 100';
+      }
+    }
+
+    if (!formData.startDate) {
+      newErrors.startDate = 'Start date is required';
+    } else {
+      const start = new Date(formData.startDate);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      if (start < now) {
+        newErrors.startDate = 'Start date cannot be in the past';
+      }
+    }
+
+    if (!formData.endDate) {
+      newErrors.endDate = 'End date is required';
+    } else {
+      const start = new Date(formData.startDate);
+      const end = new Date(formData.endDate);
+      if (end <= start) {
+        newErrors.endDate = 'End date must be after start date';
+      }
+
+      const maxDuration = 365 * 24 * 60 * 60 * 1000; // 1 year in milliseconds
+      if (end - start > maxDuration) {
+        newErrors.endDate = 'Offer duration cannot exceed 1 year';
+      }
+    }
+
+    if (!formData.items) {
+      newErrors.items = `Please select ${formData.offerType === 'product' ? 'a product' : 'a category'}`;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
   return (
     <div className="p-6">
       {/* Header */}
@@ -406,92 +467,123 @@ const OfferManagement = () => {
         </div>
       )}
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && (
+{isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-[500px]">
+          <div className="bg-white p-6 rounded-lg w-[500px] max-h-[90vh] flex flex-col">
             <h2 className="text-xl font-bold mb-4">
               {editingOffer ? 'Edit Offer' : 'Add New Offer'}
             </h2>
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <input
-                    type="text"
-                    name="offerName"
-                    value={formData.offerName}
-                    onChange={handleInputChange}
-                    placeholder="Offer Name"
-                    className="w-full border p-2 rounded"
-                    
-                  />
-                </div>
-                <div>
-                  <select
-                    name="offerType"
-                    value={formData.offerType}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded"
-                    
-                  >
-                    <option value="product">Product</option>
-                    <option value="category">Category</option>
-                  </select>
-                </div>
-                <div>
-                  <input
-                    type="number"
-                    name="discountPercentage"
-                    value={formData.discountPercentage}
-                    onChange={handleInputChange}
-                    placeholder="Discount Percentage"
-                    className="w-full border p-2 rounded"
-                    min="1"
-                    max="100"
-                    
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <input
-                    type="date"
-                    name="startDate"
-                    value={formData.startDate}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded"
-                    
-                  />
-                  <input
-                    type="date"
-                    name="endDate"
-                    value={formData.endDate}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded"
-                    
-                  />
-                </div>
-                <div>
-                  <select
-                    name="items"
-                    value={formData.items || ''}
-                    onChange={handleInputChange}
-                    className="w-full border p-2 rounded"
-                    
-                  >
-                    <option value="">Select {formData.offerType === 'product' ? 'Product' : 'Category'}</option>
-                    {formData.offerType === 'product'
-                      ? products.map((product) => (
-                          <option key={product._id} value={product._id}>
-                            {product.name}
-                          </option>
-                        ))
-                      : categories.map((category) => (
-                          <option key={category._id} value={category._id}>
-                            {category.name}
-                          </option>
-                        ))}
-                  </select>
-                </div>
-              </div>
+            <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
+              <div className="space-y-4 pr-2">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Offer Name</label>
+          <input
+            type="text"
+            name="offerName"
+            value={formData.offerName}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full rounded-md border ${
+              errors.offerName ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+          />
+          {errors.offerName && (
+            <p className="mt-1 text-xs text-red-500">{errors.offerName}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Offer Type</label>
+          <select
+            name="offerType"
+            value={formData.offerType}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full rounded-md border ${
+              errors.offerType ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+          >
+            <option value="product">Product</option>
+            <option value="category">Category</option>
+          </select>
+          {errors.offerType && (
+            <p className="mt-1 text-xs text-red-500">{errors.offerType}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Discount Percentage</label>
+          <input
+            type="number"
+            name="discountPercentage"
+            value={formData.discountPercentage}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full rounded-md border ${
+              errors.discountPercentage ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+          />
+          {errors.discountPercentage && (
+            <p className="mt-1 text-xs text-red-500">{errors.discountPercentage}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Start Date</label>
+          <input
+            type="date"
+            name="startDate"
+            value={formData.startDate}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full rounded-md border ${
+              errors.startDate ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+          />
+          {errors.startDate && (
+            <p className="mt-1 text-xs text-red-500">{errors.startDate}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">End Date</label>
+          <input
+            type="date"
+            name="endDate"
+            value={formData.endDate}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full rounded-md border ${
+              errors.endDate ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+          />
+          {errors.endDate && (
+            <p className="mt-1 text-xs text-red-500">{errors.endDate}</p>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            {formData.offerType === 'product' ? 'Select Product' : 'Select Category'}
+          </label>
+          <select
+            name="items"
+            value={formData.items}
+            onChange={handleInputChange}
+            className={`mt-1 block w-full rounded-md border ${
+              errors.items ? 'border-red-500' : 'border-gray-300'
+            } px-3 py-2 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary`}
+          >
+            <option value="">Select {formData.offerType === 'product' ? 'a product' : 'a category'}</option>
+            {formData.offerType === 'product' 
+              ? products.map(product => (
+                  <option key={product._id} value={product._id}>{product.name}</option>
+                ))
+              : categories.map(category => (
+                  <option key={category._id} value={category._id}>{category.name}</option>
+                ))
+            }
+          </select>
+          {errors.items && (
+            <p className="mt-1 text-xs text-red-500">{errors.items}</p>
+          )}
+        </div>
+      </div>
               <div className="flex justify-end gap-2 mt-6">
                 <CustomButton
                   type="button"
