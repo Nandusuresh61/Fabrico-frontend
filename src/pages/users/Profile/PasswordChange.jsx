@@ -77,6 +77,13 @@ const PasswordChange = () => {
     e.preventDefault();
     
     if (!validateForm()) return;
+    if (formData.currentPassword === formData.newPassword) {
+      setErrors(prev => ({
+        ...prev,
+        newPassword: 'New password must be different from current password'
+      }));
+      return;
+    }
     
     setIsLoading(true);
     
