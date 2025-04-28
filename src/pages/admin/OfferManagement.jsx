@@ -363,11 +363,7 @@ const OfferManagement = () => {
                           offer.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'
                         }`}
                       >
-                        {loadingOffers[offer._id] ? (
-                          <Loader size="sm" />
-                        ) : (
-                          offer.isActive ? 'Deactivate' : 'Activate'
-                        )}
+                        {offer.isActive ? 'Deactivate' : 'Activate'}
                       </button>
                     </td>
                   </tr>
@@ -427,7 +423,7 @@ const OfferManagement = () => {
                     onChange={handleInputChange}
                     placeholder="Offer Name"
                     className="w-full border p-2 rounded"
-                    required
+                    
                   />
                 </div>
                 <div>
@@ -436,7 +432,7 @@ const OfferManagement = () => {
                     value={formData.offerType}
                     onChange={handleInputChange}
                     className="w-full border p-2 rounded"
-                    required
+                    
                   >
                     <option value="product">Product</option>
                     <option value="category">Category</option>
@@ -452,7 +448,7 @@ const OfferManagement = () => {
                     className="w-full border p-2 rounded"
                     min="1"
                     max="100"
-                    required
+                    
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -462,7 +458,7 @@ const OfferManagement = () => {
                     value={formData.startDate}
                     onChange={handleInputChange}
                     className="w-full border p-2 rounded"
-                    required
+                    
                   />
                   <input
                     type="date"
@@ -470,7 +466,7 @@ const OfferManagement = () => {
                     value={formData.endDate}
                     onChange={handleInputChange}
                     className="w-full border p-2 rounded"
-                    required
+                    
                   />
                 </div>
                 <div>
@@ -479,7 +475,7 @@ const OfferManagement = () => {
                     value={formData.items || ''}
                     onChange={handleInputChange}
                     className="w-full border p-2 rounded"
-                    required
+                    
                   >
                     <option value="">Select {formData.offerType === 'product' ? 'Product' : 'Category'}</option>
                     {formData.offerType === 'product'
