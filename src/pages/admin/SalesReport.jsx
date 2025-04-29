@@ -361,7 +361,7 @@ const SalesReport = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {formatCurrency(order.productDiscount || order.items.reduce((sum, item) => {
             return sum + ((item.originalPrice - item.price) * item.quantity);
-        }, 0))}
+        }, 0) || 0)}
     </td>
     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
         {formatCurrency(order.couponDiscount || 0)}
