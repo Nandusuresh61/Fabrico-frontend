@@ -53,48 +53,63 @@ const { loading, error} = useSelector((state)=>state.user);
     const newErrors = {};
     let isValid = true;
 
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-      isValid = false;
-    } else if (formData.name.trim().length < 4) {
-      newErrors.name = 'Name must be at least 4 characters long';
-      isValid = false;
+        newErrors.name = 'Name is required';
+        isValid = false;
+    } else if (formData.name.trim().length < 3 || formData.name.trim().length > 30) {
+        newErrors.name = 'Name must be between 3 and 30 characters long';
+        isValid = false;
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.name.trim())) {
+        newErrors.name = 'Name can only contain letters and spaces';
+        isValid = false;
     }
+
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-      isValid = false;
-    }
-    if (!formData.phone) {
-      newErrors.phone = 'Phone number is required';
-      isValid = false;
-    } else if (!/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = 'Phone number is invalid';
-      isValid = false;
+        newErrors.email = 'Email is required';
+        isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Please enter a valid email address';
+        isValid = false;
+    } else if (formData.email.length > 254) {
+        newErrors.email = 'Email address is too long';
+        isValid = false;
     }
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-      isValid = false;
-    } else {
-      const passedRequirements = passwordRequirements.filter(req => req.test(formData.password));
-      if (passedRequirements.length < passwordRequirements.length) {
-        newErrors.password = 'Password does not meet all requirements';
+
+    if (!formData.phone) {
+        newErrors.phone = 'Phone number is required';
         isValid = false;
-      }
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+        newErrors.phone = 'Please enter a valid 10-digit phone number';
+        isValid = false;
+    } else if (/^0{10}$/.test(formData.phone)) {
+        newErrors.phone = 'Invalid phone number';
+        isValid = false;
+    }
+
+   
+    if (!formData.password) {
+        newErrors.password = 'Password is required';
+        isValid = false;
+    } else {
+        const passedRequirements = passwordRequirements.filter(req => req.test(formData.password));
+        if (passedRequirements.length < passwordRequirements.length) {
+            newErrors.password = 'Password does not meet all requirements';
+            isValid = false;
+        }
     }
 
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-      isValid = false;
+        newErrors.confirmPassword = 'Passwords do not match';
+        isValid = false;
     }
 
     setErrors(newErrors);
     return isValid;
-  };
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

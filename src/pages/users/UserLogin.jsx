@@ -27,27 +27,34 @@ const UserLogin = () => {
     }
   },[user])
 
-  // Form validation
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
 
+    // Email validation
     if (!email) {
-      newErrors.email = 'Email is required';
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email is invalid';
-      isValid = false;
+        newErrors.email = 'Email is required';
+        isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        newErrors.email = 'Please enter a valid email address';
+        isValid = false;
+    } else if (email.length > 254) {
+        newErrors.email = 'Email address is too long';
+        isValid = false;
     }
 
+    // Password validation
     if (!password) {
-      newErrors.password = 'Password is required';
-      isValid = false;
+        newErrors.password = 'Password is required';
+        isValid = false;
+    } else if (password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters long';
+        isValid = false;
     }
 
     setErrors(newErrors);
     return isValid;
-  };
+};
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -72,11 +79,18 @@ const UserLogin = () => {
           title: "Account Blocked",
           description: "Your account has been blocked. Please contact support.",
         });
-      } else {
+      } else if (err.includes('not verified')) {
         toast({
-          variant: "destructive",
-          title: "Login failed",
-          description: err || "Invalid email or password",
+            variant: "destructive",
+            title: "Email Not Verified",
+            description: "Please verify your email address to continue.",
+        });
+        navigate('/otp-verification', { state: { email } });
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Login failed",
+            description: err || "Invalid email or password",
         });
       }
     }
