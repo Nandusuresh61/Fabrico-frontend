@@ -129,7 +129,7 @@ const Checkout = () => {
       setShowCoupons(true);
     } catch (error) {
       toast({
-        title: "Error",
+        // title: "Error",
         description: error.response?.data?.message || "Failed to fetch coupons",
         variant: "destructive",
       });
@@ -149,13 +149,13 @@ const Checkout = () => {
       setCouponError('');
       
       toast({
-        title: "Success",
+      //  title: "Success",
         description: response.data.message,
       });
     } catch (error) {
       setCouponError(error.response?.data?.message || "Failed to apply coupon");
       toast({
-        title: "Error",
+      //  title: "Error",
         description: error.response?.data?.message || "Failed to apply coupon",
         variant: "destructive",
       });
@@ -212,7 +212,7 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     if (!selectedAddress) {
       toast({
-        title: "Error",
+      //  title: "Error",
         description: "Please select a shipping address",
         variant: "destructive"
       });
@@ -229,7 +229,7 @@ const Checkout = () => {
     const { isValid, errorMessage } = validateCartItems();
     if (!isValid) {
       toast({
-        title: "Error",
+       // title: "Error",
         description: errorMessage,
         variant: "destructive"
       });
@@ -289,7 +289,7 @@ const Checkout = () => {
                 await dispatch(getWallet()); // Refresh wallet balance
                 
                 toast({
-                    title: "Success",
+                   // title: "Success",
                     description: "Payment processed successfully!"
                 });
 
@@ -312,7 +312,7 @@ const Checkout = () => {
         await dispatch(clearCart()).unwrap();
         
         toast({
-          title: "Success",
+         // title: "Success",
           description: "Your order has been placed successfully!"
         });
 
@@ -365,7 +365,7 @@ const Checkout = () => {
     // Check if there are any errors
     if (Object.values(errors).some(error => error)) {
       toast({
-        title: "Validation Error",
+      //  title: "Validation Error",
         description: "Please fix the errors in the form",
         variant: "destructive"
       });
@@ -386,7 +386,7 @@ const Checkout = () => {
     try {
       await dispatch(addNewAddress(addressData)).unwrap();
       toast({
-        title: "Success",
+       // title: "Success",
         description: "Address added successfully",
       });
       resetForm();
@@ -448,7 +448,7 @@ const Checkout = () => {
     try {
       await dispatch(updateExistingAddress({ id: editingId, addressData })).unwrap();
       toast({
-        title: "Success",
+       // title: "Success",
         description: "Address updated successfully",
       });
       resetForm();
