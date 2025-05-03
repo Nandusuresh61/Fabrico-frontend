@@ -10,6 +10,7 @@ import { addProduct } from '../../../redux/features/productSlice';
 import { fetchBrands } from '../../../redux/features/brandSlice';
 import { getAllCategories } from '../../../redux/features/categorySlice';
 import { useToast } from '../../../hooks/use-toast';
+import validateImage from '../../../utils/imageValidation'
 
 import uploadImageToCloudinary from '../../../utils/uploadImage';
 import ReactCrop from 'react-image-crop';
@@ -131,6 +132,16 @@ const AddProductForm = ({ onClose }) => {
   const handleImageUpload = (e, variantIndex) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    const file = files[0];
+  const validation = validateImage(file);
+  
+  if (!validation.isValid) {
+    toast({
+      variant: "destructive",
+      description: validation.error
+    });
+    return;
+  }
 
     setCurrentVariantIndex(variantIndex);
     setCurrentImage(URL.createObjectURL(files[0]));

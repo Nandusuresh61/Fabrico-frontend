@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { fetchBrands } from '../../../redux/features/brandSlice';
 import { getAllCategories } from '../../../redux/features/categorySlice';
 import { useToast} from '../../../hooks/use-toast'
+import validateImage from '../../../utils/imageValidation'
 
 const EditProductForm = ({ product, onSubmit, onClose }) => {
   const dispatch = useDispatch();
@@ -108,6 +109,17 @@ const EditProductForm = ({ product, onSubmit, onClose }) => {
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
+
+    const file = files[0];
+  const validation = validateImage(file);
+  
+  if (!validation.isValid) {
+    toast({
+      variant: "destructive",
+      description: validation.error
+    });
+    return;
+  }
 
     setCurrentImage(URL.createObjectURL(files[0]));
     setCropModalOpen(true);
