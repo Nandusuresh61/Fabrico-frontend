@@ -21,9 +21,9 @@ const queryClient = new QueryClient();
 
 function App() {
 
-  useEffect(() => {
-    setupCsrfToken();
-  }, []);
+  // useEffect(() => {
+  //   setupCsrfToken();
+  // }, []);
 
   return (
     <>
