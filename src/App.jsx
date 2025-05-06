@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router"
-import UserRoutes from './routes/UserRoutes'
+import UserRoutes from './routes/UserRoute'
 import AdminRoutes from "./routes/AdminRoutes"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { TooltipProvider } from "../src/components/ui/Tooltip";
