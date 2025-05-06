@@ -20,7 +20,7 @@ import Checkout from '../pages/users/Checkout'
 import OrderSuccess from '../pages/users/OrderSuccess'
 import Orders from '../pages/users/Profile/Orders'
 import Wallet from '../pages/users/Profile/Wallet'
-import OrderDetailsPage from '../pages/users/Profile/orderDetailsPage'
+import OrderDetailsPage from '../pages/users/Profile/OrderDetailsPages'
 import PaymentFailure from '../pages/users/PaymentFailure'
 
 function UserRoutes() {
