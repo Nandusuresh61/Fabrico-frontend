@@ -83,8 +83,9 @@ const Products = () => {
   }
   const handleSearchSubmit = (e) => {
     e.preventDefault();
+    const trimmedSearchTerm = searchTerm.trim();
     // If search is empty, clear filters
-    if (!searchTerm.trim()) {
+    if (!trimmedSearchTerm) {
       setActiveCategory('all');
       setActiveBrand('all');
       updateFilters({ 
@@ -98,12 +99,12 @@ const Products = () => {
 
     // Check if the search term matches any category
     const matchedCategory = categories.filter(category => category.status == "Activated").find(
-      category => category.name.toLowerCase().includes(searchTerm.toLowerCase())
+      category => category.name.toLowerCase().includes(trimmedSearchTerm.toLowerCase())
     );
     
     // Check if the search term matches any brand
     const matchedBrand = brands.filter(brand => brand.status == 'Activated').find(
-      brand => brand.name.toLowerCase().includes(searchTerm.toLowerCase())
+      brand => brand.name.toLowerCase().includes(trimmedSearchTerm.toLowerCase())
     );
 
     if (matchedCategory) {
@@ -129,7 +130,7 @@ const Products = () => {
       setActiveCategory('all');
       setActiveBrand('all');
       updateFilters({ 
-        search: searchTerm,
+        search: trimmedSearchTerm,
         category: 'all',
         brand: 'all',
         page: 1 
