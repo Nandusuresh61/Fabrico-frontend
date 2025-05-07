@@ -53,9 +53,9 @@ const Wallet = () => {
     <div className="animate-fade-in">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-semibold">My Wallet</h2>
-        <CustomButton variant="outline" size="sm">
+        {/* <CustomButton variant="outline" size="sm">
           Add Money
-        </CustomButton>
+        </CustomButton> */}
       </div>
       
       <div className="mb-8 overflow-hidden rounded-xl bg-gradient-to-r from-primary to-primary/80 p-6 text-white shadow-md">
@@ -68,12 +68,12 @@ const Wallet = () => {
         </div>
         
         <div className="mt-6 flex gap-2">
-          <CustomButton size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
+          {/* <CustomButton size="sm" className="bg-white/10 hover:bg-white/20 text-white border-white/20">
             Withdraw
           </CustomButton>
           <CustomButton size="sm" className="bg-white text-primary hover:bg-white/90">
             Add Money
-          </CustomButton>
+          </CustomButton> */}
         </div>
       </div>
       
