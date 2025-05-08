@@ -144,9 +144,6 @@ const { loading, error} = useSelector((state)=>state.user);
             referralCode: formData.referralCode.trim() || undefined
         })).unwrap();
 
-        // Store user data in localStorage
-        localStorage.setItem("user", JSON.stringify(resultAction));
-
         toast({
             title: "Registration successful!",
             description: "Please verify your email!",

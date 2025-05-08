@@ -55,6 +55,8 @@ export const verifyOtp = createAsyncThunk(
     async (data, { rejectWithValue }) => {
         try {
             const response = await verifyOtpApi(data);
+            // Store user data in localStorage only after successful verification
+            localStorage.setItem("user", JSON.stringify(response.data));
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'OTP verification failed');
@@ -206,7 +208,6 @@ const userSlice = createSlice({
             })
             .addCase(registerUser.fulfilled, (state, action) => {
                 state.loading = false;
-                state.user = action.payload;
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.loading = false;
@@ -248,11 +249,8 @@ const userSlice = createSlice({
             .addCase(verifyOtp.fulfilled, (state, action) => {
                 state.loading = false;
                 state.verificationSuccess = true;
-                // Store user data in state and localStorage
-                if (action.payload._id) {
-                    state.user = action.payload;
-                    localStorage.setItem("user", JSON.stringify(action.payload));
-                }
+                // Store user data in state only after successful verification
+                state.user = action.payload;
             })
             .addCase(verifyOtp.rejected, (state, action) => {
                 state.loading = false;
