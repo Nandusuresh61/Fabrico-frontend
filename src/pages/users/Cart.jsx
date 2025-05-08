@@ -51,17 +51,32 @@ const Cart = () => {
 
   const handleRemoveItem = async (itemId) => {
     try {
+      // First try to remove the item
       await dispatch(removeFromCart(itemId)).unwrap();
+      
+      // Refresh the cart to ensure we have the latest state
+      await dispatch(getCart()).unwrap();
+      
       toast({
         title: "Success",
         description: "Item removed from cart",
       });
     } catch (error) {
-      toast({
-        //title: "Error",
-        description: error,
-        variant: "destructive",
-      });
+      // If there's an error, try to refresh the cart first
+      try {
+        await dispatch(getCart()).unwrap();
+        // Then try to remove the item again
+        await dispatch(removeFromCart(itemId)).unwrap();
+        toast({
+          title: "Success",
+          description: "Item removed from cart",
+        });
+      } catch (retryError) {
+        toast({
+          description: "Failed to remove item. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
