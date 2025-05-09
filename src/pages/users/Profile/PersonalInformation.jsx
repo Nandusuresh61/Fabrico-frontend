@@ -327,7 +327,7 @@ const handleCloseModal = () => {
           <div className="mb-6 md:mb-0">
             <div className="relative h-24 w-24 overflow-hidden rounded-full md:h-32 md:w-32">
               <img
-                src={formData.profileImage}
+                src={formData.profileImage || '/prof.jpg'}
                 alt="Profile"
                 className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
               />
@@ -472,7 +472,7 @@ const handleCloseModal = () => {
             <div className="mb-4">
               <div className="relative h-24 w-24 mx-auto">
                 <img
-                  src={formData.profileImage}
+                  src={formData.profileImage || '/prof.jpg'}
                   alt="Profile"
                   className="h-full w-full object-cover rounded-full"
                 />
