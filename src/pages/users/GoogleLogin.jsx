@@ -24,6 +24,7 @@ function GoogleLogin() {
                   variant: "default",
                 });
                 navigate("/");
+                window.location.reload();
               })
               .catch((error) => {
                 console.error("Google Auth Error: ", error);
