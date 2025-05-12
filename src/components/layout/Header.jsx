@@ -248,18 +248,6 @@ const Header = () => {
       {isMenuOpen && (
         <div className="fixed inset-0 top-20 z-40 bg-white animate-fade-in md:hidden">
           <div className="container px-4 py-6">
-            {/* Mobile Search */}
-            <form onSubmit={handleSearchSubmit} className="relative mb-6">
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-full border-none bg-gray-100 py-3 pl-10 pr-4 text-sm"
-              />
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-500" />
-            </form>
-
             {/* Mobile Navigation Links */}
             <nav className="flex flex-col space-y-6">
               {navOptions.map((option) => (
@@ -284,10 +272,26 @@ const Header = () => {
                 Wishlist
               </Link>
               
-              <Link to="/login" className="flex items-center py-2 text-xl font-medium text-gray-800">
-                <User className="mr-3 h-6 w-6" />
-                Account
-              </Link>
+              {user ? (
+                <>
+                  <Link to="/profile" className="flex items-center py-2 text-xl font-medium text-gray-800">
+                    <User className="mr-3 h-6 w-6" />
+                    Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center py-2 text-xl font-medium text-gray-800"
+                  >
+                    <LogOut className="mr-3 h-6 w-6" />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="flex items-center py-2 text-xl font-medium text-gray-800">
+                  <LogIn className="mr-3 h-6 w-6" />
+                  Login
+                </Link>
+              )}
             </nav>
           </div>
         </div>
