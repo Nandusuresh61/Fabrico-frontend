@@ -243,7 +243,7 @@ const Dashboard = () => {
                   <span className="text-sm font-medium text-gray-500">{index + 1}</span>
                   <span className="font-medium">{product.productDetails.name}</span>
                 </div>
-                <span className="text-sm text-gray-600">{product.totalQuantity} sold</span>
+                {/* <span className="text-sm text-gray-600">{product.totalQuantity} sold</span> */}
               </div>
             ))}
           </div>
@@ -258,7 +258,7 @@ const Dashboard = () => {
                   <span className="text-sm font-medium text-gray-500">{index + 1}</span>
                   <span className="font-medium">{category.categoryDetails.name}</span>
                 </div>
-                <span className="text-sm text-gray-600">₹{category.totalSales.toFixed(2)}</span>
+                {/* <span className="text-sm text-gray-600">₹{category.totalSales.toFixed(2)}</span> */}
               </div>
             ))}
           </div>
@@ -273,7 +273,7 @@ const Dashboard = () => {
                   <span className="text-sm font-medium text-gray-500">{index + 1}</span>
                   <span className="font-medium">{brand.brandDetails.name}</span>
                 </div>
-                <span className="text-sm text-gray-600">₹{brand.totalSales.toFixed(2)}</span>
+                {/* <span className="text-sm text-gray-600">₹{brand.totalSales.toFixed(2)}</span> */}
               </div>
             ))}
           </div>
