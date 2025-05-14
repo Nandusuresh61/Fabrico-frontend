@@ -44,7 +44,6 @@ const Products = () => {
       ...newFilters
     };
 
-    // Remove default values from URL
     const cleanFilters = {};
     Object.entries(currentFilters).forEach(([key, value]) => {
       if (
@@ -62,12 +61,10 @@ const Products = () => {
     setSearchParams(cleanFilters);
   };
 
-  // Apply filters
   const handleApplyFilters = () => {
-    updateFilters({ page: 1 }); // Reset to first page when applying filters
+    updateFilters({ page: 1 });
   };
 
-  // Clear filters
   const handleClearFilters = () => {
     setActiveCategory('all');
     setActiveBrand('all');
@@ -77,14 +74,14 @@ const Products = () => {
     setSearchParams({});
   };
 
-  // Handle search
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   }
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const trimmedSearchTerm = searchTerm.trim();
-    // If search is empty, clear filters
+
     if (!trimmedSearchTerm) {
       setActiveCategory('all');
       setActiveBrand('all');
@@ -97,36 +94,34 @@ const Products = () => {
       return;
     }
 
-    // Check if the search term matches any category
     const matchedCategory = categories.filter(category => category.status == "Activated").find(
       category => category.name.toLowerCase().includes(trimmedSearchTerm.toLowerCase())
     );
-    
-    // Check if the search term matches any brand
+
     const matchedBrand = brands.filter(brand => brand.status == 'Activated').find(
       brand => brand.name.toLowerCase().includes(trimmedSearchTerm.toLowerCase())
     );
 
     if (matchedCategory) {
-      // If search matches a category, update category filter
+  
       setActiveCategory(matchedCategory.name.toLowerCase());
       updateFilters({ 
         category: matchedCategory.name.toLowerCase(),
-        brand: 'all', // Reset brand when searching by category
+        brand: 'all',
         search: '',
         page: 1 
       });
     } else if (matchedBrand) {
-      // If search matches a brand, update brand filter using the brand ID
+     
       setActiveBrand(matchedBrand._id);
       updateFilters({ 
-        brand: matchedBrand._id, // Use brand ID instead of name
-        category: 'all', // Reset category when searching by brand
+        brand: matchedBrand._id,
+        category: 'all', 
         search: '',
         page: 1 
       });
     } else {
-      // If no category/brand match, search in product names
+     
       setActiveCategory('all');
       setActiveBrand('all');
       updateFilters({ 
@@ -330,21 +325,64 @@ const Products = () => {
             </div>
 
             {/* Pagination */}
-            {totalPages >= 1 && (
-              <div className="mt-8 flex justify-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => updateFilters({ page })}
-                    className={`h-8 w-8 rounded-full ${
-                      page === currentPage
-                        ? 'bg-primary text-white'
-                        : 'border bg-white'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
+          
+             {totalPages >= 1 && (
+              <div className="mt-8 flex items-center justify-center gap-4">
+                <button
+                  onClick={() => currentPage > 1 && updateFilters({ page: currentPage - 1 })}
+                  disabled={currentPage === 1}
+                  className={`flex items-center gap-1 rounded-lg px-4 py-2 text-sm ${currentPage === 1 ? 'cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-50'} border transition-colors duration-200`}
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Previous
+                </button>
+
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current page
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => updateFilters({ page })}
+                          className={`h-10 w-10 rounded-lg ${page === currentPage
+                            ? 'bg-primary text-white'
+                            : 'border bg-white text-gray-700 hover:bg-gray-50'
+                            } flex items-center justify-center transition-colors duration-200`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return (
+                        <span key={page} className="text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <button
+                  onClick={() => currentPage < totalPages && updateFilters({ page: currentPage + 1 })}
+                  disabled={currentPage === totalPages}
+                  className={`flex items-center gap-1 rounded-lg px-4 py-2 text-sm ${currentPage === totalPages ? 'cursor-not-allowed bg-gray-100 text-gray-400' : 'bg-white text-gray-700 hover:bg-gray-50'} border transition-colors duration-200`}
+                >
+                  Next
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             )}
           </div>
