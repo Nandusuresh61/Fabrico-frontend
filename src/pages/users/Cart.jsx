@@ -83,10 +83,16 @@ const Cart = () => {
   const handleUpdateQuantity = async (itemId, newQuantity, stock) => {
     if (newQuantity < 1) return;
     
+    if (newQuantity > 10) {
+      toast({
+        description: "Maximum quantity allowed per purchase is 10 units",
+        variant: "destructive",
+      });
+      return;
+    }
    
     if (newQuantity > stock) {
       toast({
-      //  title: "Error",
         description: "Requested quantity exceeds available stock",
         variant: "destructive",
       });
@@ -101,7 +107,6 @@ const Cart = () => {
       });
     } catch (error) {
       toast({
-       // title: "Error",
         description: error,
         variant: "destructive",
       });
@@ -310,7 +315,7 @@ const Cart = () => {
                                 <button
                                   onClick={() => handleUpdateQuantity(item._id, item.quantity + 1, item.variant.stock)}
                                   className="p-1 rounded border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                  disabled={item.quantity >= item.variant.stock}
+                                  disabled={item.quantity >= Math.min(10, item.variant.stock)}
                                 >
                                   <Plus className="h-4 w-4" />
                                 </button>
@@ -319,10 +324,10 @@ const Cart = () => {
                               {/* Add stock status message */}
                               {item.variant.stock === 0 ? (
                                 <span className="text-red-500 text-sm">Out of stock</span>
-                              ) : item.quantity >= item.variant.stock ? (
-                                <span className="text-orange-500 text-sm">Maximum stock reached</span>
-                              ) : item.variant.stock <= 5 ? (
-                                <span className="text-orange-500 text-sm">Only {item.variant.stock} items left</span>
+                              ) : item.quantity >= Math.min(10, item.variant.stock) ? (
+                                <span className="text-orange-500 text-sm">
+                                  {item.quantity >= 10 ? "Maximum purchase limit reached" : "Maximum stock reached"}
+                                </span>
                               ) : null}
                             </div>
                             <div className="flex items-center gap-2">

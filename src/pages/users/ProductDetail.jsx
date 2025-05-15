@@ -349,17 +349,23 @@ const ProductDetail = () => {
                 <input
                   type="number"
                   min="1"
+                  max="10"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value) || 1;
+                    setQuantity(Math.min(10, Math.max(1, value)));
+                  }}
                   className="h-10 w-16 border-y border-gray-300 text-center outline-none"
                 />
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
+                  onClick={() => setQuantity(Math.min(10, quantity + 1))}
                   className="flex h-10 w-10 items-center justify-center rounded-r-md border border-gray-300 text-gray-600 hover:bg-gray-50"
+                  disabled={quantity >= 10}
                 >
                   +
                 </button>
               </div>
+              <span className="text-sm text-gray-500 mt-1">Maximum 10 units per purchase</span>
             </div>
             
             <div className="flex flex-wrap gap-4">
