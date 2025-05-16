@@ -108,7 +108,7 @@ const ProductCard = ({
         )}
 
         {/* Favorite button */}
-        <button 
+        {/* <button 
           onClick={toggleFavorite}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm transition-all hover:bg-white"
@@ -120,7 +120,7 @@ const ProductCard = ({
               isFavorite ? "fill-red-500 text-red-500" : "text-gray-600",
             )} 
           />
-        </button>
+        </button> */}
 
         {/* Badge indicators - moved below discount badge */}
         {(isNew || isFeatured) && (
