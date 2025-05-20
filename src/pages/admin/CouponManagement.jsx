@@ -47,6 +47,7 @@ const CouponManagement = () => {
     discountType: "percentage",
     discountValue: "",
     minimumAmount: "",
+    maximumAmount: "",
     startDate: "",
     endDate: "",
   });
@@ -126,7 +127,8 @@ const CouponManagement = () => {
         !formData.discountValue ||
         !formData.startDate ||
         !formData.endDate ||
-        !formData.minimumAmount
+        !formData.minimumAmount ||
+        !formData.maximumAmount
       ) {
         toast({
           title: "Error",
@@ -155,6 +157,7 @@ const CouponManagement = () => {
         discountType: formData.discountType,
         discountValue: Number(formData.discountValue),
         minimumAmount: Number(formData.minimumAmount),
+        maximumAmount: Number(formData.maximumAmount),
         startDate: new Date(formData.startDate + 'T00:00:00.000Z').toISOString(),
         endDate: new Date(formData.endDate + 'T00:00:00.000Z').toISOString(),
       };
@@ -191,6 +194,7 @@ const CouponManagement = () => {
       discountType: coupon.discountType,
       discountValue: coupon.discountValue,
       minimumAmount: coupon.minOrderAmount,
+      maximumAmount: coupon.maxOrderAmount,
       startDate: new Date(new Date(coupon.startDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0],
     endDate: new Date(new Date(coupon.endDate).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().split("T")[0],
   });
@@ -300,6 +304,13 @@ const CouponManagement = () => {
                parseFloat(formData.discountValue) >= parseFloat(formData.minimumAmount)) {
       newErrors.discountValue = 'Fixed discount must be less than minimum amount';
     }
+
+    if (!formData.maximumAmount) {
+      newErrors.maximumAmount = 'Maximum amount is required';
+    } else if (parseFloat(formData.maximumAmount) <= parseFloat(formData.minimumAmount)) {
+      newErrors.maximumAmount = 'Maximum amount must be greater than minimum amount';
+    }
+
 
 
     if (!formData.startDate) {
@@ -625,6 +636,22 @@ const CouponManagement = () => {
               <p className="text-red-500 text-sm mt-1">{errors.minimumAmount}</p>
             )}
           </div>
+
+
+          <div>
+  <input
+    type="number"
+    name="maximumAmount"
+    value={formData.maximumAmount}
+    onChange={handleInputChange}
+    placeholder="Maximum Order Amount"
+    className={`w-full border p-2 rounded ${errors.maximumAmount ? 'border-red-500' : ''}`}
+    min={formData.minimumAmount || 0}
+  />
+  {errors.maximumAmount && (
+    <p className="text-red-500 text-sm mt-1">{errors.maximumAmount}</p>
+  )}
+</div>
 
           <div>
             <textarea
