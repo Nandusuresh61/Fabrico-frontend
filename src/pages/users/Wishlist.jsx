@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect,useState  } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Heart, ShoppingCart, X } from 'lucide-react';
 import { Button } from '../../components/ui/button';
@@ -15,6 +15,34 @@ const Wishlist = () => {
     const { items: wishlistItems, loading } = useSelector((state) => state.wishlist);
     const { items: cartItems } = useSelector((state) => state.cart);
     const { toast } = useToast();
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [itemToRemove, setItemToRemove] = useState(null);
+
+    const handleRemoveClick = (itemId) => {
+        setItemToRemove(itemId);
+        setShowConfirmModal(true);
+    };
+
+    const handleConfirmRemove = async () => {
+        if (!itemToRemove) return;
+        
+        try {
+            await dispatch(removeFromWishlist(itemToRemove)).unwrap();
+            toast({
+                title: "Success",
+                description: "Item removed from wishlist",
+            });
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: error,
+                variant: "destructive",
+            });
+        } finally {
+            setShowConfirmModal(false);
+            setItemToRemove(null);
+        }
+    };
 
     useEffect(() => {
         dispatch(getWishlist());
@@ -202,7 +230,7 @@ const Wishlist = () => {
                                             variant="ghost" 
                                             size="sm"
                                             className="sm:w-auto w-full text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
-                                            onClick={() => handleRemoveItem(item._id)}
+                                            onClick={() => handleRemoveClick(item._id)}
                                         >
                                             Remove
                                         </Button>
@@ -213,6 +241,31 @@ const Wishlist = () => {
                     </div>
                 )}
             </div>
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg w-full max-w-sm mx-4">
+                        <h3 className="text-lg font-medium mb-4">Remove Item</h3>
+                        <p className="text-gray-600 mb-6">Are you sure you want to remove this item from your wishlist?</p>
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setShowConfirmModal(false);
+                                    setItemToRemove(null);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleConfirmRemove}
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 };

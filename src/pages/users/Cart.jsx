@@ -16,6 +16,34 @@ const Cart = () => {
   const { items, loading, totalAmount } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.user);
   const [cartItems, setCartItems] = useState([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [itemToRemove, setItemToRemove] = useState(null);
+
+  const handleRemoveClick = (itemId) => {
+    setItemToRemove(itemId);
+    setShowConfirmModal(true);
+  };
+  const handleConfirmRemove = async () => {
+    if (!itemToRemove) return;
+    
+    try {
+      await dispatch(removeFromCart(itemToRemove)).unwrap();
+      await dispatch(getCart()).unwrap();
+      
+      toast({
+        title: "Success",
+        description: "Item removed from cart",
+      });
+    } catch (error) {
+      toast({
+        description: "Failed to remove item. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowConfirmModal(false);
+      setItemToRemove(null);
+    }
+  };
 
   
   useEffect(() => {
@@ -49,36 +77,6 @@ const Cart = () => {
     return () => clearInterval(interval);
   }, [dispatch, user]);
 
-  const handleRemoveItem = async (itemId) => {
-    try {
-      // First try to remove the item
-      await dispatch(removeFromCart(itemId)).unwrap();
-      
-      // Refresh the cart to ensure we have the latest state
-      await dispatch(getCart()).unwrap();
-      
-      toast({
-        title: "Success",
-        description: "Item removed from cart",
-      });
-    } catch (error) {
-      // If there's an error, try to refresh the cart first
-      try {
-        await dispatch(getCart()).unwrap();
-        // Then try to remove the item again
-        await dispatch(removeFromCart(itemId)).unwrap();
-        toast({
-          title: "Success",
-          description: "Item removed from cart",
-        });
-      } catch (retryError) {
-        toast({
-          description: "Failed to remove item. Please try again.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
 
   const handleUpdateQuantity = async (itemId, newQuantity, stock) => {
     if (newQuantity < 1) return;
@@ -354,7 +352,7 @@ const Cart = () => {
 
                       <div className="flex flex-col sm:flex-row sm:justify-between mt-3 gap-3">
                         <button
-                          onClick={() => handleRemoveItem(item._id)}
+                          onClick={() => handleRemoveClick(item._id)}
                           className="text-sm text-gray-500 hover:text-red-500 transition-colors"
                         >
                           Remove
@@ -415,6 +413,31 @@ const Cart = () => {
           </div>
         )}
       </div>
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-sm mx-4">
+            <h3 className="text-lg font-medium mb-4">Remove Item</h3>
+            <p className="text-gray-600 mb-6">Are you sure you want to remove this item from your cart?</p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowConfirmModal(false);
+                  setItemToRemove(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmRemove}
+              >
+                Remove
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
